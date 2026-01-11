@@ -47,6 +47,12 @@ class AdminEmailListener
 
         $this->logger->info('postPersist called for entity: ' . get_class($entity));
 
+        // Check if mailer is configured and functional before attempting to send emails
+        if (!$this->isMailerAvailable()) {
+            $this->logger->debug('Mailer not available, skipping email notifications');
+            return;
+        }
+
         try {
             if ($entity instanceof Loan) {
                 // Send confirmation email to the user
@@ -71,18 +77,24 @@ class AdminEmailListener
                 $this->logger->info('Sent admin notification for new order');
             }
         } catch (\Exception $e) {
-            $this->logger->error('Error sending emails: ' . $e->getMessage(), [
-                'exception' => $e,
-                'trace' => $e->getTraceAsString()
+            // Log as warning instead of error - email failures are non-critical
+            $this->logger->warning('Email notification failed (non-critical): ' . $e->getMessage(), [
+                'exception_type' => get_class($e),
+                'entity_type' => get_class($entity)
             ]);
-            // Don't re-throw during fixtures loading - emails are not critical for data seeding
-            // Only log the error and continue
+            // Don't re-throw - emails are not critical for application functionality
         }
     }
 
     private function handleLoanUpdate(Loan $entity, array $changeSet): void
     {
         if (!isset($changeSet['status'])) {
+            return;
+        }
+
+        // Check if mailer is configured and functional before attempting to send emails
+        if (!$this->isMailerAvailable()) {
+            $this->logger->debug('Mailer not available, skipping email notifications');
             return;
         }
 
@@ -120,12 +132,22 @@ class AdminEmailListener
                     break;
             }
         } catch (\Exception $e) {
-            $this->logger->error('Error sending loan email: ' . $e->getMessage());
+            // Log as warning instead of error - email failures are non-critical
+            $this->logger->warning('Email notification failed (non-critical): ' . $e->getMessage(), [
+                'exception_type' => get_class($e),
+                'entity_type' => 'Loan'
+            ]);
         }
     }
 
     private function handleReservationUpdate(BookReservation $entity, array $changeSet): void
     {
+        // Check if mailer is configured and functional before attempting to send emails
+        if (!$this->isMailerAvailable()) {
+            $this->logger->debug('Mailer not available, skipping email notifications');
+            return;
+        }
+
         try {
             if (isset($changeSet['position'])) {
                 $oldPosition = $changeSet['position'][0];
@@ -157,7 +179,11 @@ class AdminEmailListener
                 }
             }
         } catch (\Exception $e) {
-            $this->logger->error('Error sending reservation email: ' . $e->getMessage());
+            // Log as warning instead of error - email failures are non-critical
+            $this->logger->warning('Email notification failed (non-critical): ' . $e->getMessage(), [
+                'exception_type' => get_class($e),
+                'entity_type' => 'BookReservation'
+            ]);
         }
     }
 
@@ -165,6 +191,12 @@ class AdminEmailListener
     {
         if (!isset($changeSet['status'])) {
             $this->logger->info('No status change detected for order');
+            return;
+        }
+
+        // Check if mailer is configured and functional before attempting to send emails
+        if (!$this->isMailerAvailable()) {
+            $this->logger->debug('Mailer not available, skipping email notifications');
             return;
         }
 
@@ -198,11 +230,45 @@ class AdminEmailListener
                     break;
             }
         } catch (\Exception $e) {
-            $this->logger->error('Error sending order email: ' . $e->getMessage(), [
-                'exception' => $e,
-                'trace' => $e->getTraceAsString()
+            // Log as warning instead of error - email failures are non-critical
+            $this->logger->warning('Email notification failed (non-critical): ' . $e->getMessage(), [
+                'exception_type' => get_class($e),
+                'entity_type' => 'Order'
             ]);
-            throw $e;
+            // Don't re-throw - emails are not critical for application functionality
         }
+    }
+
+    /**
+     * Check if mailer is available and configured
+     * Returns false if mailer is not configured or uses null transport
+     * Also returns false during fixtures loading to avoid SMTP connection errors
+     */
+    private function isMailerAvailable(): bool
+    {
+        // During fixtures loading, always skip emails to avoid SMTP connection errors
+        if (php_sapi_name() === 'cli' && isset($_SERVER['argv'])) {
+            $argv = $_SERVER['argv'];
+            if (in_array('app:load-fixtures', $argv) || 
+                (isset($argv[1]) && $argv[1] === 'app:load-fixtures')) {
+                return false;
+            }
+        }
+        
+        $mailerDsn = $_ENV['MAILER_DSN'] ?? getenv('MAILER_DSN') ?: null;
+        
+        // If not set, mailer is not available
+        if (empty($mailerDsn)) {
+            return false;
+        }
+        
+        // If using null transport, mailer is not available
+        if ($mailerDsn === 'null://null' || str_starts_with($mailerDsn, 'null://')) {
+            return false;
+        }
+        
+        // For SMTP, we assume it's available unless we're in fixtures context
+        // (which is already handled above)
+        return true;
     }
 }
