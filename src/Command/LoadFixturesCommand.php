@@ -99,15 +99,18 @@ class LoadFixturesCommand extends Command
     private function purgeDatabase(SymfonyStyle $io): void
     {
         $connection = $this->entityManager->getConnection();
-        $platform = $connection->getDatabasePlatform()->getName();
+        $platform = $connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
         $schemaManager = $connection->createSchemaManager();
         $tables = $schemaManager->listTableNames();
 
-        if ($platform === 'postgresql') {
-            // PostgreSQL: Disable foreign key checks
+        if ($isPostgres) {
+            // PostgreSQL: Use session_replication_role to disable triggers
             $connection->executeStatement('SET session_replication_role = replica;');
             foreach ($tables as $table) {
-                $connection->executeStatement("TRUNCATE TABLE \"$table\" CASCADE;");
+                // Use quoteIdentifier to properly escape table names
+                $quotedTable = $platform->quoteIdentifier($table);
+                $connection->executeStatement("TRUNCATE TABLE $quotedTable CASCADE;");
                 $io->writeln("  - Truncated: $table");
             }
             $connection->executeStatement('SET session_replication_role = DEFAULT;');
@@ -115,7 +118,8 @@ class LoadFixturesCommand extends Command
             // MySQL
             $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0;');
             foreach ($tables as $table) {
-                $connection->executeStatement("TRUNCATE TABLE `$table`;");
+                $quotedTable = $platform->quoteIdentifier($table);
+                $connection->executeStatement("TRUNCATE TABLE $quotedTable;");
                 $io->writeln("  - Truncated: $table");
             }
             $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1;');
