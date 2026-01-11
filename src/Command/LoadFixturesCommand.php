@@ -102,25 +102,33 @@ class LoadFixturesCommand extends Command
         $platform = $connection->getDatabasePlatform();
         $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
         $schemaManager = $connection->createSchemaManager();
-        $tables = $schemaManager->listTableNames();
+        
+        // Get table objects to access quoted names properly
+        $tableObjects = $schemaManager->listTables();
+        $tables = [];
+        foreach ($tableObjects as $tableObject) {
+            $tables[] = $tableObject->getName();
+        }
 
         if ($isPostgres) {
             // PostgreSQL: Use session_replication_role to disable triggers
             $connection->executeStatement('SET session_replication_role = replica;');
-            foreach ($tables as $table) {
-                // Use quoteIdentifier to properly escape table names
-                $quotedTable = $platform->quoteIdentifier($table);
+            foreach ($tables as $tableName) {
+                // Remove any existing quotes, then properly quote
+                $cleanName = trim($tableName, '"');
+                $quotedTable = $platform->quoteIdentifier($cleanName);
                 $connection->executeStatement("TRUNCATE TABLE $quotedTable CASCADE;");
-                $io->writeln("  - Truncated: $table");
+                $io->writeln("  - Truncated: $cleanName");
             }
             $connection->executeStatement('SET session_replication_role = DEFAULT;');
         } else {
             // MySQL
             $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0;');
-            foreach ($tables as $table) {
-                $quotedTable = $platform->quoteIdentifier($table);
+            foreach ($tables as $tableName) {
+                $cleanName = trim($tableName, '`');
+                $quotedTable = $platform->quoteIdentifier($cleanName);
                 $connection->executeStatement("TRUNCATE TABLE $quotedTable;");
-                $io->writeln("  - Truncated: $table");
+                $io->writeln("  - Truncated: $cleanName");
             }
             $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1;');
         }
