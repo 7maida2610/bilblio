@@ -10,11 +10,10 @@ use App\Entity\ReadingGoal;
 use App\Entity\ReadingProgress;
 use App\Entity\Review;
 use App\Entity\User;
-use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class AppFixtures extends Fixture
+class AppFixtures extends BaseFixture
 {
     private UserPasswordHasherInterface $passwordHasher;
 

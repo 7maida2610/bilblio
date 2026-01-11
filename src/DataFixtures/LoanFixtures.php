@@ -5,11 +5,9 @@ namespace App\DataFixtures;
 use App\Entity\Loan;
 use App\Entity\User;
 use App\Entity\Livre;
-use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class LoanFixtures extends Fixture implements DependentFixtureInterface
+class LoanFixtures extends BaseFixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
