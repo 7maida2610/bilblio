@@ -46,10 +46,15 @@ class RegistrationController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
-            // Send verification email
-            $emailService->sendVerificationEmail($user);
-
-            $this->addFlash('success', 'Registration successful! Please check your email to verify your account.');
+            // Send verification email (don't fail registration if email fails)
+            try {
+                $emailService->sendVerificationEmail($user);
+                $this->addFlash('success', 'Registration successful! Please check your email to verify your account.');
+            } catch (\Exception $e) {
+                // Log error but don't fail registration
+                error_log('Failed to send verification email: ' . $e->getMessage());
+                $this->addFlash('warning', 'Registration successful! However, we could not send the verification email. Please contact support.');
+            }
 
             return $this->redirectToRoute('app_login');
         }
