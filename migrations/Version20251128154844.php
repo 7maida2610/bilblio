@@ -49,8 +49,8 @@ final class Version20251128154844 extends AbstractMigration
             $this->addSql('ALTER TABLE order_items ADD CONSTRAINT FK_62809DB08D9F6D38 FOREIGN KEY (order_id) REFERENCES orders (id)');
             $this->addSql('ALTER TABLE order_items ADD CONSTRAINT FK_62809DB037D925CB FOREIGN KEY (livre_id) REFERENCES livre (id)');
             $this->addSql('ALTER TABLE orders ADD CONSTRAINT FK_E52FFDEEA76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id)');
-            $this->addSql('ALTER TABLE reading_goal DROP description');
-            $this->addSql('ALTER TABLE reading_goal DROP priority');
+            $this->addSql('ALTER TABLE reading_goal DROP COLUMN IF EXISTS description');
+            $this->addSql('ALTER TABLE reading_goal DROP COLUMN IF EXISTS priority');
             $this->addSql('ALTER TABLE review ADD images JSON DEFAULT NULL');
             $this->addSql('ALTER TABLE review ADD verified BOOLEAN NOT NULL');
             $this->addSql('ALTER TABLE review ADD helpful INT NOT NULL');
