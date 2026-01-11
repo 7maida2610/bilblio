@@ -111,10 +111,6 @@ RUN { \
     echo 'max_execution_time=300'; \
 } > /usr/local/etc/php/conf.d/production.ini
 
-# Create nginx user
-RUN addgroup -g 101 -S nginx && \
-    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx
-
 # Copy application from builder
 COPY --from=builder --chown=www-data:www-data /app /app
 
