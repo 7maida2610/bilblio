@@ -23,11 +23,11 @@ class EmailService implements EmailServiceInterface
         private UrlGeneratorInterface $urlGenerator,
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
-        string $fromEmail,
-        string $fromName
+        string $fromEmail = null,
+        string $fromName = null
     ) {
-        $this->fromEmail = $fromEmail;
-        $this->fromName = $fromName;
+        $this->fromEmail = $fromEmail ?? $_ENV['EMAIL_FROM_ADDRESS'] ?? 'noreply@biblio.app';
+        $this->fromName = $fromName ?? $_ENV['EMAIL_FROM_NAME'] ?? 'BiblioApp';
     }
 
     public function sendVerificationEmail(User $user): void
