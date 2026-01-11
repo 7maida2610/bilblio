@@ -42,11 +42,34 @@ class LoadFixturesCommand extends Command
         $noInteraction = !$input->isInteractive();
 
         if ($purge) {
-            if (!$noInteraction) {
-                $io->warning('This will delete all existing data!');
-                if (!$io->confirm('Are you sure you want to continue?', false)) {
-                    $io->info('Command cancelled.');
-                    return Command::FAILURE;
+            // Check if database has existing data before purging
+            $userCount = $this->entityManager->getRepository(\App\Entity\User::class)->count([]);
+            $livreCount = $this->entityManager->getRepository(\App\Entity\Livre::class)->count([]);
+            
+            if ($userCount > 0 || $livreCount > 0) {
+                $io->warning(sprintf(
+                    'Database contains existing data: %d users, %d books.',
+                    $userCount,
+                    $livreCount
+                ));
+                
+                // In non-interactive mode (production), require explicit confirmation via env variable
+                if ($noInteraction) {
+                    $forcePurge = $_ENV['FORCE_PURGE_FIXTURES'] ?? getenv('FORCE_PURGE_FIXTURES');
+                    if ($forcePurge !== 'true') {
+                        $io->error('Refusing to purge database with existing data in non-interactive mode.');
+                        $io->note('If you really want to purge, set FORCE_PURGE_FIXTURES=true environment variable.');
+                        $io->note('This is a safety measure to prevent accidental data loss in production.');
+                        return Command::FAILURE;
+                    }
+                    $io->warning('FORCE_PURGE_FIXTURES=true detected. Proceeding with purge...');
+                } else {
+                    // In interactive mode, ask for confirmation
+                    $io->warning('This will delete all existing data!');
+                    if (!$io->confirm('Are you sure you want to continue?', false)) {
+                        $io->info('Command cancelled.');
+                        return Command::FAILURE;
+                    }
                 }
             }
 

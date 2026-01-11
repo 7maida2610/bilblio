@@ -54,16 +54,39 @@ echo "Running database migrations..."
 php bin/console dbal:run-sql "ALTER TABLE livre ADD COLUMN IF NOT EXISTS image VARCHAR(255) DEFAULT NULL" --env=prod --no-debug 2>/dev/null || true
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=prod --no-debug || echo "Migrations failed or already up to date"
 
-# Run fixtures ONLY if RUN_FIXTURES environment variable is explicitly set to "true"
-# WARNING: This will PURGE all database data! Only use for initial setup.
-# By default, fixtures are NOT loaded to preserve production data.
+# Run fixtures ONLY if RUN_FIXTURES is explicitly set to "true" AND database is empty
+# This prevents accidental data loss during rebuilds.
+# To load fixtures:
+#   1. Make sure your database is empty (or use FORCE_PURGE_FIXTURES=true)
+#   2. Set RUN_FIXTURES=true in Railway environment variables
+#   3. After fixtures load, REMOVE RUN_FIXTURES variable immediately
 if [ "$RUN_FIXTURES" = "true" ]; then
-    echo "WARNING: Loading fixtures will PURGE all existing data!"
+    echo "=========================================="
+    echo "WARNING: Fixtures loading requested!"
+    echo "=========================================="
+    echo "This will PURGE all existing database data!"
+    echo "Only use this for initial setup or testing."
+    echo ""
+    
+    # Check if we should force purge (if database has data)
+    if [ "$FORCE_PURGE_FIXTURES" = "true" ]; then
+        echo "FORCE_PURGE_FIXTURES=true detected. Purging will proceed even if data exists."
+        export FORCE_PURGE_FIXTURES=true
+    else
+        echo "If database contains data, set FORCE_PURGE_FIXTURES=true to allow purge."
+        echo "This is a safety measure to prevent accidental data loss."
+    fi
+    
     echo "Loading fixtures..."
     php bin/console app:load-fixtures --purge --env=prod --no-interaction --no-debug || echo "Fixtures failed or already loaded"
-    echo "Fixtures loaded. Remove RUN_FIXTURES variable from Railway immediately to prevent data loss on rebuild!"
+    echo ""
+    echo "=========================================="
+    echo "IMPORTANT: Remove RUN_FIXTURES variable from Railway NOW!"
+    echo "Otherwise, your data will be deleted on every rebuild!"
+    echo "=========================================="
 else
-    echo "Skipping fixtures (RUN_FIXTURES not set to 'true'). Production data is preserved."
+    echo "Fixtures skipped - Production data is preserved."
+    echo "(Set RUN_FIXTURES=true only for initial setup, then remove it immediately)"
 fi
 
 # Start supervisor (runs nginx + php-fpm)
