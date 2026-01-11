@@ -431,8 +431,16 @@
                         <label class="form-label" for="registration_form_plainPassword_first">
                             <i class="fas fa-lock mr-2"></i>Mot de passe
                         </label>
-                        {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-control', 'placeholder': 'Mot de passe', 'pattern': '(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}', 'title': 'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial'}}) }}
-                        <i class="fas fa-lock input-icon"></i>
+                        <div style="position: relative;">
+                            {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-control', 'placeholder': 'Mot de passe', 'pattern': '(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}', 'title': 'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial', 'style': 'padding-right: 50px;'}}) }}
+                            <i class="fas fa-lock input-icon" style="right: 45px;"></i>
+                            <button type="button" class="password-toggle" id="togglePasswordFirst" 
+                                style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); 
+                                background: none; border: none; color: var(--gray); cursor: pointer; 
+                                font-size: 18px; padding: 5px; z-index: 10;">
+                                <i class="fas fa-eye" id="eyeIconFirst"></i>
+                            </button>
+                        </div>
                         <div id="password-strength" class="password-strength" style="display: none;">
                             <div class="strength-meter">
                                 <div class="strength-bar" id="strength-bar"></div>
@@ -450,8 +458,16 @@
                         <label class="form-label" for="registration_form_plainPassword_second">
                             <i class="fas fa-lock mr-2"></i>Confirmer
                         </label>
-                        {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'form-control', 'placeholder': 'Confirmer'}}) }}
-                        <i class="fas fa-lock input-icon"></i>
+                        <div style="position: relative;">
+                            {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'form-control', 'placeholder': 'Confirmer', 'style': 'padding-right: 50px;'}}) }}
+                            <i class="fas fa-lock input-icon" style="right: 45px;"></i>
+                            <button type="button" class="password-toggle" id="togglePasswordSecond" 
+                                style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); 
+                                background: none; border: none; color: var(--gray); cursor: pointer; 
+                                font-size: 18px; padding: 5px; z-index: 10;">
+                                <i class="fas fa-eye" id="eyeIconSecond"></i>
+                            </button>
+                        </div>
                         <div id="password-match" class="password-match" style="display: none;">
                             <i class="fas fa-check-circle text-success"></i>
                             <span class="text-success small">Les mots de passe correspondent</span>
@@ -535,6 +551,30 @@
         document.addEventListener('DOMContentLoaded', function() {
             const passwordInput = document.getElementById('registration_form_plainPassword_first');
             const confirmPasswordInput = document.getElementById('registration_form_plainPassword_second');
+            
+            // Toggle password visibility for first password
+            const togglePasswordFirst = document.getElementById('togglePasswordFirst');
+            const eyeIconFirst = document.getElementById('eyeIconFirst');
+            if (togglePasswordFirst && passwordInput && eyeIconFirst) {
+                togglePasswordFirst.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    eyeIconFirst.classList.toggle('fa-eye');
+                    eyeIconFirst.classList.toggle('fa-eye-slash');
+                });
+            }
+            
+            // Toggle password visibility for second password
+            const togglePasswordSecond = document.getElementById('togglePasswordSecond');
+            const eyeIconSecond = document.getElementById('eyeIconSecond');
+            if (togglePasswordSecond && confirmPasswordInput && eyeIconSecond) {
+                togglePasswordSecond.addEventListener('click', function() {
+                    const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    confirmPasswordInput.setAttribute('type', type);
+                    eyeIconSecond.classList.toggle('fa-eye');
+                    eyeIconSecond.classList.toggle('fa-eye-slash');
+                });
+            }
             const strengthMeter = document.getElementById('password-strength');
             const strengthBar = document.getElementById('strength-bar');
             const strengthText = document.getElementById('strength-text');

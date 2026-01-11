@@ -54,11 +54,16 @@ echo "Running database migrations..."
 php bin/console dbal:run-sql "ALTER TABLE livre ADD COLUMN IF NOT EXISTS image VARCHAR(255) DEFAULT NULL" --env=prod --no-debug 2>/dev/null || true
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=prod --no-debug || echo "Migrations failed or already up to date"
 
-# Run fixtures once if RUN_FIXTURES environment variable is set to "true"
+# Run fixtures ONLY if RUN_FIXTURES environment variable is explicitly set to "true"
+# WARNING: This will PURGE all database data! Only use for initial setup.
+# By default, fixtures are NOT loaded to preserve production data.
 if [ "$RUN_FIXTURES" = "true" ]; then
+    echo "WARNING: Loading fixtures will PURGE all existing data!"
     echo "Loading fixtures..."
     php bin/console app:load-fixtures --purge --env=prod --no-interaction --no-debug || echo "Fixtures failed or already loaded"
-    echo "Fixtures loaded. Remove RUN_FIXTURES variable from Railway to prevent re-running."
+    echo "Fixtures loaded. Remove RUN_FIXTURES variable from Railway immediately to prevent data loss on rebuild!"
+else
+    echo "Skipping fixtures (RUN_FIXTURES not set to 'true'). Production data is preserved."
 fi
 
 # Start supervisor (runs nginx + php-fpm)
