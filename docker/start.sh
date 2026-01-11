@@ -48,5 +48,12 @@ fi
 echo "Running database migrations..."
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=prod --no-debug || echo "Migrations failed or already up to date"
 
+# Run fixtures once if RUN_FIXTURES environment variable is set to "true"
+if [ "$RUN_FIXTURES" = "true" ]; then
+    echo "Loading fixtures..."
+    php bin/console doctrine:fixtures:load --env=prod --no-interaction --no-debug || echo "Fixtures failed or already loaded"
+    echo "Fixtures loaded. Remove RUN_FIXTURES variable from Railway to prevent re-running."
+fi
+
 # Start supervisor (runs nginx + php-fpm)
 exec /usr/bin/supervisord -c /etc/supervisord.conf
