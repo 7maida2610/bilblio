@@ -37,8 +37,9 @@ if [ -d "var/cache" ]; then
     php bin/console cache:warmup --env=prod --no-debug 2>/dev/null || true
 fi
 
-# Run database migrations (optional - uncomment if you want automatic migrations)
-# php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration 2>/dev/null || true
+# Run database migrations automatically on startup
+echo "Running database migrations..."
+php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=prod --no-debug || echo "Migrations failed or already up to date"
 
 # Start supervisor (runs nginx + php-fpm)
 exec /usr/bin/supervisord -c /etc/supervisord.conf
