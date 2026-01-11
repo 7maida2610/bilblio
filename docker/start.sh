@@ -46,6 +46,8 @@ fi
 
 # Run database migrations automatically on startup
 echo "Running database migrations..."
+# Quick fix: Ensure image column exists before migrations (in case migrations fail)
+php bin/console dbal:run-sql "ALTER TABLE livre ADD COLUMN IF NOT EXISTS image VARCHAR(255) DEFAULT NULL" --env=prod --no-debug 2>/dev/null || true
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=prod --no-debug || echo "Migrations failed or already up to date"
 
 # Run fixtures once if RUN_FIXTURES environment variable is set to "true"
