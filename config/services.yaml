@@ -9,8 +9,6 @@ parameters:
     profile_pictures_directory: '%kernel.project_dir%/public/uploads/profile_pictures'
     auteur_images_directory: '%kernel.project_dir%/public/uploads/auteur_images'
     review_images_directory: '%kernel.project_dir%/public/uploads/review_images'
-    app.email.from_address: '%env(EMAIL_FROM_ADDRESS)%'
-    app.email.from_name: '%env(EMAIL_FROM_NAME)%'
     stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
     stripe_publishable_key: '%env(STRIPE_PUBLISHABLE_KEY)%'
 
@@ -31,11 +29,11 @@ services:
     App\:
         resource: '../src/'
 
-    # Email service configuration
+    # Email service configuration - env vars handled in PHP constructor with defaults
     App\Service\EmailService:
         arguments:
-            $fromEmail: '%app.email.from_address%'
-            $fromName: '%app.email.from_name%'
+            $fromEmail: null
+            $fromName: null
 
     # Bind EmailServiceInterface to EmailService implementation
     App\Service\EmailServiceInterface:
