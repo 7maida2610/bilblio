@@ -60,18 +60,18 @@ class LoadFixturesCommand extends Command
         $objectManager = new class($this->entityManager) implements ObjectManager {
             public function __construct(private EntityManagerInterface $em) {}
 
-            public function find($className, $id) { return $this->em->find($className, $id); }
-            public function persist($object): void { $this->em->persist($object); }
-            public function remove($object): void { $this->em->remove($object); }
+            public function find(string $className, mixed $id): ?object { return $this->em->find($className, $id); }
+            public function persist(object $object): void { $this->em->persist($object); }
+            public function remove(object $object): void { $this->em->remove($object); }
             public function flush(): void { $this->em->flush(); }
-            public function clear($objectName = null): void { $this->em->clear($objectName); }
-            public function detach($object): void { $this->em->detach($object); }
-            public function refresh($object): void { $this->em->refresh($object); }
-            public function getRepository($className) { return $this->em->getRepository($className); }
-            public function getClassMetadata($className) { return $this->em->getClassMetadata($className); }
-            public function getMetadataFactory() { return $this->em->getMetadataFactory(); }
-            public function initializeObject($obj): void {}
-            public function contains($object): bool { return $this->em->contains($object); }
+            public function clear(?object $objectName = null): void { $this->em->clear($objectName); }
+            public function detach(object $object): void { $this->em->detach($object); }
+            public function refresh(object $object): void { $this->em->refresh($object); }
+            public function getRepository(string $className): \Doctrine\Persistence\ObjectRepository { return $this->em->getRepository($className); }
+            public function getClassMetadata(string $className): \Doctrine\Persistence\Mapping\ClassMetadata { return $this->em->getClassMetadata($className); }
+            public function getMetadataFactory(): \Doctrine\Persistence\Mapping\ClassMetadataFactory { return $this->em->getMetadataFactory(); }
+            public function initializeObject(object $obj): void {}
+            public function contains(object $object): bool { return $this->em->contains($object); }
         };
 
         // Load fixtures
