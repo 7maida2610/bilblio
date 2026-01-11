@@ -23,9 +23,9 @@ final class Version20251117073310 extends AbstractMigration
         $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
         
         if ($isPostgres) {
-            // PostgreSQL syntax
-            $this->addSql('ALTER TABLE "user" ADD created_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL');
-            $this->addSql('ALTER TABLE "user" ADD updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL');
+            // PostgreSQL syntax - Use IF NOT EXISTS to avoid errors if columns already exist
+            $this->addSql('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS created_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL');
+            $this->addSql('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL');
 
             // Populate existing records with current timestamp
             $now = date('Y-m-d H:i:s');
