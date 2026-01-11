@@ -60,7 +60,7 @@ RUN composer run-script --no-dev post-install-cmd
 # Stage 2: Production - Minimal runtime image
 FROM php:8.2-fpm-alpine
 
-# Install runtime dependencies only
+# Install runtime dependencies only (including build deps for PHP extensions)
 RUN apk add --no-cache \
     libpng \
     libjpeg-turbo \
@@ -70,7 +70,14 @@ RUN apk add --no-cache \
     oniguruma \
     postgresql-libs \
     nginx \
-    supervisor
+    supervisor \
+    zlib-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libzip-dev \
+    icu-dev \
+    postgresql-dev
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -83,6 +90,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         opcache \
         gd \
         mbstring
+
+# Remove build dependencies to reduce image size
+RUN apk del zlib-dev libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev icu-dev postgresql-dev
 
 # Configure PHP for production
 RUN { \
