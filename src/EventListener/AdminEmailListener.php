@@ -75,7 +75,8 @@ class AdminEmailListener
                 'exception' => $e,
                 'trace' => $e->getTraceAsString()
             ]);
-            throw $e; // Re-throw to see the error
+            // Don't re-throw during fixtures loading - emails are not critical for data seeding
+            // Only log the error and continue
         }
     }
 
