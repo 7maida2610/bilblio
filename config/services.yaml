@@ -44,11 +44,11 @@ services:
         arguments:
             $parameterBag: '@parameter_bag'
 
-    # Cloudinary service configuration
+    # Cloudinary service configuration - env var handled in PHP constructor with default
     App\Service\CloudinaryService:
         arguments:
             $logger: '@logger'
-            $cloudinaryUrl: '%env(CLOUDINARY_URL)%'
+            $cloudinaryUrl: null
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

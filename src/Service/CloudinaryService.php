@@ -20,6 +20,8 @@ class CloudinaryService
     public function __construct(LoggerInterface $logger, ?string $cloudinaryUrl = null)
     {
         $this->logger = $logger;
+        // Use provided value, or try to get from environment, or use empty string
+        $cloudinaryUrl = $cloudinaryUrl ?? ($_ENV['CLOUDINARY_URL'] ?? null);
         $this->enabled = !empty($cloudinaryUrl);
 
         if ($this->enabled && $cloudinaryUrl) {
