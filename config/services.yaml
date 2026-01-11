@@ -8,6 +8,7 @@ parameters:
     pdf_directory: '%kernel.project_dir%/public/uploads/pdfs'
     profile_pictures_directory: '%kernel.project_dir%/public/uploads/profile_pictures'
     auteur_images_directory: '%kernel.project_dir%/public/uploads/auteur_images'
+    review_images_directory: '%kernel.project_dir%/public/uploads/review_images'
     app.email.from_address: 'khlifahmed9@gmail.com'
     app.email.from_name: 'BiblioApp'
     stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
@@ -44,6 +45,12 @@ services:
     App\Service\StripePaymentService:
         arguments:
             $parameterBag: '@parameter_bag'
+
+    # Cloudinary service configuration
+    App\Service\CloudinaryService:
+        arguments:
+            $logger: '@logger'
+            $cloudinaryUrl: '%env(CLOUDINARY_URL)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
