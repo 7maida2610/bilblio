@@ -72,6 +72,7 @@ class LoadFixturesCommand extends Command
             public function getMetadataFactory(): \Doctrine\Persistence\Mapping\ClassMetadataFactory { return $this->em->getMetadataFactory(); }
             public function initializeObject(object $obj): void {}
             public function contains(object $object): bool { return $this->em->contains($object); }
+            public function isUninitializedObject(object $object): bool { return $this->em->getUnitOfWork()->isUninitializedObject($object); }
         };
 
         // Load fixtures
