@@ -48,6 +48,12 @@ class PdfController extends AbstractController
             ResponseHeaderBag::DISPOSITION_INLINE,
             basename($localPdfPath)
         );
+        
+        // Allow PDF to be displayed in iframe (remove X-Frame-Options)
+        $response->headers->remove('X-Frame-Options');
+        // Allow content from same origin to be embedded
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->headers->set('Content-Security-Policy', "frame-ancestors 'self'");
 
         return $response;
     }
