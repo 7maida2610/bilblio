@@ -4,12 +4,15 @@ set -e
 # Create supervisor and nginx directories if they don't exist
 mkdir -p /var/log/supervisor /var/run /var/log/nginx
 
-# Wait for database to be ready (Railway provides DATABASE_URL)
-if [ -n "$DATABASE_URL" ]; then
+# Wait for database to be ready (Railway provides DATABASE_URL or DATABASE_PUBLIC_URL)
+# Use DATABASE_PUBLIC_URL if available (for Railway), otherwise fallback to DATABASE_URL
+DB_URL="${DATABASE_PUBLIC_URL:-$DATABASE_URL}"
+
+if [ -n "$DB_URL" ]; then
     echo "Waiting for database connection..."
-    echo "DATABASE_URL format: ${DATABASE_URL:0:50}..."
+    echo "Database URL format: ${DB_URL:0:60}..."
     until php -r "
-        \$url = parse_url(getenv('DATABASE_URL'));
+        \$url = parse_url(getenv('DATABASE_PUBLIC_URL') ?: getenv('DATABASE_URL'));
         \$host = \$url['host'] ?? 'localhost';
         \$port = \$url['port'] ?? 5432;
         echo \"Trying to connect to \$host:\$port...\n\";
@@ -21,7 +24,7 @@ if [ -n "$DATABASE_URL" ]; then
     done
     echo "Database is ready!"
 else
-    echo "WARNING: DATABASE_URL is not set!"
+    echo "WARNING: Neither DATABASE_URL nor DATABASE_PUBLIC_URL is set!"
 fi
 
 # Set production environment
