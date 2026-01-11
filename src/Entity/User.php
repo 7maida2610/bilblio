@@ -452,7 +452,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $now = new \DateTimeImmutable();
+        if ($this->createdAt === null) {
+            $this->createdAt = $now;
+        }
+        // Also set updated_at on creation
+        if ($this->updatedAt === null) {
+            $this->updatedAt = $now;
+        }
     }
 
     #[ORM\PreUpdate]

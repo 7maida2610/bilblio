@@ -38,6 +38,10 @@ echo "Starting on port $PORT"
 # Update nginx configuration to use PORT (listen on 0.0.0.0 for Railway)
 sed -i "s/listen 0.0.0.0:8080;/listen 0.0.0.0:$PORT;/" /etc/nginx/http.d/default.conf
 
+# Ensure cache and log directories exist and have correct permissions
+mkdir -p var/cache/prod var/log
+chmod -R 777 var/cache var/log 2>/dev/null || true
+
 # Warm up cache (only if cache directory exists)
 if [ -d "var/cache" ]; then
     echo "Warming up Symfony cache..."

@@ -37,7 +37,9 @@ class RegistrationController extends AbstractController
             $user->setRoles(['ROLE_USER']);
             $user->setIsActive(true);
             $user->setIsVerified(false);
-            $user->setCreatedAt(new \DateTimeImmutable());
+            $now = new \DateTimeImmutable();
+            $user->setCreatedAt($now);
+            $user->setUpdatedAt($now);
 
             // Generate verification token
             $verificationToken = bin2hex(random_bytes(32));
