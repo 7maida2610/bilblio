@@ -1,0 +1,38 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Réservation annulée{% endblock %}
+
+{% block body %}
+<h2><i class="fas fa-times-circle"></i> Réservation annulée</h2>
+
+<p>Bonjour {{ user.username ?? user.email }},</p>
+
+<p>Votre réservation a été annulée avec succès.</p>
+
+<div style="background: #ffebee; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <h3 style="margin-top: 0;">{{ book.titre }}</h3>
+    <p>
+        <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}<br>
+        <strong>Date d'annulation :</strong> {{ 'now'|date('d/m/Y à H:i') }}<br>
+        <strong>Statut :</strong> <span style="color: #d32f2f;">Annulée</span>
+    </p>
+</div>
+
+<h4>Ce que vous pouvez faire :</h4>
+<ul>
+    <li>Explorez d'autres livres dans nos collections</li>
+    <li>Créez une nouvelle réservation si vous changez d'avis</li>
+    <li>Consultez les recommandations personnalisées</li>
+</ul>
+
+<p>
+    <a href="{{ app.request.host }}/livres" style="display: inline-block; background: #2196f3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">
+        Explorer les livres
+    </a>
+</p>
+
+<p>À bientôt !</p>
+
+<p>Cordialement,<br>
+L'équipe BiblioApp</p>
+{% endblock %}

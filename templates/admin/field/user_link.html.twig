@@ -1,0 +1,15 @@
+{% if field.value %}
+    <a href="{{ path('admin', {'entity': 'User', 'action': 'detail', 'id': field.value.id}) }}" class="text-decoration-none">
+        <div class="d-flex align-items-center">
+            {% if field.value.profilePicture %}
+                <img src="{{ asset('uploads/profile_pictures/' ~ field.value.profilePicture) }}" alt="Profile" class="rounded-circle mr-2" style="width: 32px; height: 32px; object-fit: cover;">
+            {% endif %}
+            <div>
+                <strong>{{ field.value.username ?: field.value.email }}</strong><br>
+                <small class="text-muted">{{ field.value.email }}</small>
+            </div>
+        </div>
+    </a>
+{% else %}
+    <span class="text-muted">Utilisateur inconnu</span>
+{% endif %}

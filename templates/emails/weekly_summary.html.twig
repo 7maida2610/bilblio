@@ -1,0 +1,23 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block subject %}Your weekly reading summary{% endblock %}
+
+{% block body %}
+<h1>Hello {{ user.username }}!</h1>
+
+<p>Here's your reading summary for this week:</p>
+
+<div style="background: white; padding: 20px; border-radius: 5px; margin: 20px 0;">
+    <h2>📊 Weekly Statistics</h2>
+    <ul>
+        <li><strong>Books Read:</strong> {{ stats.books_read }}</li>
+        <li><strong>Pages Read:</strong> {{ stats.pages_read }}</li>
+        <li><strong>Time Spent Reading:</strong> {{ stats.time_spent }}</li>
+        <li><strong>Favorite Genre:</strong> {{ stats.favorite_genre }}</li>
+    </ul>
+</div>
+
+<p>Keep up the great reading habit! Happy reading!</p>
+
+<p>Best regards,<br>The BiblioApp Team</p>
+{% endblock %}

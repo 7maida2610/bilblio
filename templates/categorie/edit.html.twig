@@ -1,0 +1,33 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Modifier la Catégorie{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Modifier la Catégorie</h1>
+        <a href="{{ path('app_categorie_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+        </a>
+    </div>
+
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Informations de la Catégorie</h6>
+        </div>
+        <div class="card-body">
+            {{ include('categorie/_form.html.twig') }}
+        </div>
+    </div>
+
+    <!-- Delete Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-danger">Supprimer la Catégorie</h6>
+        </div>
+        <div class="card-body">
+            {{ include('categorie/_delete_form.html.twig') }}
+        </div>
+    </div>
+{% endblock %}

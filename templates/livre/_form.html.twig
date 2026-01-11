@@ -1,0 +1,541 @@
+{{ form_start(form, {'attr': {'class': 'user', 'enctype': 'multipart/form-data'}}) }}
+
+    <!-- Basic Information Section -->
+    <div class="card border-left-primary shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-info-circle mr-2"></i>Informations de Base
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="form-group row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.titre.vars.id }}" class="form-label font-weight-bold">
+                        <i class="fas fa-book mr-1 text-primary"></i>Titre du livre *
+                    </label>
+                    {{ form_widget(form.titre, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Entrez le titre complet du livre'}}) }}
+                    {{ form_errors(form.titre) }}
+                    <small class="form-text text-muted">Le titre principal du livre tel qu'il apparaît sur la couverture</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.isbn.vars.id }}" class="form-label font-weight-bold">
+                        <i class="fas fa-barcode mr-1 text-primary"></i>ISBN *
+                    </label>
+                    {{ form_widget(form.isbn, {'attr': {'class': 'form-control form-control-lg', 'placeholder': '978-2-1234-5678-9'}}) }}
+                    {{ form_errors(form.isbn) }}
+                    <small class="form-text text-muted">Numéro ISBN unique du livre (13 chiffres)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Publication Details Section -->
+    <div class="card border-left-success shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-success">
+                <i class="fas fa-file-alt mr-2"></i>Détails de Publication
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="form-group row">
+                <div class="col-md-3 mb-3">
+                    <label for="{{ form.nbPages.vars.id }}" class="form-label font-weight-bold">
+                        <i class="fas fa-file mr-1 text-success"></i>Nombre de pages *
+                    </label>
+                    {{ form_widget(form.nbPages, {'attr': {'class': 'form-control form-control-lg', 'placeholder': '250', 'min': '1'}}) }}
+                    {{ form_errors(form.nbPages) }}
+                    <small class="form-text text-muted">Nombre total de pages</small>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="{{ form.stockVente.vars.id }}" class="form-label font-weight-bold">
+                        <i class="fas fa-shopping-cart mr-1 text-success"></i>Stock Vente *
+                    </label>
+                    {{ form_widget(form.stockVente, {'attr': {'class': 'form-control form-control-lg', 'placeholder': '25', 'min': '0'}}) }}
+                    {{ form_errors(form.stockVente) }}
+                    <small class="form-text text-muted">Exemplaires pour la vente</small>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="{{ form.stockEmprunt.vars.id }}" class="form-label font-weight-bold">
+                        <i class="fas fa-book-reader mr-1 text-success"></i>Stock Emprunt *
+                    </label>
+                    {{ form_widget(form.stockEmprunt, {'attr': {'class': 'form-control form-control-lg', 'placeholder': '25', 'min': '0'}}) }}
+                    {{ form_errors(form.stockEmprunt) }}
+                    <small class="form-text text-muted">Exemplaires pour l'emprunt</small>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.nbExemplaires.vars.id }}" class="form-label font-weight-bold">
+                        <i class="fas fa-copy mr-1 text-secondary"></i>Total Exemplaires
+                    </label>
+                    {{ form_widget(form.nbExemplaires, {'attr': {'class': 'form-control form-control-lg bg-light', 'placeholder': '50', 'min': '0', 'readonly': 'readonly'}}) }}
+                    {{ form_errors(form.nbExemplaires) }}
+                    <small class="form-text text-muted">Total (vente + emprunt) - calculé automatiquement</small>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.prix.vars.id }}" class="form-label font-weight-bold">
+                        <i class="fas fa-euro-sign mr-1 text-success"></i>Prix (€) *
+                    </label>
+                    {{ form_widget(form.prix, {'attr': {'class': 'form-control form-control-lg', 'placeholder': '19.99', 'min': '0', 'step': '0.01'}}) }}
+                    {{ form_errors(form.prix) }}
+                    <small class="form-text text-muted">Prix unitaire HT</small>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.dateEdition.vars.id }}" class="form-label font-weight-bold">
+                        <i class="fas fa-calendar mr-1 text-success"></i>Date d'édition *
+                    </label>
+                    {{ form_widget(form.dateEdition, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                    {{ form_errors(form.dateEdition) }}
+                    <small class="form-text text-muted">Date de première publication</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    {{ form_widget(form.isBorrowable, {'attr': {'class': 'form-check-input'}}) }}
+                    <label for="{{ form.isBorrowable.vars.id }}" class="form-check-label font-weight-bold">
+                        <i class="fas fa-book-reader mr-1 text-success"></i>{{ form.isBorrowable.vars.label }}
+                    </label>
+                    {{ form_errors(form.isBorrowable) }}
+                    <small class="form-text text-muted">Cochez cette case si ce livre peut être emprunté par les utilisateurs</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Upload Section -->
+    <div class="card border-left-info shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-info">
+                <i class="fas fa-image mr-2"></i>Image de Couverture
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="file-upload-area" id="file-upload-area">
+                <div class="upload-zone text-center p-4 border-2 border-dashed border-info rounded" id="upload-zone">
+                    <div class="upload-icon mb-3">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-info"></i>
+                    </div>
+                    <div class="upload-text">
+                        <h5 class="text-info mb-2">Glissez-déposez votre image ici</h5>
+                        <p class="text-muted mb-2">ou</p>
+                        <label for="{{ form.image.vars.id }}" class="btn btn-info btn-lg">
+                            <i class="fas fa-folder-open mr-2"></i>Parcourir les fichiers
+                        </label>
+                        {{ form_widget(form.image, {'attr': {'class': 'd-none', 'accept': 'image/*'}}) }}
+                        {{ form_errors(form.image) }}
+                    </div>
+                    <div class="upload-hint mt-3">
+                        <small class="text-muted">
+                            Formats acceptés: JPG, PNG, GIF • Taille max: 5MB • Résolution recommandée: 800x1200px
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Preview Area -->
+                <div class="image-preview mt-3" id="image-preview" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-info">Aperçu de l'image</h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <img id="preview-img" src="" alt="Preview" class="img-fluid rounded shadow" style="max-height: 300px;">
+                            <div class="mt-2">
+                                <small class="text-muted" id="file-info"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Image Display -->
+                {% if livre.image %}
+                    <div class="current-image mt-3">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning text-white">
+                                <h6 class="m-0 font-weight-bold">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>Image actuelle
+                                </h6>
+                            </div>
+                            <div class="card-body text-center">
+                                <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="Image actuelle" class="img-fluid rounded shadow" style="max-height: 200px;">
+                                <p class="text-warning mt-2 mb-0">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Une nouvelle image remplacera l'image actuelle
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Upload Section -->
+    <div class="card border-left-danger shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-danger">
+                <i class="fas fa-file-pdf mr-2"></i>Document PDF
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="file-upload-area" id="pdf-upload-area">
+                <div class="upload-zone text-center p-4 border-2 border-dashed border-danger rounded" id="pdf-upload-zone">
+                    <div class="upload-icon mb-3">
+                        <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                    </div>
+                    <div class="upload-text">
+                        <h5 class="text-danger mb-2">Glissez-déposez votre PDF ici</h5>
+                        <p class="text-muted mb-2">ou</p>
+                        <label for="{{ form.pdf.vars.id }}" class="btn btn-danger btn-lg">
+                            <i class="fas fa-folder-open mr-2"></i>Parcourir les fichiers
+                        </label>
+                        {{ form_widget(form.pdf, {'attr': {'class': 'd-none', 'accept': 'application/pdf'}}) }}
+                        {{ form_errors(form.pdf) }}
+                    </div>
+                    <div class="upload-hint mt-3">
+                        <small class="text-muted">
+                            Formats acceptés: PDF • Taille max: 10MB
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Preview Area -->
+                <div class="pdf-preview mt-3" id="pdf-preview" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-danger">Aperçu du PDF</h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
+                            <div class="mt-2">
+                                <small class="text-muted" id="pdf-file-info"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current PDF Display -->
+                {% if livre.pdf %}
+                    <div class="current-pdf mt-3">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <h6 class="m-0 font-weight-bold">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>PDF actuel
+                                </h6>
+                            </div>
+                            <div class="card-body text-center">
+                                <i class="fas fa-file-pdf fa-3x text-danger mb-2"></i>
+                                <p class="text-danger mt-2 mb-0">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Un nouveau PDF remplacera le PDF actuel
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Relationships Section -->
+    <div class="card border-left-warning shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-warning">
+                <i class="fas fa-link mr-2"></i>Relations et Associations
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label for="{{ form.auteur.vars.id }}" class="form-label font-weight-bold">
+                    <i class="fas fa-user mr-1 text-warning"></i>Auteur *
+                </label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    </div>
+                    {{ form_widget(form.auteur, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                </div>
+                {{ form_errors(form.auteur) }}
+                <small class="form-text text-muted">Sélectionnez l'auteur de ce livre dans la liste</small>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.categorie.vars.id }}" class="form-label font-weight-bold">
+                    <i class="fas fa-tag mr-1 text-warning"></i>Catégorie *
+                </label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                    </div>
+                    {{ form_widget(form.categorie, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                </div>
+                {{ form_errors(form.categorie) }}
+                <small class="form-text text-muted">Choisissez la catégorie littéraire appropriée</small>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.editeur.vars.id }}" class="form-label font-weight-bold">
+                    <i class="fas fa-building mr-1 text-warning"></i>Éditeur *
+                </label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-building"></i></span>
+                    </div>
+                    {{ form_widget(form.editeur, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                </div>
+                {{ form_errors(form.editeur) }}
+                <small class="form-text text-muted">Sélectionnez l'éditeur qui publie ce livre</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Section -->
+    <div class="card border-left-primary shadow mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">
+                            <i class="fas fa-save mr-2"></i>{{ button_label|default('Enregistrer le livre') }}
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-grid">
+                        <a href="{{ path('app_livre_index') }}" class="btn btn-secondary btn-lg btn-block">
+                            <i class="fas fa-times mr-2"></i>Annuler
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .file-upload-area {
+            position: relative;
+        }
+
+        .upload-zone {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover {
+            background-color: rgba(23, 162, 184, 0.05);
+            border-color: #17a2b8 !important;
+        }
+
+        .upload-zone.dragover {
+            background-color: rgba(23, 162, 184, 0.1);
+            border-color: #17a2b8 !important;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .form-control:focus {
+            border-color: #bac8f3;
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadZone = document.getElementById('upload-zone');
+            const fileInput = document.getElementById('{{ form.image.vars.id }}');
+            const previewArea = document.getElementById('image-preview');
+            const previewImg = document.getElementById('preview-img');
+            const fileInfo = document.getElementById('file-info');
+
+            // Drag and drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight(e) {
+                uploadZone.classList.add('dragover');
+            }
+
+            function unhighlight(e) {
+                uploadZone.classList.remove('dragover');
+            }
+
+            uploadZone.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    handleFileSelect(files[0]);
+                }
+            }
+
+            // File selection handling
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    handleFileSelect(this.files[0]);
+                }
+            });
+
+            function handleFileSelect(file) {
+                // Validate file type
+                if (!file.type.match('image.*')) {
+                    alert('Veuillez sélectionner un fichier image valide.');
+                    return;
+                }
+
+                // Validate file size (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('La taille du fichier ne doit pas dépasser 5MB.');
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewArea.style.display = 'block';
+
+                    // Show file info
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                    fileInfo.textContent = `${file.name} (${fileSize} MB)`;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Click to select files
+            uploadZone.addEventListener('click', function() {
+                fileInput.click();
+            });
+        });
+
+        // PDF Upload functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const pdfUploadZone = document.getElementById('pdf-upload-zone');
+            const pdfFileInput = document.getElementById('{{ form.pdf.vars.id }}');
+            const pdfPreviewArea = document.getElementById('pdf-preview');
+            const pdfFileInfo = document.getElementById('pdf-file-info');
+
+            // Drag and drop functionality for PDF
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                pdfUploadZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                pdfUploadZone.addEventListener(eventName, highlightPdf, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                pdfUploadZone.addEventListener(eventName, unhighlightPdf, false);
+            });
+
+            function highlightPdf(e) {
+                pdfUploadZone.classList.add('dragover');
+            }
+
+            function unhighlightPdf(e) {
+                pdfUploadZone.classList.remove('dragover');
+            }
+
+            pdfUploadZone.addEventListener('drop', handlePdfDrop, false);
+
+            function handlePdfDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                if (files.length > 0) {
+                    pdfFileInput.files = files;
+                    handlePdfFileSelect(files[0]);
+                }
+            }
+
+            // PDF file selection handling
+            pdfFileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    handlePdfFileSelect(this.files[0]);
+                }
+            });
+
+            function handlePdfFileSelect(file) {
+                // Validate file type
+                if (file.type !== 'application/pdf') {
+                    alert('Veuillez sélectionner un fichier PDF valide.');
+                    return;
+                }
+
+                // Validate file size (10MB max)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('La taille du fichier ne doit pas dépasser 10MB.');
+                    return;
+                }
+
+                // Show preview
+                pdfPreviewArea.style.display = 'block';
+
+                // Show file info
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                pdfFileInfo.textContent = `${file.name} (${fileSize} MB)`;
+            }
+
+            // Click to select PDF files
+            pdfUploadZone.addEventListener('click', function() {
+                pdfFileInput.click();
+            });
+            
+            // Auto-calculate total stock (vente + emprunt)
+            const stockVenteInput = document.getElementById('{{ form.stockVente.vars.id }}');
+            const stockEmpruntInput = document.getElementById('{{ form.stockEmprunt.vars.id }}');
+            const nbExemplairesInput = document.getElementById('{{ form.nbExemplaires.vars.id }}');
+            
+            function updateTotalStock() {
+                const stockVente = parseInt(stockVenteInput.value) || 0;
+                const stockEmprunt = parseInt(stockEmpruntInput.value) || 0;
+                nbExemplairesInput.value = stockVente + stockEmprunt;
+            }
+            
+            if (stockVenteInput && stockEmpruntInput && nbExemplairesInput) {
+                stockVenteInput.addEventListener('input', updateTotalStock);
+                stockEmpruntInput.addEventListener('input', updateTotalStock);
+                // Initial calculation
+                updateTotalStock();
+            }
+        });
+    </script>
+
+{{ form_end(form) }}

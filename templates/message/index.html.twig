@@ -1,0 +1,158 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Messagerie - Biblio{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-envelope text-primary mr-2"></i>Messagerie
+            </h1>
+            <p class="text-muted small mb-0">Gérez vos messages</p>
+        </div>
+        <a href="{{ path('app_messages_new') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Nouveau Message
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-primary text-uppercase mb-1 font-weight-bold" style="font-size: 0.8rem;">Non lus</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ unreadCount }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-success text-uppercase mb-1 font-weight-bold" style="font-size: 0.8rem;">Total Messages</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <a href="{{ path('app_messages_new') }}" class="card border-left-info shadow h-100 py-2 text-decoration-none">
+                <div class="card-body">
+                    <div class="text-info text-uppercase mb-1 font-weight-bold" style="font-size: 0.8rem;">Action</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800"><i class="fas fa-pen"></i> Écrire un message</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-light">
+            <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <a class="nav-link {% if tab == 'inbox' %}active{% endif %}" href="{{ path('app_messages_index', {'tab': 'inbox'}) }}">
+                        <i class="fas fa-inbox mr-1"></i> Boîte de réception
+                        {% if unreadCount > 0 %}
+                            <span class="badge badge-danger">{{ unreadCount }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tab == 'sent' %}active{% endif %}" href="{{ path('app_messages_index', {'tab': 'sent'}) }}">
+                        <i class="fas fa-paper-plane mr-1"></i> Messages envoyés
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        {% if messages|length > 0 %}
+            <div class="list-group list-group-flush">
+                {% for message in messages %}
+                    <a href="{{ path('app_messages_show', {'id': message.id}) }}" 
+                       class="list-group-item list-group-item-action {% if not message.isRead and tab == 'inbox' %}bg-light{% endif %}">
+                        <div class="d-flex w-100 align-items-center">
+                            <div class="mr-3">
+                                {% set otherUser = tab == 'inbox' ? message.sender : message.recipient %}
+                                {% if otherUser.profilePicture %}
+                                    <img class="rounded-circle" src="{{ asset('uploads/profile_pictures/' ~ otherUser.profilePicture) }}" 
+                                         alt="{{ otherUser.username }}" style="width: 45px; height: 45px; object-fit: cover;">
+                                {% else %}
+                                    <img class="rounded-circle" src="{{ asset('img/undraw_profile.svg') }}" 
+                                         alt="{{ otherUser.username }}" style="width: 45px; height: 45px;">
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-1 {% if not message.isRead and tab == 'inbox' %}font-weight-bold{% endif %} text-gray-800">
+                                        {% if tab == 'inbox' %}
+                                            <i class="fas fa-user text-muted mr-1" style="font-size: 0.75rem;"></i>{{ message.sender.username }}
+                                        {% else %}
+                                            <i class="fas fa-arrow-right text-muted mr-1" style="font-size: 0.75rem;"></i>{{ message.recipient.username }}
+                                        {% endif %}
+                                    </h6>
+                                    <small class="text-muted">{{ message.timeAgo }}</small>
+                                </div>
+                                <p class="mb-1 {% if not message.isRead and tab == 'inbox' %}font-weight-bold{% endif %}">{{ message.subject }}</p>
+                                <small class="text-muted">{{ message.content|length > 100 ? message.content|slice(0, 100) ~ '...' : message.content }}</small>
+                            </div>
+                            {% if not message.isRead and tab == 'inbox' %}
+                                <span class="badge badge-primary ml-2">Nouveau</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if totalPages > 1 %}
+                <div class="card-footer">
+                    <nav aria-label="Page navigation" class="d-flex justify-content-center">
+                        <ul class="pagination mb-0">
+                            {% if page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ path('app_messages_index', {'tab': tab, 'page': page - 1}) }}">Précédente</a>
+                                </li>
+                            {% endif %}
+
+                            {% for i in range(max(1, page - 2), min(totalPages, page + 2)) %}
+                                <li class="page-item {% if i == page %}active{% endif %}">
+                                    <a class="page-link" href="{{ path('app_messages_index', {'tab': tab, 'page': i}) }}">{{ i }}</a>
+                                </li>
+                            {% endfor %}
+
+                            {% if page < totalPages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ path('app_messages_index', {'tab': tab, 'page': page + 1}) }}">Suivante</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="card-body text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-0">
+                    {% if tab == 'inbox' %}
+                        Votre boîte de réception est vide.
+                    {% else %}
+                        Vous n'avez pas encore envoyé de messages.
+                    {% endif %}
+                </p>
+                <a href="{{ path('app_messages_new') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus"></i> Écrire un message
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .list-group-item:hover {
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+    .nav-tabs .nav-link.active {
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

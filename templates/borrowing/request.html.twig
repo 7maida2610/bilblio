@@ -1,0 +1,317 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Demande d'emprunt - {{ livre.titre }}{% endblock %}
+
+{% block body %}
+<style>
+    .borrowing-calendar {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .calendar-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .availability-indicator {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .available {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+
+    .unavailable {
+        background: linear-gradient(135deg, #dc3545, #fd7e14);
+        color: white;
+    }
+
+    .reservation-info {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .reservation-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .reservation-item {
+        padding: 8px 12px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .reservation-item:last-child {
+        border-bottom: none;
+    }
+
+    .position-badge {
+        background: var(--primary);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+</style>
+
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-book-reader text-primary mr-2"></i>Demande d'emprunt
+        </h1>
+        <p class="mb-0 text-muted">{{ livre.titre }}</p>
+    </div>
+    <a href="{{ path('app_livre_show', {'id': livre.id}) }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+        <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour au livre
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Borrowing Form -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-calendar-plus mr-2"></i>Détails de l'emprunt
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if hasActiveLoan %}
+                    <div class="availability-indicator unavailable">
+                        <i class="fas fa-info-circle mr-2"></i>Emprunt en cours
+                    </div>
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-book-reader mr-2"></i>
+                        <strong>Vous avez déjà un emprunt pour ce livre</strong><br>
+                        <small>Vous ne pouvez pas emprunter un livre que vous avez déjà.</small>
+                        <br><a href="{{ path('app_loan_index') }}" class="btn btn-sm btn-info mt-2">
+                            <i class="fas fa-list mr-1"></i>Voir mes emprunts
+                        </a>
+                    </div>
+                {% elseif hasActiveReservation %}
+                    <div class="availability-indicator unavailable">
+                        <i class="fas fa-hourglass-half mr-2"></i>Réservation en cours
+                    </div>
+                    <div class="alert alert-warning mb-3">
+                        <i class="fas fa-list-ol mr-2"></i>
+                        <strong>Vous êtes déjà dans la file d'attente</strong><br>
+                        <small>Position: <strong>#{{ userReservation.position }}</strong></small><br>
+                        <small>Disponible vers: <strong>{{ userReservation.expectedAvailableDateFormatted }}</strong></small>
+                        <br><a href="{{ path('app_reservation_view', {'id': userReservation.id}) }}" class="btn btn-sm btn-warning mt-2">
+                            <i class="fas fa-eye mr-1"></i>Voir ma réservation
+                        </a>
+                    </div>
+                {% elseif available %}
+                    <div class="availability-indicator available">
+                        <i class="fas fa-check-circle mr-2"></i>Livre disponible pour emprunt
+                    </div>
+
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Règles d'emprunt :</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Date de début : à partir d'aujourd'hui</li>
+                            <li>Durée maximale : <strong>14 jours</strong></li>
+                            <li>Date de retour automatiquement calculée</li>
+                        </ul>
+                    </div>
+
+                    {{ form_start(form, {'attr': {'class': 'user', 'id': 'borrowing-form'}}) }}
+                        <div class="form-group row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.loanStartDate) }}
+                                {{ form_widget(form.loanStartDate, {'attr': {'class': 'form-control', 'id': 'loan-start-date', 'min': 'now'|date('Y-m-d')}}) }}
+                                {{ form_errors(form.loanStartDate) }}
+                                <small class="text-muted">Minimum : aujourd'hui ({{ 'now'|date('d/m/Y') }})</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.dueDate) }}
+                                {{ form_widget(form.dueDate, {'attr': {'class': 'form-control', 'id': 'loan-due-date'}}) }}
+                                {{ form_errors(form.dueDate) }}
+                                <small class="text-muted" id="due-date-info">Maximum : 14 jours après la date de début</small>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.notes) }}
+                            {{ form_widget(form.notes, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.notes) }}
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-user btn-block">
+                            <i class="fas fa-paper-plane mr-2"></i>Soumettre la demande
+                        </button>
+                    {{ form_end(form) }}
+                    
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        initBorrowingForm();
+                    });
+                    document.addEventListener('turbo:load', function() {
+                        initBorrowingForm();
+                    });
+                    
+                    function initBorrowingForm() {
+                        const startDateInput = document.getElementById('loan-start-date');
+                        const dueDateInput = document.getElementById('loan-due-date');
+                        const dueDateInfo = document.getElementById('due-date-info');
+                        
+                        if (!startDateInput || !dueDateInput) return;
+                        
+                        // Set minimum start date to today
+                        const today = new Date();
+                        const todayStr = today.toISOString().split('T')[0];
+                        startDateInput.setAttribute('min', todayStr);
+                        
+                        // If no start date set, default to today
+                        if (!startDateInput.value) {
+                            startDateInput.value = todayStr;
+                        }
+                        
+                        function updateDueDateConstraints() {
+                            const startDate = new Date(startDateInput.value);
+                            if (isNaN(startDate.getTime())) return;
+                            
+                            // Min due date = start date + 1 day
+                            const minDueDate = new Date(startDate);
+                            minDueDate.setDate(minDueDate.getDate() + 1);
+                            
+                            // Max due date = start date + 14 days
+                            const maxDueDate = new Date(startDate);
+                            maxDueDate.setDate(maxDueDate.getDate() + 14);
+                            
+                            const minDueStr = minDueDate.toISOString().split('T')[0];
+                            const maxDueStr = maxDueDate.toISOString().split('T')[0];
+                            
+                            dueDateInput.setAttribute('min', minDueStr);
+                            dueDateInput.setAttribute('max', maxDueStr);
+                            
+                            // Auto-set due date to max if not set or out of range
+                            if (!dueDateInput.value || new Date(dueDateInput.value) > maxDueDate || new Date(dueDateInput.value) < minDueDate) {
+                                dueDateInput.value = maxDueStr;
+                            }
+                            
+                            // Update info text
+                            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                            dueDateInfo.innerHTML = 'Du ' + minDueDate.toLocaleDateString('fr-FR', options) + ' au <strong>' + maxDueDate.toLocaleDateString('fr-FR', options) + '</strong> (max 14 jours)';
+                        }
+                        
+                        // Initial update
+                        updateDueDateConstraints();
+                        
+                        // Update when start date changes
+                        startDateInput.addEventListener('change', updateDueDateConstraints);
+                    }
+                    </script>
+                {% else %}
+                    <div class="availability-indicator unavailable">
+                        <i class="fas fa-clock mr-2"></i>Livre actuellement indisponible
+                    </div>
+
+                    <div class="reservation-info">
+                        <h6 class="text-warning mb-3">
+                            <i class="fas fa-users mr-2"></i>Liste d'attente
+                        </h6>
+                        <p class="mb-3">
+                            Ce livre n'est pas disponible actuellement. Vous serez automatiquement ajouté à la liste d'attente.
+                            Nous vous notifierons dès qu'il sera disponible.
+                        </p>
+
+                        {% set reservations = livre.reservations %}
+                        {% if reservations|length > 0 %}
+                            <div class="reservation-list">
+                                {% for reservation in reservations %}
+                                    {% if reservation.isActive %}
+                                        <div class="reservation-item">
+                                            <div>
+                                                <strong>{{ reservation.user.username }}</strong>
+                                                <small class="text-muted d-block">
+                                                    Demandé le {{ reservation.requestedAt|date('d/m/Y à H:i') }}
+                                                </small>
+                                            </div>
+                                            <span class="position-badge">Position {{ reservation.position }}</span>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="text-center">
+                        <p class="text-muted mb-4">
+                            Cliquez sur le bouton ci-dessous pour vous inscrire à la liste d'attente.
+                        </p>
+                        <a href="{{ path('app_borrowing_request', {'id': livre.id}) }}" class="btn btn-warning btn-lg">
+                            <i class="fas fa-list mr-2"></i>M'inscrire à la liste d'attente
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Book Info -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-info-circle mr-2"></i>Informations du livre
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    {% if livre.image %}
+                        <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-fluid rounded" style="max-height: 150px;">
+                    {% else %}
+                        <div class="bg-light rounded p-4">
+                            <i class="fas fa-book fa-3x text-muted"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <h6 class="font-weight-bold">{{ livre.titre }}</h6>
+                <p class="text-muted small mb-2">
+                    <i class="fas fa-user mr-1"></i>{{ livre.auteur.prenom }} {{ livre.auteur.nom }}
+                </p>
+                <p class="text-muted small mb-2">
+                    <i class="fas fa-building mr-1"></i>{{ livre.editeur.nomEditeur }}
+                </p>
+                <p class="text-muted small mb-0">
+                    <i class="fas fa-copy mr-1"></i>{{ livre.stockEmprunt }} exemplaire(s) pour emprunt
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Calendar Link -->
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-calendar mr-2"></i>Mon historique
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                <p class="text-muted small mb-3">
+                    Voir votre historique d'emprunt pour ce livre
+                </p>
+                <a href="{{ path('app_borrowing_calendar', {'id': livre.id}) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-calendar-alt mr-1"></i>Voir le calendrier
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

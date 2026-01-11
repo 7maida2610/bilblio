@@ -1,0 +1,48 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block subject %}Bienvenue sur BiblioApp !{% endblock %}
+
+{% block body %}
+<h2><i class="fas fa-gift"></i> Bienvenue sur BiblioApp !</h2>
+
+<p>Bonjour {{ user.username ?? user.email }},</p>
+
+<p>Merci d'avoir rejoint BiblioApp ! Votre compte a été créé et vérifié avec succès.</p>
+
+<p>Voici ce que vous pouvez faire avec votre nouveau compte :</p>
+
+<div style="margin: 20px 0;">
+    <div style="background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #009688; border-radius: 0 5px 5px 0;">
+        <h4 style="margin: 0 0 5px 0; color: #009688;"><i class="fas fa-book"></i> Parcourir notre collection</h4>
+        <p style="margin: 0; color: #666;">Explorez des milliers de livres dans différents genres et catégories.</p>
+    </div>
+
+    <div style="background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #009688; border-radius: 0 5px 5px 0;">
+        <h4 style="margin: 0 0 5px 0; color: #009688;"><i class="fas fa-book-reader"></i> Suivre votre lecture</h4>
+        <p style="margin: 0; color: #666;">Gardez une trace de votre progression de lecture et définissez des objectifs personnels.</p>
+    </div>
+
+    <div style="background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #009688; border-radius: 0 5px 5px 0;">
+        <h4 style="margin: 0 0 5px 0; color: #009688;"><i class="fas fa-hand-holding"></i> Emprunter des livres</h4>
+        <p style="margin: 0; color: #666;">Empruntez des livres de notre bibliothèque et gérez vos emprunts facilement.</p>
+    </div>
+
+    <div style="background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #009688; border-radius: 0 5px 5px 0;">
+        <h4 style="margin: 0 0 5px 0; color: #009688;"><i class="fas fa-shopping-cart"></i> Commander des livres</h4>
+        <p style="margin: 0; color: #666;">Achetez vos livres préférés et recevez-les chez vous.</p>
+    </div>
+
+    <div style="background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #009688; border-radius: 0 5px 5px 0;">
+        <h4 style="margin: 0 0 5px 0; color: #009688;"><i class="fas fa-heart"></i> Créer des listes de souhaits</h4>
+        <p style="margin: 0; color: #666;">Enregistrez des livres pour plus tard et soyez notifié de leur disponibilité.</p>
+    </div>
+</div>
+
+<p style="text-align: center;">
+    <a href="{{ url('app_livre_index') }}" class="button"><i class="fas fa-rocket"></i> Commencer à explorer</a>
+</p>
+
+<p>Bonne lecture ! <i class="fas fa-book"></i></p>
+
+<p>Cordialement,<br>L'équipe BiblioApp</p>
+{% endblock %}

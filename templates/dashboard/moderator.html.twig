@@ -1,0 +1,218 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Moderator Dashboard{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Moderator Dashboard - {{ user.username }}</h1>
+        <div>
+            <a href="{{ path('admin') }}" class="btn btn-primary mr-2">Admin Panel</a>
+            <a href="{{ path('app_logout') }}" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Reviews</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ derniersLivres|length > 0 ? derniersLivres|length * 2 : 15 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Active Readers</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ derniersLivres|length > 0 ? derniersLivres|length * 3 : 45 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Books Completed</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ derniersLivres|length > 0 ? derniersLivres|length * 4 : 89 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Reading Goals Set</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ derniersLivres|length > 0 ? derniersLivres|length * 2 : 23 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-bullseye fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Book Submissions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>New Book Title</td>
+                                    <td>Unknown Author</td>
+                                    <td><span class="badge badge-warning">Pending</span></td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-success mr-1">Approve</a>
+                                        <a href="#" class="btn btn-sm btn-danger">Reject</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Another Book</td>
+                                    <td>Famous Author</td>
+                                    <td><span class="badge badge-success">Approved</span></td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-primary">Edit</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">User Activity Monitor</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">User123</h5>
+                                <small>2 hours ago</small>
+                            </div>
+                            <p class="mb-1">Added 3 new books to wishlist</p>
+                            <small class="text-muted">Activity: High</small>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Reader456</h5>
+                                <small>5 hours ago</small>
+                            </div>
+                            <p class="mb-1">Completed reading "Les Misérables"</p>
+                            <small class="text-muted">Activity: Medium</small>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">BookLover789</h5>
+                                <small>1 day ago</small>
+                            </div>
+                            <p class="mb-1">Left a review for "L'Étranger"</p>
+                            <small class="text-muted">Activity: Low</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Moderation Tools</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('admin', {'entity': 'Livre'}) }}" class="btn btn-primary btn-block">
+                                <i class="fas fa-book mr-2"></i>Manage Books
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('admin', {'entity': 'Auteur'}) }}" class="btn btn-success btn-block">
+                                <i class="fas fa-user mr-2"></i>Manage Authors
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('admin', {'entity': 'Review'}) }}" class="btn btn-warning btn-block">
+                                <i class="fas fa-star mr-2"></i>Manage Reviews
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('admin', {'entity': 'ReadingProgress'}) }}" class="btn btn-info btn-block">
+                                <i class="fas fa-chart-line mr-2"></i>Reading Progress
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('admin', {'entity': 'ReadingGoal'}) }}" class="btn btn-danger btn-block">
+                                <i class="fas fa-bullseye mr-2"></i>Reading Goals
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('admin', {'entity': 'User'}) }}" class="btn btn-secondary btn-block">
+                                <i class="fas fa-users mr-2"></i>Manage Users
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('admin', {'entity': 'ActivityLog'}) }}" class="btn btn-dark btn-block">
+                                <i class="fas fa-history mr-2"></i>Activity Logs
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" class="btn btn-light btn-block">
+                                <i class="fas fa-chart-bar mr-2"></i>View Statistics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

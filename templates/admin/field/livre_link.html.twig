@@ -1,0 +1,19 @@
+{% if field.value %}
+    <a href="{{ path('admin', {'entity': 'Livre', 'action': 'detail', 'id': field.value.id}) }}" class="text-decoration-none">
+        <div class="d-flex align-items-center">
+            {% if field.value.image %}
+                <img src="{{ asset('uploads/' ~ field.value.image) }}" alt="{{ field.value.titre }}" class="rounded mr-2" style="width: 32px; height: 48px; object-fit: cover;">
+            {% else %}
+                <div class="rounded mr-2 bg-light d-flex align-items-center justify-content-center" style="width: 32px; height: 48px;">
+                    <i class="fas fa-book text-muted"></i>
+                </div>
+            {% endif %}
+            <div>
+                <strong>{{ field.value.titre }}</strong><br>
+                <small class="text-muted">{{ field.value.auteur.nom ?? 'Unknown Author' }}</small>
+            </div>
+        </div>
+    </a>
+{% else %}
+    <span class="text-muted">-</span>
+{% endif %}

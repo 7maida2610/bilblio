@@ -1,0 +1,151 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Test Loan Emails - BiblioApp{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-envelope"></i> Test Loan Emails
+        </h1>
+        <a href="{{ path('backoffice_emails_index') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    {% if app.flashes %}
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fas fa-book-reader"></i> Emprunts Disponibles ({{ totalLoans }})
+                    </h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Utilisateur</th>
+                                <th>Livre</th>
+                                <th>Statut</th>
+                                <th>Demandé</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if loans|length == 0 %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                        Aucun emprunt trouvé
+                                    </td>
+                                </tr>
+                            {% else %}
+                                {% for loan in loans %}
+                                    <tr>
+                                        <td><strong>#{{ loan.id }}</strong></td>
+                                        <td>
+                                            <small>{{ loan.user.email }}</small><br>
+                                            <strong>{{ loan.user.firstName }} {{ loan.user.lastName }}</strong>
+                                        </td>
+                                        <td><small>{{ loan.livre.titre }}</small></td>
+                                        <td>
+                                            {% if loan.status == 'requested' %}
+                                                <span class="badge badge-warning">Demandé</span>
+                                            {% elseif loan.status == 'approved' %}
+                                                <span class="badge badge-info">Approuvé</span>
+                                            {% elseif loan.status == 'active' %}
+                                                <span class="badge badge-success">En cours</span>
+                                            {% elseif loan.status == 'overdue' %}
+                                                <span class="badge badge-danger">En retard</span>
+                                            {% elseif loan.status == 'returned' %}
+                                                <span class="badge badge-secondary">Retourné</span>
+                                            {% else %}
+                                                <span class="badge badge-dark">{{ loan.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><small>{{ loan.requestedAt|date('d/m/Y H:i') }}</small></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{{ path('backoffice_test_loan_approved', {loanId: loan.id}) }}" 
+                                                   class="btn btn-success btn-sm"
+                                                   title="Test email d'approbation"
+                                                   onclick="return confirm('Envoyer email d\'approbation?')">
+                                                    <i class="fas fa-check"></i> Approuvé
+                                                </a>
+                                                <a href="{{ path('backoffice_test_loan_rejected', {loanId: loan.id}) }}" 
+                                                   class="btn btn-danger btn-sm"
+                                                   title="Test email de rejet"
+                                                   onclick="return confirm('Envoyer email de rejet?')">
+                                                    <i class="fas fa-times"></i> Rejeté
+                                                </a>
+                                                <a href="{{ path('backoffice_test_loan_overdue', {loanId: loan.id}) }}" 
+                                                   class="btn btn-warning btn-sm"
+                                                   title="Test email de retard"
+                                                   onclick="return confirm('Envoyer email d\'alerte retard?')">
+                                                    <i class="fas fa-hourglass-end"></i> Retard
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if totalPages > 1 %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if currentPage > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('backoffice_emails_loans', {page: 1}) }}">Première</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('backoffice_emails_loans', {page: currentPage - 1}) }}">Précédente</a>
+                            </li>
+                        {% endif %}
+
+                        {% for p in 1..totalPages %}
+                            {% if p == currentPage %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ p }}</span>
+                                </li>
+                            {% elseif p >= currentPage - 2 and p <= currentPage + 2 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ path('backoffice_emails_loans', {page: p}) }}">{{ p }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if currentPage < totalPages %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('backoffice_emails_loans', {page: currentPage + 1}) }}">Suivante</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('backoffice_emails_loans', {page: totalPages}) }}">Dernière</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

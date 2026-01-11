@@ -1,0 +1,408 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Progression de Lecture - {{ livre.titre }}{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-book-reader text-primary mr-2"></i>Progression de Lecture
+            </h1>
+            <p class="mb-0 text-muted">{{ livre.titre }} - {{ livre.auteur.prenom }} {{ livre.auteur.nom }}</p>
+        </div>
+        <a href="{{ path('app_livre_show', {'id': livre.id}) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left mr-2"></i>Retour au livre
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Book Information -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle mr-2"></i>Informations du Livre
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    {% if livre.image %}
+                        <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-fluid rounded mb-3" style="max-height: 200px;">
+                    {% else %}
+                        <div class="bg-light rounded p-4 mb-3">
+                            <i class="fas fa-book fa-3x text-gray-300"></i>
+                        </div>
+                    {% endif %}
+
+                    <h5 class="font-weight-bold">{{ livre.titre }}</h5>
+                    <p class="text-muted mb-2">{{ livre.auteur.prenom }} {{ livre.auteur.nom }}</p>
+                    <p class="small text-muted mb-0">{{ livre.nbPages }} pages</p>
+
+                    {% if livre.pdf %}
+                        <div class="mt-3">
+                            <a href="{{ path('app_pdf_view', {'id': livre.id}) }}" class="btn btn-primary btn-sm" target="_blank">
+                                <i class="fas fa-file-pdf mr-1"></i>Lire le PDF
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Reading Progress -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-line mr-2"></i>Progression de Lecture
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="font-weight-bold">Progression</span>
+                            <span class="badge badge-primary">{{ progress.progressPercentage }}%</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-primary" role="progressbar"
+                                 style="width: {{ progress.progressPercentage }}%"
+                                 aria-valuenow="{{ progress.progressPercentage }}"
+                                 aria-valuemin="0" aria-valuemax="100">
+                                {{ progress.progressPercentage }}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Page -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="currentPage" class="font-weight-bold">
+                                    <i class="fas fa-file-alt mr-1"></i>Page Actuelle
+                                </label>
+                                <input type="number" class="form-control" id="currentPage"
+                                       value="{{ progress.currentPage ?: 1 }}" min="1" max="{{ livre.nbPages }}">
+                                <small class="form-text text-muted">sur {{ livre.nbPages }} pages</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">
+                                    <i class="fas fa-clock mr-1"></i>Dernière Lecture
+                                </label>
+                                <p class="mb-0">{{ progress.lastReadAt ? progress.lastReadAt|date('d/m/Y H:i') : 'Jamais' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Completion Status -->
+                    {% if progress.isCompleted %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <strong>Félicitations!</strong> Vous avez terminé ce livre.
+                        </div>
+                    {% endif %}
+
+                    <!-- Update Button -->
+                    <button type="button" class="btn btn-primary" id="updateProgressBtn">
+                        <i class="fas fa-save mr-1"></i>Mettre à jour la progression
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bookmarks -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-bookmark mr-2"></i>Marque-pages
+                    </h6>
+                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#addBookmarkModal">
+                        <i class="fas fa-plus mr-1"></i>Ajouter
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if progress.bookmarks and progress.bookmarks|length > 0 %}
+                        <div class="list-group">
+                            {% for bookmark in progress.bookmarks %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ bookmark.title }}</h6>
+                                        <p class="mb-1 text-muted small">Page {{ bookmark.page }}</p>
+                                        {% if bookmark.note %}
+                                            <small class="text-muted">{{ bookmark.note }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="removeBookmark({{ loop.index0 }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-bookmark fa-3x text-gray-300 mb-3"></i>
+                            <p class="text-muted">Aucun marque-page enregistré</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-sticky-note mr-2"></i>Notes Personnelles
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <textarea class="form-control" id="readingNotes" rows="6"
+                                  placeholder="Écrivez vos notes, réflexions ou commentaires sur ce livre...">{{ progress.notes ?: '' }}</textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="saveNotesBtn">
+                        <i class="fas fa-save mr-1"></i>Enregistrer les notes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Bookmark Modal -->
+    <div class="modal fade" id="addBookmarkModal" tabindex="-1" role="dialog" aria-labelledby="addBookmarkModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBookmarkModalLabel">Ajouter un Marque-page</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="bookmarkTitle" class="font-weight-bold">Titre du marque-page</label>
+                        <input type="text" class="form-control" id="bookmarkTitle" placeholder="Ex: Passage important, Chapitre 5...">
+                    </div>
+                    <div class="form-group">
+                        <label for="bookmarkPage" class="font-weight-bold">Numéro de page</label>
+                        <input type="number" class="form-control" id="bookmarkPage" min="1" max="{{ livre.nbPages }}" value="{{ progress.currentPage ?: 1 }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="bookmarkNote" class="font-weight-bold">Note (optionnel)</label>
+                        <textarea class="form-control" id="bookmarkNote" rows="3" placeholder="Ajoutez une note personnelle..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="saveBookmarkBtn">Ajouter le marque-page</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const livreId = {{ livre.id }};
+
+    // Update progress
+    document.getElementById('updateProgressBtn').addEventListener('click', function() {
+        const currentPage = document.getElementById('currentPage').value;
+        const progressPercentage = Math.round((currentPage / {{ livre.nbPages }}) * 100);
+
+        fetch(`{{ path('app_reading_progress_update', {'id': livre.id}) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                currentPage: parseInt(currentPage),
+                progressPercentage: progressPercentage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Progression mise à jour avec succès!', 'success');
+                // Update progress bar
+                const progressBar = document.querySelector('.progress-bar');
+                progressBar.style.width = data.progress.percentage + '%';
+                progressBar.textContent = data.progress.percentage + '%';
+                document.querySelector('.badge-primary').textContent = data.progress.percentage + '%';
+            } else {
+                showNotification('Erreur lors de la mise à jour', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Erreur lors de la mise à jour', 'danger');
+        });
+    });
+
+    // Save notes
+    document.getElementById('saveNotesBtn').addEventListener('click', function() {
+        const notes = document.getElementById('readingNotes').value;
+
+        fetch(`{{ path('app_reading_progress_update', {'id': livre.id}) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                notes: notes
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Notes enregistrées avec succès!', 'success');
+            } else {
+                showNotification('Erreur lors de l\'enregistrement', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Erreur lors de l\'enregistrement', 'danger');
+        });
+    });
+
+    // Add bookmark
+    document.getElementById('saveBookmarkBtn').addEventListener('click', function() {
+        const title = document.getElementById('bookmarkTitle').value;
+        const page = document.getElementById('bookmarkPage').value;
+        const note = document.getElementById('bookmarkNote').value;
+
+        if (!title.trim()) {
+            showNotification('Veuillez saisir un titre pour le marque-page', 'warning');
+            return;
+        }
+
+        fetch(`{{ path('app_reading_progress_bookmark', {'id': livre.id}) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                title: title,
+                page: parseInt(page),
+                note: note
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Marque-page ajouté avec succès!', 'success');
+                $('#addBookmarkModal').modal('hide');
+                // Reset form
+                document.getElementById('bookmarkTitle').value = '';
+                document.getElementById('bookmarkNote').value = '';
+                // Reload page to show new bookmark
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Erreur lors de l\'ajout du marque-page', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Erreur lors de l\'ajout du marque-page', 'danger');
+        });
+    });
+});
+
+// Remove bookmark function
+function removeBookmark(index) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce marque-page ?')) {
+        fetch(`{{ path('app_reading_progress_remove_bookmark', {'id': livre.id, 'index': 'PLACEHOLDER'}) }}`.replace('PLACEHOLDER', index), {
+            method: 'DELETE',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Marque-page supprimé avec succès!', 'success');
+                // Reload page to update list
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Erreur lors de la suppression', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Erreur lors de la suppression', 'danger');
+        });
+    }
+}
+
+// Notification system
+function showNotification(message, type) {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.custom-notification');
+    existingNotifications.forEach(function(notification) {
+        notification.remove();
+    });
+
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} custom-notification position-fixed`;
+    notification.style.cssText = `
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border-radius: 10px;
+        animation: slideInRight 0.5s ease;
+    `;
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <span class="flex-grow-1">${message}</span>
+            <button type="button" class="close ml-2" onclick="this.parentElement.parentElement.remove()">
+                <span>&times;</span>
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto remove after 3 seconds
+    setTimeout(function() {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOutRight 0.5s ease';
+            setTimeout(function() {
+                notification.remove();
+            }, 500);
+        }
+    }, 3000);
+}
+
+// Add notification animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    .custom-notification .close {
+        border: none;
+        background: none;
+        font-size: 1.2rem;
+        opacity: 0.7;
+    }
+    .custom-notification .close:hover {
+        opacity: 1;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

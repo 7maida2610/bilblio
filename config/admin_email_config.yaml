@@ -1,0 +1,83 @@
+admin_email_config:
+    # Email Service Configuration for EasyAdmin Bundle
+    # This configures email notifications for admin actions
+
+    features:
+        # Send email when loan is approved by admin
+        send_email_on_loan_approval: true
+        
+        # Send email when loan is rejected by admin
+        send_email_on_loan_rejection: true
+        
+        # Send email when loan is marked as returned
+        send_email_on_loan_return: true
+        
+        # Send email when new order is created
+        send_email_on_new_order: true
+        
+        # Send email when order status is updated
+        send_email_on_order_status_update: true
+        
+        # Send email when reservation is promoted in queue
+        send_email_on_reservation_promotion: true
+        
+        # Send email when reservation is ready for pickup
+        send_email_on_reservation_available: true
+        
+        # Send email when reservation is cancelled
+        send_email_on_reservation_cancel: true
+
+    # Admin notification settings
+    admin_notifications:
+        # Send daily summary of pending loans
+        daily_pending_loans_summary: true
+        
+        # Send daily summary of pending reservations
+        daily_pending_reservations_summary: true
+        
+        # Send alerts for overdue loans
+        alert_overdue_loans: true
+        
+        # Send alerts for low stock books
+        alert_low_stock: true
+        
+        # Send summary of new user registrations
+        daily_registration_summary: true
+
+    # Email dispatch timing
+    dispatch_timing:
+        # Immediate: Send email as soon as action is performed
+        # Queued: Add to queue for batch sending
+        # Scheduled: Send at scheduled time
+        default_strategy: 'immediate'
+        
+        # Use message queue for email delivery
+        use_message_queue: false
+        
+        # Batch send emails every X minutes
+        batch_interval_minutes: 5
+
+    # Retry configuration
+    retry:
+        # Retry failed emails
+        enabled: true
+        
+        # Maximum retry attempts
+        max_attempts: 3
+        
+        # Retry after X seconds
+        retry_after_seconds: 300
+
+    # Logging configuration
+    logging:
+        # Log all email send attempts
+        log_email_sends: true
+        
+        # Log email delivery confirmations
+        log_deliveries: true
+        
+        # Log email failures
+        log_failures: true
+        
+        # Log file location (relative to project root)
+        log_file: 'var/log/email.log'

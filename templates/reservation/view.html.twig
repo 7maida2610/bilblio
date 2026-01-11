@@ -1,0 +1,249 @@
+{% extends "backendofficebase.html.twig" %}
+
+{% block title %}Détail Réservation - Biblio{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        position: relative;
+    }
+
+    .timeline-item:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 50px;
+        width: 2px;
+        height: calc(100% + 30px);
+        background-color: #e9ecef;
+    }
+
+    .timeline-marker {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.2rem;
+        z-index: 1;
+    }
+
+    .timeline-marker.completed {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .timeline-marker.pending {
+        background-color: #ffc107;
+        color: white;
+    }
+
+    .timeline-content {
+        padding-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-hourglass-end text-warning mr-2"></i>Détail Réservation
+            </h1>
+            <p class="text-muted mb-0">Consultez les détails de votre réservation</p>
+        </div>
+        <a href="{{ path('app_reservation_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Book Info (Left) -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <!-- Cover -->
+                    {% if reservation.livre.image %}
+                        <img src="{{ asset('uploads/images/' ~ reservation.livre.image) }}" alt="{{ reservation.livre.titre }}" class="img-fluid rounded mb-3" style="max-height: 250px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 250px;">
+                            <i class="fas fa-book text-muted" style="font-size: 4rem;"></i>
+                        </div>
+                    {% endif %}
+
+                    <!-- Book Details -->
+                    <h5 class="font-weight-bold mb-2">{{ reservation.livre.titre }}</h5>
+                    <p class="text-muted small mb-3">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ reservation.livre.auteur.prenom }} {{ reservation.livre.auteur.nom }}
+                    </p>
+
+                    {% if reservation.livre.editeur %}
+                        <p class="small text-muted mb-2">
+                            <strong>Éditeur:</strong> {{ reservation.livre.editeur.nomEditeur }}
+                        </p>
+                    {% endif %}
+
+                    <!-- Unavailable Alert -->
+                    <div class="alert alert-warning alert-sm py-2 px-3 mb-3">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        <small><strong>En rupture de stock</strong></small>
+                    </div>
+
+                    <!-- View Book Link -->
+                    <a href="{{ path('app_livre_show', {'id': reservation.livre.id}) }}" class="btn btn-primary btn-block">
+                        <i class="fas fa-book mr-1"></i>Voir la fiche complète
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reservation Details (Right) -->
+        <div class="col-lg-8">
+            <!-- Status Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-hourglass-end mr-2"></i>Statut de la Réservation
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2"><i class="fas fa-list-ol mr-1"></i>Position dans la Queue</h6>
+                            <div style="font-size: 2.5rem; color: #ff6f00; font-weight: bold;">
+                                #{{ reservation.position }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2"><i class="fas fa-calendar-check mr-1"></i>Disponibilité Estimée</h6>
+                            <div style="font-size: 1.25rem; color: #17a2b8; font-weight: bold;">
+                                <i class="fas fa-clock mr-1"></i>{{ reservation.expectedAvailableDateFormatted }}
+                            </div>
+                            <small class="text-muted">Date approximative basée sur la file d'attente</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2"><i class="fas fa-bookmark mr-1"></i>Statut</h6>
+                            {% if reservation.isActive %}
+                                <span class="badge badge-warning p-2" style="font-size: 1rem;">
+                                    <i class="fas fa-hourglass-end mr-1"></i>En Attente
+                                </span>
+                            {% else %}
+                                <span class="badge badge-secondary p-2" style="font-size: 1rem;">
+                                    <i class="fas fa-check-circle mr-1"></i>Annulée
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker completed">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Réservation Demandée</h6>
+                                <p class="text-muted small mb-0">
+                                    {{ reservation.requestedAt|date('d M Y \\à H:i') }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {% if reservation.notifiedAt %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker completed">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Notification Envoyée</h6>
+                                    <p class="text-muted small mb-0">
+                                        {{ reservation.notifiedAt|date('d M Y \\à H:i') }}
+                                    </p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker pending">
+                                    <i class="fas fa-hourglass-half"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Notification Attendue</h6>
+                                    <p class="text-muted small mb-0">
+                                        Vous serez notifié dès que le livre est disponible
+                                    </p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            {% if reservation.isActive %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-danger">
+                            <i class="fas fa-sliders-h mr-2"></i>Actions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ path('app_reservation_cancel', {'id': reservation.id}) }}" style="display: inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ reservation.id) }}">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?');">
+                                <i class="fas fa-trash mr-1"></i>Annuler la réservation
+                            </button>
+                        </form>
+                        <small class="d-block text-muted mt-2">
+                            Cette action est irréversible. Votre position dans la queue sera libérée.
+                        </small>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-calendar-alt mr-2"></i>Calendrier
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted small mb-3">
+                        Voir la queue de réservation de ce livre sur le calendrier
+                    </p>
+                    <a href="{{ path('app_reservation_calendar', {'id': reservation.id}) }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-calendar-alt mr-1"></i>Voir le calendrier
+                    </a>
+                </div>
+            </div>
+
+            <!-- Information -->
+            <div class="card shadow">
+                <div class="card-body">
+                    <h6 class="mb-3">
+                        <i class="fas fa-info-circle mr-2"></i>Informations
+                    </h6>
+                    <ul class="small mb-0">
+                        <li class="mb-2"><i class="fas fa-check mr-1 text-success"></i>Vous êtes actuellement <strong>#{{ reservation.position }}</strong> dans la queue</li>
+                        <li class="mb-2"><i class="fas fa-envelope mr-1 text-info"></i>Quand le livre devient disponible, vous recevrez une notification par email</li>
+                        <li><i class="fas fa-trash mr-1 text-danger"></i>Vous pouvez annuler votre réservation à tout moment</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

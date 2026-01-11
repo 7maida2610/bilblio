@@ -1,0 +1,233 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Gestion des Réservations - Biblio{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-bookmark text-primary mr-2"></i>Gestion des Réservations
+            </h1>
+            <p class="text-muted small mb-0">Dashboard de gestion des réservations de livres</p>
+        </div>
+        <span class="badge badge-primary p-2" style="font-size: 0.9rem;">{{ total }} réservation(s) au total</span>
+    </div>
+
+    <!-- Stats Cards Row -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-success text-uppercase mb-1 font-weight-bold" style="font-size: 0.8rem;">Actives</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ activeCount }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-left-secondary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-secondary text-uppercase mb-1 font-weight-bold" style="font-size: 0.8rem;">Terminées</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ inactiveCount }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-primary text-uppercase mb-1 font-weight-bold" style="font-size: 0.8rem;">Total</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-light">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-filter"></i> Filtres de Recherche
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mr-2 mb-2">
+                    <select name="status" class="form-control" style="min-width: 180px;">
+                        <option value="">Toutes les réservations</option>
+                        <option value="active" {% if status == 'active' %}selected{% endif %}>Actives</option>
+                        <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Terminées/Annulées</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mb-2">
+                    <i class="fas fa-search"></i> Filtrer
+                </button>
+                {% if status %}
+                    <a href="{{ path('app_admin_reservation_management') }}" class="btn btn-secondary mb-2 ml-2">
+                        <i class="fas fa-redo"></i> Réinitialiser
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Reservations Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center bg-light">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list"></i> Liste des Réservations
+            </h6>
+            <small class="text-muted">{{ reservations|length }} résultat(s)</small>
+        </div>
+        {% if reservations|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th style="width: 5%;">ID</th>
+                            <th style="width: 15%;">Utilisateur</th>
+                            <th style="width: 22%;">Livre</th>
+                            <th style="width: 10%;">Position</th>
+                            <th style="width: 10%;">Statut</th>
+                            <th style="width: 12%;">Demandé le</th>
+                            <th style="width: 12%;">Notifié le</th>
+                            <th style="width: 14%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                            <tr class="{% if not reservation.isActive %}table-secondary{% elseif reservation.position == 0 %}table-success{% endif %}">
+                                <td>
+                                    <span class="font-weight-bold text-gray-800">#{{ reservation.id }}</span>
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold text-gray-800">
+                                        <i class="fas fa-user text-muted mr-1"></i>{{ reservation.user.username }}
+                                    </div>
+                                    <small class="text-muted">{{ reservation.user.email }}</small>
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold text-gray-800">
+                                        <i class="fas fa-book text-muted mr-1"></i>{{ reservation.livre.titre|length > 25 ? reservation.livre.titre|slice(0, 25) ~ '...' : reservation.livre.titre }}
+                                    </div>
+                                    <small class="text-muted">ISBN: {{ reservation.livre.isbn ?? 'N/A' }}</small>
+                                </td>
+                                <td>
+                                    {% if reservation.isActive %}
+                                        <span class="badge badge-{% if reservation.position == 0 %}success{% else %}info{% endif %}">
+                                            {% if reservation.position == 0 %}
+                                                <i class="fas fa-star"></i> Premier
+                                            {% else %}
+                                                #{{ reservation.position + 1 }}
+                                            {% endif %}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-{% if reservation.isActive %}success{% else %}secondary{% endif %}">
+                                        {% if reservation.isActive %}Active{% else %}Terminée{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small>{{ reservation.requestedAtFormatted }}</small>
+                                </td>
+                                <td>
+                                    {% if reservation.notifiedAt %}
+                                        <small>{{ reservation.notifiedAtFormatted }}</small>
+                                    {% else %}
+                                        <span class="badge badge-light"><i class="fas fa-bell-slash"></i> Non notifié</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ path('app_admin_reservation_detail', {'id': reservation.id}) }}" class="btn btn-primary" title="Voir détails" data-toggle="tooltip">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if reservation.isActive and reservation.position == 0 and reservation.livre.stockEmprunt > 0 %}
+                                            <form method="POST" action="{{ path('app_admin_reservation_create_loan', {'id': reservation.id}) }}" class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('create_loan' ~ reservation.id) }}">
+                                                <button type="submit" class="btn btn-success" title="Créer emprunt" data-toggle="tooltip">
+                                                    <i class="fas fa-exchange-alt"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if reservation.isActive %}
+                                            <form method="POST" action="{{ path('app_admin_reservation_cancel', {'id': reservation.id}) }}" class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ reservation.id) }}">
+                                                <button type="submit" class="btn btn-danger" title="Annuler" data-toggle="tooltip" onclick="return confirm('Annuler cette réservation ?')">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if totalPages > 1 %}
+                <nav aria-label="Page navigation" class="d-flex justify-content-center mt-3 mb-3">
+                    <ul class="pagination">
+                        {% if page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if status %}&status={{ status }}{% endif %}">Première</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page - 1 }}{% if status %}&status={{ status }}{% endif %}">Précédente</a>
+                            </li>
+                        {% endif %}
+
+                        {% for i in range(max(1, page - 2), min(totalPages, page + 2)) %}
+                            <li class="page-item {% if i == page %}active{% endif %}">
+                                <a class="page-link" href="?page={{ i }}{% if status %}&status={{ status }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+
+                        {% if page < totalPages %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page + 1 }}{% if status %}&status={{ status }}{% endif %}">Suivante</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ totalPages }}{% if status %}&status={{ status }}{% endif %}">Dernière</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="card-body">
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Aucune réservation ne correspond à vos critères de recherche.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+    
+    .badge {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.6rem;
+    }
+    
+    .btn-group-sm > .btn {
+        padding: 0.25rem 0.5rem;
+    }
+</style>
+
+<script>
+    $(function() {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+{% endblock %}

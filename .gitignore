@@ -1,0 +1,82 @@
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
+
+###> symfony/asset-mapper ###
+/public/assets/
+/assets/vendor/
+###< symfony/asset-mapper ###
+
+###> Uploaded Files (User-generated content) ###
+/public/uploads/
+/public/uploads/images/
+/public/uploads/pdfs/
+/public/public/uploads/
+###< Uploaded Files ###
+
+###> IDE/Editor Files ###
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+###< IDE/Editor Files ###
+
+###> OS Files ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+###< OS Files ###
+
+###> Logs and Temporary Files ###
+*.log
+/logs/
+/tmp/
+/temp/
+###< Logs and Temporary Files ###
+
+###> Node.js ###
+node_modules/
+/npm-debug.log*
+/yarn-debug.log*
+/yarn-error.log*
+###< Node.js ###
+
+###> Composer ###
+/composer.phar
+###< Composer ###
+
+###> Symfony Specific ###
+/bin/.phpunit/
+/.phpunit.result.cache
+###< Symfony Specific ###
+
+###> Installation Files ###
+*.exe
+miktex-setup.exe
+###< Installation Files ###
+
+###> Documentation Files ###
+# Ignore all .md files except README.md
+*.md
+!README.md
+
+# Ignore docs directory
+/docs/
+###< Documentation Files ###

@@ -1,0 +1,117 @@
+<!-- Delete Button Trigger -->
+<button type="button" class="btn btn-danger btn-lg btn-block" data-toggle="modal" data-target="#deleteModal{{ livre.id }}">
+    <i class="fas fa-trash mr-2"></i>Supprimer ce livre
+</button>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal{{ livre.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ livre.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel{{ livre.id }}">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Confirmer la suppression
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-book fa-2x text-danger"></i>
+                    </div>
+                </div>
+
+                <h5 class="text-center font-weight-bold text-gray-800 mb-3">
+                    Êtes-vous sûr de vouloir supprimer ce livre ?
+                </h5>
+
+                <div class="card border-warning mb-4">
+                    <div class="card-body bg-light">
+                        <div class="row">
+                            <div class="col-3 text-center">
+                                {% if livre.image %}
+                                    <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-fluid rounded shadow-sm" style="max-width: 60px; max-height: 80px; object-fit: cover;">
+                                {% else %}
+                                    <i class="fas fa-book fa-2x text-gray-400"></i>
+                                {% endif %}
+                            </div>
+                            <div class="col-9">
+                                <h6 class="font-weight-bold text-primary mb-1">{{ livre.titre }}</h6>
+                                <p class="text-muted small mb-1">
+                                    <i class="fas fa-user mr-1"></i>{{ livre.auteur ? livre.auteur.prenom ~ ' ' ~ livre.auteur.nom : 'Auteur inconnu' }}
+                                </p>
+                                <p class="text-muted small mb-1">
+                                    <i class="fas fa-tag mr-1"></i>{{ livre.categorie ? livre.categorie.designation : 'N/A' }}
+                                </p>
+                                <p class="text-muted small mb-0">
+                                    <i class="fas fa-barcode mr-1"></i>{{ livre.isbn }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger">
+                    <h6 class="font-weight-bold mb-2">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>Attention !
+                    </h6>
+                    <ul class="mb-0 pl-3">
+                        <li>Cette action est <strong>irréversible</strong></li>
+                        <li>Tous les exemplaires de ce livre seront supprimés du stock</li>
+                        <li>Les données statistiques liées à ce livre seront perdues</li>
+                        <li>Cette action peut affecter les rapports et analyses futures</li>
+                    </ul>
+                </div>
+
+                <div class="text-center">
+                    <p class="text-muted mb-0">
+                        Tapez <strong>"SUPPRIMER"</strong> pour confirmer :
+                    </p>
+                    <input type="text" id="confirmText{{ livre.id }}" class="form-control text-center font-weight-bold mt-2" placeholder="SUPPRIMER" maxlength="9">
+                </div>
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary btn-lg px-4" data-dismiss="modal">
+                    <i class="fas fa-times mr-2"></i>Annuler
+                </button>
+
+                <form method="post" action="{{ path('app_livre_delete', {'id': livre.id}) }}" class="d-inline" id="deleteForm{{ livre.id }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ livre.id) }}">
+                    <button type="submit" class="btn btn-danger btn-lg px-4" id="confirmDeleteBtn{{ livre.id }}" disabled>
+                        <i class="fas fa-trash mr-2"></i>Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmTextInput = document.getElementById('confirmText{{ livre.id }}');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn{{ livre.id }}');
+
+    confirmTextInput.addEventListener('input', function() {
+        if (this.value.toUpperCase() === 'SUPPRIMER') {
+            confirmDeleteBtn.disabled = false;
+            confirmDeleteBtn.classList.remove('btn-danger');
+            confirmDeleteBtn.classList.add('btn-outline-danger');
+        } else {
+            confirmDeleteBtn.disabled = true;
+            confirmDeleteBtn.classList.remove('btn-outline-danger');
+            confirmDeleteBtn.classList.add('btn-danger');
+        }
+    });
+
+    // Reset form when modal is closed
+    $('#deleteModal{{ livre.id }}').on('hidden.bs.modal', function() {
+        confirmTextInput.value = '';
+        confirmDeleteBtn.disabled = true;
+        confirmDeleteBtn.classList.remove('btn-outline-danger');
+        confirmDeleteBtn.classList.add('btn-danger');
+    });
+});
+</script>

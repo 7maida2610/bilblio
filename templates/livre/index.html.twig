@@ -1,0 +1,1099 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Gestion des Livres{% endblock %}
+
+{% block body %}
+    <style>
+        .table-nowrap th,
+        .table-nowrap td {
+            white-space: nowrap;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .table-nowrap .btn {
+            white-space: nowrap;
+            display: inline-block;
+        }
+        .table-nowrap .badge {
+            white-space: nowrap;
+            display: inline-block;
+        }
+        .table-nowrap img {
+            max-width: 50px;
+            max-height: 50px;
+        }
+        .table-nowrap .btn-group {
+            white-space: nowrap;
+        }
+        .table-nowrap th:nth-child(1) { min-width: 60px; } /* ID */
+        .table-nowrap th:nth-child(2) { min-width: 80px; } /* Image */
+        .table-nowrap th:nth-child(3) { min-width: 200px; } /* Title */
+        .table-nowrap th:nth-child(4) { min-width: 150px; } /* Author */
+        .table-nowrap th:nth-child(5) { min-width: 120px; } /* Category */
+        .table-nowrap th:nth-child(6) { min-width: 120px; } /* Publisher */
+        .table-nowrap th:nth-child(7) { min-width: 140px; } /* ISBN */
+        .table-nowrap th:nth-child(8) { min-width: 80px; } /* Price */
+        .table-nowrap th:nth-child(9) { min-width: 100px; } /* Stock */
+        .table-nowrap th:nth-child(10) { min-width: 150px; } /* Actions */
+
+        /* Modern Book Card Styles */
+        .modern-book-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .modern-book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .book-image {
+            transition: transform 0.3s ease;
+        }
+
+        .modern-book-card:hover .book-image {
+            transform: scale(1.05);
+        }
+
+        .stock-badge {
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+            font-size: 0.75rem;
+            padding: 0.375rem 0.5rem;
+        }
+
+        .book-overlay {
+            background: rgba(0,0,0,0.7);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .modern-book-card:hover .book-overlay {
+            opacity: 1;
+        }
+
+        .sold-out-banner {
+            background: rgba(220, 53, 69, 0.9);
+            backdrop-filter: blur(2px);
+            z-index: 3;
+            border-radius: 15px;
+        }
+
+        .quick-actions .btn {
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+
+        .quick-actions .btn:hover {
+            transform: scale(1.1);
+        }
+
+        .quick-actions .btn:active {
+            transform: scale(0.9);
+        }
+
+        .cart-btn:hover {
+            background-color: #28a745 !important;
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.4);
+            animation: bounce 0.6s ease;
+        }
+
+        .loan-btn:hover {
+            background-color: #17a2b8 !important;
+            box-shadow: 0 0 15px rgba(23, 162, 184, 0.4);
+            animation: pulse 0.6s ease;
+        }
+
+        .wishlist-btn {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .wishlist-btn:hover {
+            color: #e74a3b !important;
+            transform: scale(1.2);
+        }
+
+        .wishlist-btn:hover i:before {
+            content: "\f004";
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) scale(1); }
+            40% { transform: translateY(-10px) scale(1.1); }
+            60% { transform: translateY(-5px) scale(1.05); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes heartbeat {
+            0% { transform: translateX(-50%) scale(1); }
+            25% { transform: translateX(-50%) scale(1.2); }
+            50% { transform: translateX(-50%) scale(1.3); }
+            75% { transform: translateX(-50%) scale(1.2); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        .book-card-entrance {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quick-actions .btn {
+            border-radius: 50px !important;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 2px;
+        }
+
+        .rating-stars-small .fa-star {
+            font-size: 0.8rem;
+            margin-right: 2px;
+        }
+
+        .author-name {
+            font-weight: 500;
+        }
+
+        /* Borrowing Status Indicators */
+        .borrowing-status-indicator {
+            z-index: 5;
+        }
+
+        .borrowing-status-indicator .badge {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        .available-indicator .badge-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            animation: gentle-pulse 3s ease-in-out infinite;
+        }
+
+        .unavailable-indicator .badge-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+        }
+
+        .unavailable-indicator .badge-info {
+            background: linear-gradient(135deg, #17a2b8, #6f42c1);
+        }
+
+        .unavailable-indicator .badge-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+
+        @keyframes gentle-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Enhanced borrowing buttons */
+        .loan-btn.available {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            border: none;
+            box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+        }
+
+        .loan-btn.available:hover {
+            background: linear-gradient(135deg, #138496, #117a8b);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(23, 162, 184, 0.4);
+        }
+
+        /* Date input styling */
+        input[type="date"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: white;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #495057;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='%23999' viewBox='0 0 20 20'%3e%3cpath fill-rule='evenodd' d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z' clip-rule='evenodd'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.5em 1.5em;
+            padding-right: 3rem;
+        }
+
+        input[type="date"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(0, 150, 136, 0.25);
+            outline: 0;
+        }
+
+        /* Fallback for older browsers */
+        input[type="date"]:not(:valid)::before {
+            content: attr(placeholder);
+            color: #6c757d;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .modern-book-card {
+                margin-bottom: 1rem;
+            }
+
+            .quick-actions {
+                flex-direction: row !important;
+                justify-content: center;
+            }
+
+            .quick-actions .btn {
+                margin: 0 2px;
+            }
+        }
+    </style>
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gestion des Livres</h1>
+        <div>
+            <div class="btn-group mr-2" role="group">
+                <a href="{{ path('app_livre_index', app.request.query.all|merge({'view': 'table'})) }}" class="btn btn-sm btn-outline-primary {% if app.request.get('view') != 'grid' %}active{% endif %}">
+                    <i class="fas fa-table"></i> Tableau
+                </a>
+                <a href="{{ path('app_livre_index', app.request.query.all|merge({'view': 'grid'})) }}" class="btn btn-sm btn-outline-primary {% if app.request.get('view') == 'grid' or not app.request.get('view') %}active{% endif %}">
+                    <i class="fas fa-th"></i> Grille
+                </a>
+            </div>
+            {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_livre_new') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Ajouter un Livre
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Low Stock Warning Banner -->
+    {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+        {% set lowStockBooks = [] %}
+        {% for livre in livres %}
+            {% if livre.nbExemplaires <= 5 and livre.nbExemplaires > 0 %}
+                {% set lowStockBooks = lowStockBooks|merge([livre]) %}
+            {% endif %}
+        {% endfor %}
+        {% if lowStockBooks|length > 0 %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <strong>Attention - Stock Faible:</strong> {{ lowStockBooks|length }} livre(s) ont un stock faible (≤5 exemplaires).
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Advanced Search and Filters -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-light">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-search mr-2"></i>Recherche et Filtres Avancés
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ path('app_livre_index') }}" id="filterForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="search" class="form-label font-weight-bold">
+                            <i class="fas fa-search mr-2 text-primary"></i>Recherche
+                        </label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-search text-primary"></i></span>
+                            </div>
+                            <input type="text" name="search" id="search" value="{{ search|default('') }}" class="form-control" placeholder="Titre, auteur, catégorie, éditeur ou ISBN...">
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="categorie" class="form-label font-weight-bold">
+                            <i class="fas fa-tag mr-2 text-info"></i>Catégorie
+                        </label>
+                        <select name="categorie" id="categorie" class="form-control">
+                            <option value="">🎭 Toutes les catégories</option>
+                            {% for categorie in categories %}
+                                <option value="{{ categorie.id }}" {{ app.request.get('categorie') == categorie.id ? 'selected' }}>{{ categorie.designation }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="sort" class="form-label font-weight-bold">
+                            <i class="fas fa-sort mr-2 text-warning"></i>Trier par
+                        </label>
+                        <select name="sort" id="sort" class="form-control">
+                            <option value="l.titre" {{ app.request.get('sort') == 'l.titre' ? 'selected' }}>Titre (A-Z)</option>
+                            <option value="l.titre DESC" {{ app.request.get('sort') == 'l.titre DESC' ? 'selected' }}>Titre (Z-A)</option>
+                            <option value="l.prix" {{ app.request.get('sort') == 'l.prix' ? 'selected' }}>Prix croissant</option>
+                            <option value="l.prix DESC" {{ app.request.get('sort') == 'l.prix DESC' ? 'selected' }}>Prix décroissant</option>
+                            <option value="l.createdAt DESC" {{ app.request.get('sort') == 'l.createdAt DESC' ? 'selected' }}>Plus récent</option>
+                            <option value="l.createdAt" {{ app.request.get('sort') == 'l.createdAt' ? 'selected' }}>Plus ancien</option>
+                            {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+                                <option value="l.nbExemplaires DESC" {{ app.request.get('sort') == 'l.nbExemplaires DESC' ? 'selected' }}>Stock élevé</option>
+                                <option value="l.nbExemplaires" {{ app.request.get('sort') == 'l.nbExemplaires' ? 'selected' }}>Stock faible</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="auteur" class="form-label font-weight-bold">
+                            <i class="fas fa-user mr-2 text-success"></i>Auteur
+                        </label>
+                        <select name="auteur" id="auteur" class="form-control">
+                            <option value="">Tous les auteurs</option>
+                            {% for auteur in auteurs %}
+                                <option value="{{ auteur.id }}" {{ app.request.get('auteur') == auteur.id ? 'selected' }}>{{ auteur.prenom }} {{ auteur.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="editeur" class="form-label font-weight-bold">
+                            <i class="fas fa-building mr-2 text-secondary"></i>Éditeur
+                        </label>
+                        <select name="editeur" id="editeur" class="form-control">
+                            <option value="">Tous les éditeurs</option>
+                            {% for editeur in editeurs %}
+                                <option value="{{ editeur.id }}" {{ app.request.get('editeur') == editeur.id ? 'selected' }}>{{ editeur.nomEditeur }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="rating_filter" class="form-label font-weight-bold">
+                            <i class="fas fa-star mr-2 text-warning"></i>Note minimum
+                        </label>
+                        <select name="rating_filter" id="rating_filter" class="form-control">
+                            <option value="">Toutes les notes</option>
+                            <option value="4" {{ app.request.get('rating_filter') == '4' ? 'selected' }}>4+ étoiles</option>
+                            <option value="3" {{ app.request.get('rating_filter') == '3' ? 'selected' }}>3+ étoiles</option>
+                            <option value="2" {{ app.request.get('rating_filter') == '2' ? 'selected' }}>2+ étoiles</option>
+                            <option value="1" {{ app.request.get('rating_filter') == '1' ? 'selected' }}>1+ étoile</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="prix_min" class="form-label font-weight-bold">Prix minimum</label>
+                        <input type="number" name="prix_min" id="prix_min" value="{{ app.request.get('prix_min') }}" class="form-control" min="0" step="0.01">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="prix_max" class="form-label font-weight-bold">Prix maximum</label>
+                        <input type="number" name="prix_max" id="prix_max" value="{{ app.request.get('prix_max') }}" class="form-control" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary mr-2">
+                            <i class="fas fa-search mr-1"></i>Rechercher
+                        </button>
+                        <a href="{{ path('app_livre_index') }}" class="btn btn-outline-secondary mr-2">
+                            <i class="fas fa-times mr-1"></i>Effacer les filtres
+                        </a>
+                        <div class="float-right">
+                            <small class="text-muted">{{ livres.getTotalItemCount }} livre(s) trouvé(s)</small>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if app.request.get('view') == 'grid' or not app.request.get('view') %}
+        <!-- Modern Grid View -->
+        <div class="row">
+            {% for livre in livres %}
+                <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow h-100 modern-book-card book-card-entrance">
+                        <!-- Book Image -->
+                        <div class="position-relative">
+                            {% if livre.image %}
+                                <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="card-img-top book-image" style="height: 250px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light book-image-placeholder" style="height: 250px;">
+                                    <i class="fas fa-book fa-4x text-gray-300"></i>
+                                </div>
+                            {% endif %}
+
+                            <!-- Borrowing Status Indicator -->
+                            {% if livre.isBorrowable %}
+                                {% set userHasLoan = false %}
+                                {% set userReservation = null %}
+                                {% set activeLoansCount = livre.activeLoansCount %}
+                                {% set reservationsCount = livre.activeReservationsCount %}
+                                {% if app.user %}
+                                    {% for loan in livre.loans %}
+                                        {% if loan.user == app.user and loan.status in ['requested', 'approved', 'active', 'overdue'] %}
+                                            {% set userHasLoan = true %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% for reservation in livre.reservations %}
+                                        {% if reservation.user == app.user and reservation.isActive() %}
+                                            {% set userReservation = reservation %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+
+                                {% if userHasLoan %}
+                                    <!-- User has active loan -->
+                                    <div class="position-absolute borrowing-status-indicator" style="top: 10px; left: 10px;">
+                                        <span class="badge badge-info badge-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
+                                            <i class="fas fa-book-reader mr-1"></i>En cours
+                                        </span>
+                                    </div>
+                                {% elseif userReservation %}
+                                    <!-- User in queue -->
+                                    <div class="position-absolute borrowing-status-indicator" style="top: 10px; left: 10px;">
+                                        <span class="badge badge-warning badge-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
+                                            <i class="fas fa-list-ol mr-1"></i>File #{{ userReservation.position }}
+                                        </span>
+                                    </div>
+                                {% elseif livre.isAvailableForBorrowing() %}
+                                    <!-- Available Indicator -->
+                                    <div class="position-absolute borrowing-status-indicator available-indicator" style="top: 10px; left: 10px;">
+                                        <span class="badge badge-success badge-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
+                                            <i class="fas fa-check-circle mr-1"></i>Disponible
+                                        </span>
+                                        {% if reservationsCount > 0 %}
+                                            <span class="badge badge-info badge-pill px-2 py-1 ml-1" style="font-size: 0.65rem;">
+                                                <i class="fas fa-users"></i> {{ reservationsCount }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <!-- Not Available - Show loans/reservations count -->
+                                    <div class="position-absolute borrowing-status-indicator unavailable-indicator" style="top: 10px; left: 10px;">
+                                        <span class="badge badge-danger badge-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
+                                            <i class="fas fa-book-reader mr-1"></i>{{ activeLoansCount }}/{{ livre.stockEmprunt }}
+                                        </span>
+                                        {% if reservationsCount > 0 %}
+                                            <span class="badge badge-warning badge-pill px-2 py-1 ml-1" style="font-size: 0.65rem;">
+                                                <i class="fas fa-list-ol"></i> {{ reservationsCount }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+
+                            <!-- Stock Badge (for sale) -->
+                            {% if livre.stockVente > 10 %}
+                                <span class="badge badge-success position-absolute stock-badge">
+                                    <i class="fas fa-shopping-cart mr-1"></i>En stock
+                                </span>
+                            {% elseif livre.stockVente > 0 %}
+                                <span class="badge badge-warning position-absolute stock-badge">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>Stock faible
+                                </span>
+                            {% else %}
+                                <span class="badge badge-danger position-absolute stock-badge">
+                                    <i class="fas fa-times-circle mr-1"></i>Épuisé
+                                </span>
+                                <!-- Sold Out Banner -->
+                                <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center sold-out-banner">
+                                    <div class="bg-danger text-white px-3 py-2 rounded-pill font-weight-bold">
+                                        <i class="fas fa-ban mr-1"></i>ÉPUISÉ
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- Quick Actions Overlay -->
+                            <div class="card-img-overlay d-flex align-items-center justify-content-center book-overlay">
+                                 <div class="btn-group-vertical quick-actions">
+                                     <a href="{{ path('app_livre_show', {'id': livre.id}) }}" class="btn btn-primary btn-sm mb-1" title="Voir les détails">
+                                         <i class="fas fa-eye"></i>
+                                     </a>
+                                     {% if is_granted('ROLE_USER') %}
+                                     <form action="{{ path('app_cart_add', {'id': livre.id}) }}" method="post" class="mb-1" title="Ajouter au panier">
+                                         <input type="hidden" name="_token" value="{{ csrf_token('add-cart-' ~ livre.id) }}">
+                                         <button type="submit" class="btn btn-success btn-sm cart-btn" {% if livre.stockVente <= 0 %}disabled{% endif %}>
+                                             <i class="fas fa-cart-plus"></i>
+                                         </button>
+                                     </form>
+
+                                     {% if livre.isBorrowable %}
+                                         {% set userHasLoan = false %}
+                                         {% set userReservation = null %}
+                                         {% if app.user %}
+                                             {% for loan in livre.loans %}
+                                                 {% if loan.user == app.user and loan.status in ['requested', 'approved', 'active', 'overdue'] %}
+                                                     {% set userHasLoan = true %}
+                                                 {% endif %}
+                                             {% endfor %}
+                                             {% for reservation in livre.reservations %}
+                                                 {% if reservation.user == app.user and reservation.isActive() %}
+                                                     {% set userReservation = reservation %}
+                                                 {% endif %}
+                                             {% endfor %}
+                                         {% endif %}
+
+                                         {% if userHasLoan %}
+                                             <!-- User has active loan - show info -->
+                                             <button type="button" class="btn btn-info btn-sm mb-1" title="Emprunt en cours" disabled>
+                                                 <i class="fas fa-book-reader"></i>
+                                             </button>
+                                         {% elseif userReservation %}
+                                             <!-- User already in queue - show position -->
+                                             <button type="button" class="btn btn-warning btn-sm mb-1" title="Position #{{ userReservation.position }} dans la file" disabled>
+                                                 <i class="fas fa-list-ol"></i> #{{ userReservation.position }}
+                                             </button>
+                                         {% elseif livre.isAvailableForBorrowing() %}
+                                             <!-- Available for borrowing - show borrow button -->
+                                             <button type="button" class="btn btn-info btn-sm loan-btn mb-1" title="{{ borrowing.messages.borrow_now|default('Emprunter maintenant') }}" onclick="showBorrowModal({{ livre.id }}, '{{ livre.titre }}', true)">
+                                                 <i class="fas fa-book-reader"></i>
+                                             </button>
+                                         {% else %}
+                                             <!-- Not available - show reservation button -->
+                                             <button type="button" class="btn btn-secondary btn-sm loan-btn mb-1" title="{{ borrowing.messages.reserve_later|default('Réserver pour plus tard') }}" onclick="showBorrowModal({{ livre.id }}, '{{ livre.titre }}', false)">
+                                                 <i class="fas fa-calendar-plus"></i>
+                                             </button>
+                                         {% endif %}
+                                     {% endif %}
+
+                                     <!-- Reading Progress Button (for owners and active borrowers) -->
+                                     {% set canAccessProgress = false %}
+                                     {% if app.user %}
+                                         {% if livre.createdBy == app.user %}
+                                             {% set canAccessProgress = true %}
+                                         {% else %}
+                                             {% for loan in livre.loans %}
+                                                 {% if loan.user == app.user and (loan.status == 'active' or loan.status == 'overdue') %}
+                                                     {% set canAccessProgress = true %}
+                                                 {% endif %}
+                                             {% endfor %}
+                                         {% endif %}
+                                     {% endif %}
+
+                                     {% if canAccessProgress %}
+                                         <a href="{{ path('app_reading_progress_show', {'id': livre.id}) }}" class="btn btn-success btn-sm mb-1" title="Voir ma progression">
+                                             <i class="fas fa-chart-line"></i>
+                                         </a>
+                                     {% endif %}
+
+                                     <!-- PDF Access Button (for owners and active borrowers) -->
+                                     {% if livre.pdf and canAccessProgress %}
+                                         <a href="{{ path('app_pdf_view', {'id': livre.id}) }}" class="btn btn-danger btn-sm mb-1" title="Lire le PDF" target="_blank">
+                                             <i class="fas fa-file-pdf"></i>
+                                         </a>
+                                     {% endif %}
+                                     {% endif %}
+                                 </div>
+                             </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title font-weight-bold text-truncate mb-2" title="{{ livre.titre }}">
+                                {{ livre.titre }}
+                            </h6>
+
+                            <p class="card-text small text-muted mb-2">
+                                <i class="fas fa-user mr-1 text-primary"></i>
+                                <span class="author-name">{{ livre.auteur ? livre.auteur.prenom ~ ' ' ~ livre.auteur.nom : 'Auteur inconnu' }}</span>
+                            </p>
+
+                            <p class="card-text small text-muted mb-3">
+                                <i class="fas fa-tag mr-1 text-info"></i>{{ livre.categorie ? livre.categorie.designation : 'N/A' }}
+                            </p>
+
+                            <!-- Rating Display -->
+                            {% set avgRating = 0 %}
+                            {% set totalReviews = 0 %}
+                            {% for review in livre.reviews %}
+                                {% set avgRating = avgRating + review.rating %}
+                                {% set totalReviews = totalReviews + 1 %}
+                            {% endfor %}
+                            {% if totalReviews > 0 %}
+                                {% set avgRating = (avgRating / totalReviews)|round(1) %}
+                            {% endif %}
+
+                            {% if totalReviews > 0 %}
+                            <div class="mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="rating-stars-small mr-2">
+                                        {% for i in 1..5 %}
+                                            <i class="fas fa-star {% if i <= avgRating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <small class="text-muted">({{ totalReviews }} avis)</small>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Price and Actions -->
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="h5 font-weight-bold text-success mb-0">{{ livre.prix|number_format(2, ',', ' ') }} €</span>
+                                    {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+                                    <small class="text-muted">V:{{ livre.stockVente }} | E:{{ livre.stockEmprunt }}</small>
+                                    {% endif %}
+                                </div>
+
+                                <div class="btn-group w-100" role="group">
+                                    {% if is_granted('ROLE_USER') %}
+                                    <form action="{{ path('app_user_wishlist_add', {'id': livre.id}) }}" method="post" class="flex-fill" title="Ajouter à la wishlist">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('add-wishlist-' ~ livre.id) }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100 wishlist-btn">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+
+                                    {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+                                    <a href="{{ path('app_livre_edit', {'id': livre.id}) }}" class="btn btn-outline-warning btn-sm" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% endif %}
+
+                                    {% if is_granted('ROLE_ADMIN') %}
+                                    <form method="post" action="{{ path('app_livre_delete', {'id': livre.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce livre ?');" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ livre.id) }}">
+                                        <button class="btn btn-outline-danger btn-sm" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center py-5">
+                        <i class="fas fa-search fa-4x text-gray-300 mb-4"></i>
+                        <h4 class="text-gray-600 mb-3">Aucun livre trouvé</h4>
+                        <p class="text-muted mb-4">Essayez de modifier vos critères de recherche ou de supprimer les filtres.</p>
+                        <a href="{{ path('app_livre_index') }}" class="btn btn-primary">
+                            <i class="fas fa-times mr-2"></i>Effacer les filtres
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Table View -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Liste des Livres</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-nowrap" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>{{ knp_pagination_sortable(livres, 'ID', 'l.id') }}</th>
+                                <th>Image</th>
+                                <th>{{ knp_pagination_sortable(livres, 'Titre', 'l.titre') }}</th>
+                                <th>Auteur</th>
+                                <th>Catégorie</th>
+                                <th>Éditeur</th>
+                                <th>ISBN</th>
+                                {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+                                <th>{{ knp_pagination_sortable(livres, 'Prix', 'l.prix') }}</th>
+                                <th>Stock</th>
+                                {% endif %}
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for livre in livres %}
+                            <tr>
+                                <td>{{ livre.id }}</td>
+                                <td>
+                                     {% if livre.image %}
+                                         <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-thumbnail" style="width: 40px; height: 40px; object-fit: cover;">
+                                     {% else %}
+                                         <i class="fas fa-book text-gray-300" style="font-size: 24px;"></i>
+                                     {% endif %}
+                                 </td>
+                                <td>{{ livre.titre }}</td>
+                                <td>{{ livre.auteur ? livre.auteur.prenom ~ ' ' ~ livre.auteur.nom : 'N/A' }}</td>
+                                <td>{{ livre.categorie ? livre.categorie.designation : 'N/A' }}</td>
+                                <td>{{ livre.editeur ? livre.editeur.nomEditeur : 'N/A' }}</td>
+                                <td>{{ livre.isbn }}</td>
+                                {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+                                <td>{{ livre.prix }} €</td>
+                                <td>
+                                    <span class="badge badge-success mr-1" title="Stock Vente">
+                                        <i class="fas fa-shopping-cart mr-1"></i>{{ livre.stockVente }}
+                                    </span>
+                                    <span class="badge badge-info" title="Stock Emprunt">
+                                        <i class="fas fa-book-reader mr-1"></i>{{ livre.stockEmprunt }}
+                                    </span>
+                                </td>
+                                {% endif %}
+                                <td>
+                                     <div class="btn-group" role="group">
+                                         <a href="{{ path('app_livre_show', {'id': livre.id}) }}" class="btn btn-info btn-sm" title="Voir les détails">
+                                             <i class="fas fa-eye"></i>
+                                         </a>
+                                         {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+                                         <a href="{{ path('app_livre_edit', {'id': livre.id}) }}" class="btn btn-warning btn-sm" title="Modifier">
+                                             <i class="fas fa-edit"></i>
+                                         </a>
+                                         {% endif %}
+                                         {% if is_granted('ROLE_ADMIN') %}
+                                         <form method="post" action="{{ path('app_livre_delete', {'id': livre.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce livre ?');" style="display: inline;">
+                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ livre.id) }}">
+                                             <button class="btn btn-danger btn-sm" title="Supprimer">
+                                                 <i class="fas fa-trash"></i>
+                                             </button>
+                                         </form>
+                                         {% endif %}
+                                     </div>
+                                 </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="{{ is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') ? 10 : 8 }}" class="text-center">Aucun livre trouvé</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if livres.getPageCount() > 1 %}
+        <div class="d-flex justify-content-center">
+            {{ knp_pagination_render(livres, 'pagination.html.twig') }}
+        </div>
+    {% endif %}
+
+    <!-- Borrowing Modal -->
+    <div class="modal fade" id="borrowModal" tabindex="-1" role="dialog" aria-labelledby="borrowModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="borrowModalLabel">
+                        <i class="fas fa-book-reader mr-2"></i>Demande d'emprunt
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="borrowForm" method="post">
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <h6 id="bookTitle" class="font-weight-bold text-primary"></h6>
+                            <div id="availabilityStatus" class="mt-3"></div>
+                        </div>
+
+                        <div id="immediateBorrowSection" style="display: none;">
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <strong>Disponible immédiatement!</strong><br>
+                                Vous pouvez emprunter ce livre dès maintenant pour une durée de 14 jours.
+                            </div>
+                        </div>
+
+                        <div id="reservationSection" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="fas fa-calendar-plus mr-2"></i>
+                                <strong>Réservation requise</strong><br>
+                                Ce livre n'est pas disponible actuellement. Choisissez une date préférée pour votre emprunt.
+                            </div>
+
+                            <div class="form-group">
+                                <label for="preferredDate" class="font-weight-bold">
+                                    <i class="fas fa-calendar mr-1"></i>Date préférée d'emprunt
+                                </label>
+                                <input type="date" class="form-control form-control-lg" id="preferredDate" name="preferred_date" required style="font-size: 16px; padding: 12px;">
+                                <small class="form-text text-muted">
+                                    Choisissez la date à laquelle vous souhaitez commencer votre emprunt.
+                                </small>
+                            </div>
+
+                            <div id="queueInfo" class="mt-3" style="display: none;">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-list-ol mr-2"></i>
+                                    <strong>Position dans la file:</strong> <span id="queuePosition"></span><br>
+                                    <small>Vous serez notifié lorsque le livre sera disponible.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="bookId" name="book_id">
+                        <input type="hidden" id="borrowType" name="borrow_type" value="borrow">
+                        <input type="hidden" name="_token" id="borrowToken">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times mr-1"></i>Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="borrowSubmitBtn">
+                            <i class="fas fa-paper-plane mr-1"></i>
+                            <span id="submitBtnText">Envoyer la demande</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Enhanced interactivity for book browsing
+document.addEventListener('DOMContentLoaded', function() {
+    // Listen for form submissions to add to cart
+    document.querySelectorAll('form[action*="/cart/add/"]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            const button = form.querySelector('button');
+            const originalIcon = button.innerHTML;
+
+            // Show loading state
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+
+            // Update cart count after a short delay to allow the server to process
+            setTimeout(function() {
+                if (typeof updateCartCount === 'function') {
+                    updateCartCount();
+                }
+
+                // Show success message
+                showNotification('Livre ajouté au panier avec succès!', 'success');
+
+                // Reset button state
+                button.innerHTML = originalIcon;
+                button.disabled = false;
+            }, 800);
+        });
+    });
+
+    // Listen for loan requests
+    document.querySelectorAll('form[action*="/loan/request/"]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            const button = form.querySelector('button');
+            const originalIcon = button.innerHTML;
+
+            // Show loading state
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+
+            setTimeout(function() {
+                showNotification('Demande d\'emprunt envoyée!', 'info');
+                button.innerHTML = originalIcon;
+                button.disabled = false;
+            }, 800);
+        });
+    });
+
+    // Borrowing modal functionality
+    window.showBorrowModal = function(bookId, bookTitle, isAvailable) {
+        // Set modal content
+        document.getElementById('bookTitle').textContent = bookTitle;
+        document.getElementById('bookId').value = bookId;
+        document.getElementById('borrowToken').value = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+        const availabilityStatus = document.getElementById('availabilityStatus');
+        const immediateSection = document.getElementById('immediateBorrowSection');
+        const reservationSection = document.getElementById('reservationSection');
+        const submitBtnText = document.getElementById('submitBtnText');
+
+        if (isAvailable) {
+            // Available for immediate borrowing
+            availabilityStatus.innerHTML = '<span class="badge badge-success badge-lg"><i class="fas fa-check-circle mr-1"></i>Disponible</span>';
+            immediateSection.style.display = 'block';
+            reservationSection.style.display = 'none';
+            submitBtnText.textContent = 'Emprunter maintenant';
+            document.getElementById('borrowType').value = 'borrow';
+        } else {
+            // Reservation required
+            availabilityStatus.innerHTML = '<span class="badge badge-warning badge-lg"><i class="fas fa-clock mr-1"></i>Réservation</span>';
+            immediateSection.style.display = 'none';
+            reservationSection.style.display = 'block';
+            submitBtnText.textContent = 'Faire une réservation';
+            document.getElementById('borrowType').value = 'reserve';
+
+            // Set minimum date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const minDate = tomorrow.toISOString().split('T')[0];
+            const dateInput = document.getElementById('preferredDate');
+
+            // Check if date input is supported
+            const isDateSupported = (function() {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'date');
+                return input.type === 'date';
+            })();
+
+            if (isDateSupported) {
+                dateInput.min = minDate;
+                dateInput.value = minDate;
+                dateInput.style.display = 'block';
+                console.log('Date input configured:', { min: minDate, value: minDate });
+            } else {
+                // Fallback for browsers without date support
+                dateInput.type = 'text';
+                dateInput.placeholder = 'JJ/MM/AAAA (ex: 15/12/2025)';
+                dateInput.value = minDate.replace(/-/g, '/').split('/').reverse().join('/');
+                dateInput.style.display = 'block';
+                console.log('Fallback text input used for date');
+            }
+        }
+
+        // Show modal
+        $('#borrowModal').modal('show');
+    };
+
+    // Handle borrow form submission
+    document.getElementById('borrowForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const submitBtn = document.getElementById('borrowSubmitBtn');
+        const originalText = submitBtn.innerHTML;
+
+        // Show loading state
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Traitement...';
+        submitBtn.disabled = true;
+
+        // Submit the form
+        fetch('/loan/request', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#borrowModal').modal('hide');
+                showNotification(data.message || 'Demande traitée avec succès!', 'success');
+
+                // Reload page after short delay to show updated status
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showNotification(data.message || 'Erreur lors du traitement de la demande.', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Erreur lors du traitement de la demande.', 'danger');
+        })
+        .finally(() => {
+            // Reset button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+
+    // Listen for wishlist additions
+    document.querySelectorAll('form[action*="/wishlist/add/"]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            const button = form.querySelector('button');
+
+            setTimeout(function() {
+                showNotification('Ajouté à votre wishlist!', 'danger');
+                button.style.color = '#e74a3b';
+            }, 500);
+        });
+    });
+
+    // Add entrance animation delay for cards
+    document.querySelectorAll('.book-card-entrance').forEach(function(card, index) {
+        card.style.animationDelay = (index * 0.1) + 's';
+    });
+});
+
+// Notification system
+function showNotification(message, type) {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.custom-notification');
+    existingNotifications.forEach(function(notification) {
+        notification.remove();
+    });
+
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} custom-notification position-fixed`;
+    notification.style.cssText = `
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border-radius: 10px;
+        animation: slideInRight 0.5s ease;
+    `;
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <span class="flex-grow-1">${message}</span>
+            <button type="button" class="close ml-2" onclick="this.parentElement.parentElement.remove()">
+                <span>&times;</span>
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto remove after 3 seconds
+    setTimeout(function() {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOutRight 0.5s ease';
+            setTimeout(function() {
+                notification.remove();
+            }, 500);
+        }
+    }, 3000);
+}
+
+// Add notification animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    .custom-notification .close {
+        border: none;
+        background: none;
+        font-size: 1.2rem;
+        opacity: 0.7;
+    }
+    .custom-notification .close:hover {
+        opacity: 1;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

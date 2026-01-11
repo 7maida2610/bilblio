@@ -1,0 +1,43 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block subject %}Votre commande a été expédiée - {{ order.orderNumber }}{% endblock %}
+
+{% block body %}
+<h1>🎉 Votre commande est en route !</h1>
+
+<p>Bonjour {{ user.username }},</p>
+
+<p>Excellente nouvelle ! Votre commande <strong>{{ order.orderNumber }}</strong> a été expédiée et est en route vers vous.</p>
+
+<div style="background-color: #d4edda; border: 1px solid #c3e6cb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: #155724;">📦 Détails de l'expédition</h3>
+    <p><strong>Numéro de commande:</strong> {{ order.orderNumber }}</p>
+    <p><strong>Date d'expédition:</strong> {{ "now"|date('d/m/Y H:i') }}</p>
+    <p><strong>Adresse de livraison:</strong><br>
+    {{ order.shippingAddress|nl2br }}</p>
+    {% if order.trackingNumber %}
+    <p><strong>Numéro de suivi:</strong> {{ order.trackingNumber }}</p>
+    {% endif %}
+</div>
+
+<h3>Articles expédiés :</h3>
+<ul>
+{% for item in order.orderItems %}
+    <li><strong>{{ item.livre.titre }}</strong> - Quantité: {{ item.quantity }}</li>
+{% endfor %}
+</ul>
+
+<div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+    <h4 style="color: #856404; margin-top: 0;">⏰ Délais de livraison estimés</h4>
+    <p style="color: #856404;">Votre commande devrait arriver dans les 2-5 jours ouvrables.</p>
+    <p style="color: #856404;">Vous recevrez un email de confirmation lorsque le colis sera livré.</p>
+</div>
+
+<p>Vous pouvez suivre votre commande en temps réel dans votre <a href="{{ url('app_user_profile') }}">espace client</a>.</p>
+
+<p>Si vous avez des questions concernant votre livraison, n'hésitez pas à nous contacter.</p>
+
+<p>Nous espérons que vous apprécierez vos nouvelles lectures ! 📚</p>
+
+<p>Cordialement,<br>L'équipe BiblioApp</p>
+{% endblock %}

@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{% block title %}SB Admin 2 - Dashboard{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo.png">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo.png">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template-->
+    <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    {% block stylesheets %}
+    {% endblock %}
+
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ path('app_backoffice_dashboard') }}">
+                <div class="sidebar-brand-icon">
+                    <img src="/logo.png" alt="Logo" style="width: 200px; height: 100px; object-fit: contain; margin-left: -25px;">
+                </div>
+            </a>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
+
+            <!-- Nav Item - Retour au site -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_landing') }}">
+                    <i class="fas fa-home"></i>
+                    <span>Retour au site</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
+
+            <!-- Nav Item - Dashboard -->
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ path('app_backoffice_dashboard') }}">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span></a>
+            </li>
+
+            {% if not is_granted('ROLE_ADMIN') %}
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Mes Livres
+            </div>
+
+            <!-- Nav Item - My Books (Dropdown) -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseMyBooks" aria-expanded="false" aria-controls="collapseMyBooks">
+                    <i class="fas fa-fw fa-book-open"></i>
+                    <span>Mes Livres</span>
+                </a>
+                <div id="collapseMyBooks" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="{{ path('app_loan_index') }}">
+                            <i class="fas fa-fw fa-book-reader mr-2"></i>Mes Emprunts
+                        </a>
+                        <a class="collapse-item" href="{{ path('app_reservation_index') }}">
+                            <i class="fas fa-fw fa-hourglass-end mr-2"></i>Mes Réservations
+                        </a>
+                        <a class="collapse-item" href="{{ path('app_profile_owned_books') }}">
+                            <i class="fas fa-fw fa-book mr-2"></i>Mes Livres Achetés
+                        </a>
+                        <a class="collapse-item" href="{{ path('app_profile_wishlist') }}">
+                            <i class="fas fa-fw fa-heart mr-2"></i>Ma Wishlist
+                        </a>
+                        <a class="collapse-item" href="{{ path('app_profile_orders') }}">
+                            <i class="fas fa-fw fa-shopping-bag mr-2"></i>Mes Commandes
+                        </a>
+                    </div>
+                </div>
+            </li>
+            {% endif %}
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Gestion de Bibliothèque
+            </div>
+
+            <!-- Nav Item - Library Management (Dropdown) -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLibrary" aria-expanded="false" aria-controls="collapseLibrary">
+                    <i class="fas fa-fw fa-books"></i>
+                    <span>Gestion Livres</span>
+                </a>
+                <div id="collapseLibrary" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="{{ path('app_livre_index') }}">
+                            <i class="fas fa-fw fa-list mr-2"></i>Tous les Livres
+                        </a>
+                        <a class="collapse-item" href="{{ path('app_auteur_index') }}">
+                            <i class="fas fa-fw fa-user mr-2"></i>Auteurs
+                        </a>
+                        <a class="collapse-item" href="{{ path('app_categorie_index') }}">
+                            <i class="fas fa-fw fa-tags mr-2"></i>Catégories
+                        </a>
+                        <a class="collapse-item" href="{{ path('app_editeur_index') }}">
+                            <i class="fas fa-fw fa-building mr-2"></i>Éditeurs
+                        </a>
+                    </div>
+                </div>
+            </li>
+
+            {% if not is_granted('ROLE_ADMIN') %}
+            <!-- Nav Item - Mon Panier -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_cart_index') }}">
+                    <i class="fas fa-fw fa-shopping-cart"></i>
+                    <span>Mon Panier</span></a>
+            </li>
+            {% endif %}
+
+            <!-- Nav Item - Mon Profil -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_profile') }}">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span>Mon Profil</span></a>
+            </li>
+
+            {% if is_granted('ROLE_ADMIN') %}
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Administration
+            </div>
+
+            <!-- Nav Item - Admin Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('admin') }}">
+                    <i class="fas fa-fw fa-cogs"></i>
+                    <span>Panel Admin</span></a>
+            </li>
+
+            <!-- Nav Item - Loan Management -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_admin_loan_management') }}">
+                    <i class="fas fa-fw fa-book-reader"></i>
+                    <span>Gestion Emprunts</span></a>
+            </li>
+
+            <!-- Nav Item - Reservation Management -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_admin_reservation_management') }}">
+                    <i class="fas fa-fw fa-bookmark"></i>
+                    <span>Gestion Réservations</span></a>
+            </li>
+
+            <!-- Nav Item - Users -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('admin', {'entity': 'User'}) }}">
+                    <i class="fas fa-fw fa-users"></i>
+                    <span>Utilisateurs</span></a>
+            </li>
+
+            <!-- Nav Item - Activity Logs -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_activity_logs_index') }}">
+                    <i class="fas fa-fw fa-history"></i>
+                    <span>Logs d'Activité</span></a>
+            </li>
+
+            <!-- Nav Item - Email Management -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('backoffice_emails_index') }}">
+                    <i class="fas fa-fw fa-envelope"></i>
+                    <span>Gestion Emails</span></a>
+            </li>
+
+            <!-- Nav Item - Banner Management -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_admin_banner_custom') }}">
+                    <i class="fas fa-fw fa-flag"></i>
+                    <span>Gestion Bannières</span></a>
+            </li>
+            {% endif %}
+
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <!-- Sidebar Footer - Logout -->
+            <div class="text-center d-none d-md-inline mb-3">
+                <a class="btn btn-outline-light btn-sm" href="{{ path('app_logout') }}">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+            </div>
+
+            <!-- Sidebar Toggler (Sidebar) -->
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+        </ul>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                    <!-- Mobile Menu Toggle (Topbar) -->
+                    <div class="dropdown d-md-none mr-3">
+                        <button id="mobileMenuToggle" class="btn btn-link rounded-circle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <!-- Mobile Navigation Menu Dropdown -->
+                        <div class="dropdown-menu mobile-nav-menu shadow-lg" aria-labelledby="mobileMenuToggle">
+                            <!-- Menu Header -->
+                            <div class="mobile-nav-header px-3 py-2 mb-2">
+                                <img src="/logo.png" alt="Logo" style="width: 120px; height: 60px; object-fit: contain;">
+                            </div>
+                            
+                            <!-- Dashboard -->
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_backoffice_dashboard') }}">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                            </a>
+                            
+                            <!-- Retour au site -->
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_landing') }}">
+                                <i class="fas fa-home mr-2"></i>Retour au site
+                            </a>
+                            
+                            <div class="dropdown-divider"></div>
+                            
+                            {% if not is_granted('ROLE_ADMIN') %}
+                            <!-- Mes Livres Section -->
+                            <h6 class="dropdown-header">
+                                <i class="fas fa-book-open mr-2"></i>Mes Livres
+                            </h6>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_loan_index') }}">
+                                <i class="fas fa-book-reader mr-2"></i>Mes Emprunts
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_reservation_index') }}">
+                                <i class="fas fa-hourglass-end mr-2"></i>Mes Réservations
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_profile_owned_books') }}">
+                                <i class="fas fa-book mr-2"></i>Mes Livres Achetés
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_profile_wishlist') }}">
+                                <i class="fas fa-heart mr-2"></i>Ma Wishlist
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_profile_orders') }}">
+                                <i class="fas fa-shopping-bag mr-2"></i>Mes Commandes
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            {% endif %}
+                            
+                            <!-- Gestion de Bibliothèque Section -->
+                            <h6 class="dropdown-header">
+                                <i class="fas fa-books mr-2"></i>Gestion de Bibliothèque
+                            </h6>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_livre_index') }}">
+                                <i class="fas fa-list mr-2"></i>Tous les Livres
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_auteur_index') }}">
+                                <i class="fas fa-user mr-2"></i>Auteurs
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_categorie_index') }}">
+                                <i class="fas fa-tags mr-2"></i>Catégories
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_editeur_index') }}">
+                                <i class="fas fa-building mr-2"></i>Éditeurs
+                            </a>
+                            
+                            {% if not is_granted('ROLE_ADMIN') %}
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_cart_index') }}">
+                                <i class="fas fa-shopping-cart mr-2"></i>Mon Panier
+                            </a>
+                            {% endif %}
+                            
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_profile') }}">
+                                <i class="fas fa-user mr-2"></i>Mon Profil
+                            </a>
+                            
+                            {% if is_granted('ROLE_ADMIN') %}
+                            <div class="dropdown-divider"></div>
+                            <!-- Administration Section -->
+                            <h6 class="dropdown-header">
+                                <i class="fas fa-cogs mr-2"></i>Administration
+                            </h6>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('admin') }}">
+                                <i class="fas fa-cogs mr-2"></i>Panel Admin
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_admin_loan_management') }}">
+                                <i class="fas fa-book-reader mr-2"></i>Gestion Emprunts
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_admin_reservation_management') }}">
+                                <i class="fas fa-bookmark mr-2"></i>Gestion Réservations
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('admin', {'entity': 'User'}) }}">
+                                <i class="fas fa-users mr-2"></i>Utilisateurs
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_activity_logs_index') }}">
+                                <i class="fas fa-history mr-2"></i>Logs d'Activité
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('backoffice_emails_index') }}">
+                                <i class="fas fa-envelope mr-2"></i>Gestion Emails
+                            </a>
+                            <a class="dropdown-item mobile-nav-item" href="{{ path('app_admin_banner_custom') }}">
+                                <i class="fas fa-flag mr-2"></i>Gestion Bannières
+                            </a>
+                            {% endif %}
+                            
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item mobile-nav-item text-danger" href="{{ path('app_logout') }}">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Topbar Search -->
+                    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search position-relative" action="{{ path('app_search') }}" method="GET" id="navbarSearchForm">
+                        <div class="input-group">
+                            <input type="text" name="q" id="navbarSearchInput" class="form-control bg-light border-0 small" placeholder="Rechercher livres, auteurs..." aria-label="Search" autocomplete="off">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search fa-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Autocomplete dropdown -->
+                        <div id="searchAutocomplete" class="shadow-lg bg-white rounded" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1050; max-height: 400px; overflow-y: auto;"></div>
+                    </form>
+
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+
+                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+                        <li class="nav-item dropdown no-arrow d-sm-none">
+                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-search fa-fw"></i>
+                            </a>
+                            <!-- Dropdown - Search Mobile -->
+                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in" aria-labelledby="searchDropdown">
+                                <form class="form-inline mr-auto w-100 navbar-search" action="{{ path('app_search') }}" method="GET">
+                                    <div class="input-group">
+                                        <input type="text" name="q" class="form-control bg-light border-0 small" placeholder="Rechercher..." aria-label="Search">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="submit">
+                                                <i class="fas fa-search fa-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </li>
+
+                        <!-- Nav Item - Alerts -->
+                        <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-bell fa-fw"></i>
+                                <!-- Counter - Alerts -->
+                                <span class="badge badge-danger badge-counter">3+</span>
+                            </a>
+                            <!-- Dropdown - Alerts -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
+                                <h6 class="dropdown-header">
+                                    Alerts Center
+                                </h6>
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-primary">
+                                            <i class="fas fa-file-alt text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small text-gray-500">December 12, 2019</div>
+                                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-success">
+                                            <i class="fas fa-donate text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small text-gray-500">December 7, 2019</div>
+                                        $290.29 has been deposited into your account!
+                                    </div>
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-warning">
+                                            <i class="fas fa-exclamation-triangle text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small text-gray-500">December 2, 2019</div>
+                                        Spending Alert: We've noticed unusually high spending for your account.
+                                    </div>
+                                </a>
+                                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+                            </div>
+                        </li>
+
+                        <!-- Nav Item - Cart -->
+                        <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link position-relative" href="{{ path('app_cart_index') }}" title="Mon panier">
+                                <i class="fas fa-shopping-cart fa-fw"></i>
+                                <!-- Counter - Cart Items -->
+                                <span class="badge badge-danger badge-counter cart-count" style="display: none;">0</span>
+                            </a>
+                        </li>
+
+                        <!-- Nav Item - Messages -->
+                        <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-envelope fa-fw"></i>
+                                <!-- Counter - Messages -->
+                                <span class="badge badge-danger badge-counter message-count" style="display: none;">0</span>
+                            </a>
+                            <!-- Dropdown - Messages -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="messagesDropdown" style="min-width: 320px;">
+                                <h6 class="dropdown-header">
+                                    Message Center
+                                </h6>
+                                <div id="messages-dropdown-content">
+                                    <div class="text-center py-3">
+                                        <i class="fas fa-spinner fa-spin text-muted"></i>
+                                    </div>
+                                </div>
+                                <a class="dropdown-item text-center small text-gray-500" href="{{ path('app_messages_index') }}">
+                                    <i class="fas fa-envelope-open-text mr-1"></i> Voir tous les messages
+                                </a>
+                            </div>
+                        </li>
+
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <!-- Nav Item - User Information -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ app.user.username ?: app.user.email }}</span>
+                                {% if app.user.profilePicture %}
+                                    <img class="img-profile rounded-circle" src="{{ asset('uploads/profile_pictures/' ~ app.user.profilePicture) }}" style="width: 32px; height: 32px; object-fit: cover;">
+                                {% else %}
+                                    <img class="img-profile rounded-circle" src="{{ asset('img/undraw_profile.svg') }}">
+                                {% endif %}
+                            </a>
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="{{ path('app_profile') }}">
+                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Mon Profil
+                                </a>
+                                <a class="dropdown-item" href="{{ path('app_cart_index') }}">
+                                    <i class="fas fa-shopping-cart fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Mon Panier
+                                </a>
+                                <a class="dropdown-item" href="{{ path('app_loan_index') }}">
+                                    <i class="fas fa-book-reader fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Mes Emprunts
+                                </a>
+                                <a class="dropdown-item" href="{{ path('app_reservation_index') }}">
+                                    <i class="fas fa-hourglass-end fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Mes Réservations
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Déconnexion
+                                </a>
+                            </div>
+                        </li>
+
+                    </ul>
+
+                </nav>
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+                    <!-- Flash Messages -->
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('warning') %}
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('info') %}
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {# Top Banners #}
+                    {% set topBanners = [] %}
+                    {% if app.user %}
+                        {% set topBanners = banner_repository.findActiveBanners('top', app.user) %}
+                    {% else %}
+                        {% set topBanners = banner_repository.findActiveBanners('top') %}
+                    {% endif %}
+                    {% include 'components/_banners.html.twig' with {'banners': topBanners} %}
+
+                    {% block body %}{% endblock %}
+
+                    {# Bottom Banners #}
+                    {% set bottomBanners = [] %}
+                    {% if app.user %}
+                        {% set bottomBanners = banner_repository.findActiveBanners('bottom', app.user) %}
+                    {% else %}
+                        {% set bottomBanners = banner_repository.findActiveBanners('bottom') %}
+                    {% endif %}
+                    {% include 'components/_banners.html.twig' with {'banners': bottomBanners} %}
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; Biblio Admin 2025</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Prêt à partir ?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Sélectionnez "Déconnexion" ci-dessous si vous êtes prêt à mettre fin à votre session actuelle.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+                    <a class="btn btn-primary" href="{{ path('app_logout') }}">Déconnexion</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery first -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{{ asset('js/sb-admin-2.js') }}"></script>
+    <script src="{{ asset('js/demo/datatables-demo.js') }}"></script>
+
+    <!-- Custom Purple Theme Styles -->
+    <style>
+        /* Cart count badge uses the same style as badge-counter (alerts, messages) */
+        /* The badge-counter class is already applied in the HTML and styled by sb-admin-2.css */
+    </style>
+
+    <script>
+        // Update cart count
+        function updateCartCount() {
+            fetch('{{ path('app_cart_count') }}')
+                .then(response => response.json())
+                .then(data => {
+                    const cartCountElement = document.querySelector('.cart-count');
+                    if (cartCountElement) {
+                        cartCountElement.textContent = data.count;
+                        cartCountElement.style.display = data.count > 0 ? 'inline-block' : 'none';
+                    }
+                })
+                .catch(error => console.error('Error updating cart count:', error));
+        }
+
+        // Update message count and dropdown
+        function updateMessageCount() {
+            fetch('{{ path('app_messages_unread_count') }}')
+                .then(response => response.json())
+                .then(data => {
+                    const messageCountElement = document.querySelector('.message-count');
+                    if (messageCountElement) {
+                        messageCountElement.textContent = data.count;
+                        messageCountElement.style.display = data.count > 0 ? 'inline' : 'none';
+                    }
+                })
+                .catch(error => console.error('Error updating message count:', error));
+        }
+
+        // Load recent messages in dropdown
+        function loadRecentMessages() {
+            const container = document.getElementById('messages-dropdown-content');
+            if (!container) return;
+
+            fetch('{{ path('app_messages_recent') }}')
+                .then(response => response.json())
+                .then(messages => {
+                    if (messages.length === 0) {
+                        container.innerHTML = `
+                            <div class="text-center py-3 text-muted">
+                                <i class="fas fa-inbox"></i><br>
+                                <small>Aucun message</small>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    let html = '';
+                    messages.forEach(msg => {
+                        html += `
+                            <a class="dropdown-item d-flex align-items-center ${!msg.isRead ? 'bg-light' : ''}" href="{{ path('app_messages_index') }}">
+                                <div class="dropdown-list-image mr-3">
+                                    <img class="rounded-circle" src="${msg.senderImage}" alt="${msg.sender}" style="width: 40px; height: 40px; object-fit: cover;">
+                                    <div class="status-indicator ${!msg.isRead ? 'bg-success' : ''}"></div>
+                                </div>
+                                <div class="font-weight-bold" style="overflow: hidden;">
+                                    <div class="text-truncate" style="max-width: 200px;">${msg.subject}</div>
+                                    <div class="small text-gray-500">${msg.sender} · ${msg.timeAgo}</div>
+                                </div>
+                            </a>
+                        `;
+                    });
+                    container.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading messages:', error);
+                    container.innerHTML = `
+                        <div class="text-center py-3 text-muted">
+                            <small>Erreur de chargement</small>
+                        </div>
+                    `;
+                });
+        }
+
+        // Update cart count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            updateMessageCount();
+
+            // Load messages when dropdown is opened
+            const messagesDropdown = document.getElementById('messagesDropdown');
+            if (messagesDropdown) {
+                messagesDropdown.addEventListener('click', function() {
+                    loadRecentMessages();
+                });
+            }
+
+            // Search Autocomplete
+            const searchInput = document.getElementById('navbarSearchInput');
+            const autocompleteDropdown = document.getElementById('searchAutocomplete');
+            let searchTimeout = null;
+
+            if (searchInput && autocompleteDropdown) {
+                console.log('Search autocomplete initialized'); // Debug
+                
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.trim();
+                    console.log('Searching for:', query); // Debug
+                    
+                    // Clear previous timeout
+                    if (searchTimeout) {
+                        clearTimeout(searchTimeout);
+                    }
+                    
+                    // Hide dropdown if query is too short
+                    if (query.length < 2) {
+                        autocompleteDropdown.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Debounce search
+                    searchTimeout = setTimeout(function() {
+                        const url = '{{ path("app_search_autocomplete") }}?q=' + encodeURIComponent(query);
+                        console.log('Fetching:', url); // Debug
+                        
+                        fetch(url)
+                            .then(response => {
+                                console.log('Response status:', response.status); // Debug
+                                return response.json();
+                            })
+                            .then(suggestions => {
+                                console.log('Suggestions:', suggestions); // Debug
+                                
+                                if (suggestions.length === 0) {
+                                    autocompleteDropdown.innerHTML = '<div class="p-3 text-center text-muted"><small>Aucun résultat trouvé</small></div>';
+                                    autocompleteDropdown.style.display = 'block';
+                                    return;
+                                }
+                                
+                                let html = '';
+                                suggestions.forEach(function(item) {
+                                    let icon = item.type === 'livre' ? 'fa-book text-primary' : 'fa-user text-success';
+                                    let typeLabel = item.type === 'livre' ? 'Livre' : 'Auteur';
+                                    html += '<a class="dropdown-item d-flex align-items-center py-2" href="' + item.url + '" style="border-bottom: 1px solid #f1f1f1;">';
+                                    html += '<div class="mr-3"><i class="fas ' + icon + ' fa-lg"></i></div>';
+                                    html += '<div><span class="font-weight-bold">' + item.label + '</span>';
+                                    html += '<br><small class="text-muted">' + typeLabel + '</small></div>';
+                                    html += '</a>';
+                                });
+                                
+                                // Add "See all results" link
+                                html += '<a class="dropdown-item text-center text-primary py-2" href="{{ path("app_search") }}?q=' + encodeURIComponent(query) + '">';
+                                html += '<i class="fas fa-search mr-1"></i> Voir tous les résultats';
+                                html += '</a>';
+                                
+                                autocompleteDropdown.innerHTML = html;
+                                autocompleteDropdown.style.display = 'block';
+                            })
+                            .catch(error => {
+                                console.error('Search error:', error);
+                                autocompleteDropdown.innerHTML = '<div class="p-3 text-center text-danger"><small>Erreur de recherche</small></div>';
+                                autocompleteDropdown.style.display = 'block';
+                            });
+                    }, 250);
+                });
+                
+                // Hide autocomplete when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!searchInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                        autocompleteDropdown.style.display = 'none';
+                    }
+                });
+                
+                // Show autocomplete on focus if there's a value
+                searchInput.addEventListener('focus', function() {
+                    if (this.value.trim().length >= 2 && autocompleteDropdown.innerHTML.trim() !== '') {
+                        autocompleteDropdown.style.display = 'block';
+                    }
+                });
+                
+                // Hide on escape key
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        autocompleteDropdown.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        // Update cart count after adding items (you can call this from other pages)
+        window.updateCartCount = updateCartCount;
+        window.updateMessageCount = updateMessageCount;
+    </script>
+
+    <style>
+        /* Bilio App Color System - Cool Teal Theme */
+        :root {
+            --primary: #009688;
+            --primary-dark: #004D40;
+            --secondary: #FF6F00;
+            --success: #4CAF50;
+            --danger: #F44336;
+            --warning: #FFC107;
+            --background: #F5F5F5;
+            --surface: #FFFFFF;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+
+        .bg-primary {
+            background-color: var(--primary) !important;
+        }
+
+        .text-primary {
+            color: var(--primary) !important;
+        }
+
+        .border-left-primary {
+            border-left: 0.25rem solid var(--primary) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #00695C 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 150, 136, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #E65100;
+            border-color: #E65100;
+            color: white;
+        }
+
+        .card-header.bg-light {
+            background-color: var(--background) !important;
+            border-bottom: 1px solid #e3e6f0;
+        }
+
+        .bg-light {
+            background-color: var(--background) !important;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-primary);
+        }
+
+        .card {
+            background-color: var(--surface);
+            border: 1px solid #e0e0e0;
+        }
+
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+
+        /* Status colors */
+        .text-success {
+            color: var(--success) !important;
+        }
+
+        .text-danger {
+            color: var(--danger) !important;
+        }
+
+        .text-warning {
+            color: var(--warning) !important;
+        }
+
+        .bg-success {
+            background-color: var(--success) !important;
+        }
+
+        .bg-danger {
+            background-color: var(--danger) !important;
+        }
+
+        .bg-warning {
+            background-color: var(--warning) !important;
+        }
+
+        /* Timeline styles with new colors */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--background);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -22px;
+            top: 5px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px var(--background);
+        }
+
+        .timeline-marker.bg-success {
+            background-color: var(--success);
+        }
+
+        .timeline-marker.bg-info {
+            background-color: var(--primary);
+        }
+
+        .timeline-marker.bg-warning {
+            background-color: var(--warning);
+        }
+
+        .timeline-marker.bg-primary {
+            background-color: var(--primary);
+        }
+
+        .timeline-content {
+            background: var(--surface);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timeline-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .timeline-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        /* Enhanced form styling */
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(0, 150, 136, 0.25);
+        }
+
+        /* Navigation enhancements */
+        .navbar-light .navbar-nav .nav-link {
+            color: var(--text-primary);
+        }
+
+        .navbar-light .navbar-nav .nav-link:hover {
+            color: var(--primary);
+        }
+
+        /* Sidebar styling */
+        .sidebar .sidebar-brand {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+
+        .sidebar .nav-item .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .sidebar .nav-item .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding-left: 2rem;
+        }
+
+        /* Smooth dropdown menu animations */
+        .sidebar .collapse {
+            transition: all 0.3s ease-in-out !important;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        .sidebar .collapse.show {
+            max-height: 2000px;
+            transition: all 0.3s ease-in-out !important;
+        }
+
+        .sidebar .nav-link[data-toggle="collapse"] {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar .nav-link[data-toggle="collapse"]::after {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid currentColor;
+            border-bottom: 2px solid currentColor;
+            transform: rotate(-45deg);
+            transition: transform 0.3s ease;
+            margin-left: auto;
+        }
+
+        .sidebar .nav-link[data-toggle="collapse"][aria-expanded="true"]::after {
+            transform: rotate(45deg);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar .collapse .nav-item {
+            padding-left: 1.5rem;
+        }
+
+        .sidebar .collapse .nav-link {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .collapse .nav-link:hover {
+            border-left-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.08);
+            padding-left: 1.5rem;
+        }
+
+        .sidebar .collapse .nav-link.active {
+            border-left-color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Dropdown collapse styling */
+        .collapse-inner {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .collapse-item {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            margin-left: 1rem;
+        }
+
+        .collapse-item:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: rgba(255, 255, 255, 0.5);
+            padding-left: 1.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .collapse-item.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-left-color: white;
+            font-weight: 600;
+        }
+
+        .sidebar .nav-item.active .nav-link {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+        }
+
+        .sidebar-heading {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 1.5rem 1rem 0.5rem;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-heading:first-of-type {
+            margin-top: 0.5rem;
+        }
+
+        /* Badge styling */
+        .badge-primary {
+            background-color: var(--primary);
+        }
+
+        .badge-secondary {
+            background-color: var(--secondary);
+        }
+
+        /* Progress bars */
+        .progress-bar.bg-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+        }
+
+        /* Alert styling */
+        .alert-success {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .alert-danger {
+            background-color: rgba(244, 67, 54, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        /* Table styling */
+        .table thead th {
+            background-color: var(--background);
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        /* Card hover effects */
+        .card:hover {
+            box-shadow: 0 4px 8px rgba(0, 150, 136, 0.1);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+
+        /* Mobile Navigation Menu Styles */
+        .mobile-nav-menu {
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            width: 300px;
+            border: none;
+            border-radius: 12px;
+            margin-top: 8px;
+            padding: 0;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2) !important;
+            animation: slideDown 0.3s ease-out;
+            background: white;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mobile-nav-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+            padding: 15px 20px !important;
+        }
+
+        .mobile-nav-item {
+            padding: 14px 20px !important;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            color: #3a3b45;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .mobile-nav-item:hover,
+        .mobile-nav-item:focus {
+            background-color: #f8f9fc;
+            border-left-color: var(--primary);
+            color: var(--primary) !important;
+            transform: translateX(5px);
+            text-decoration: none;
+        }
+
+        .mobile-nav-item:active {
+            background-color: #eaecf4;
+        }
+
+        .mobile-nav-item i {
+            width: 22px;
+            text-align: center;
+            color: var(--primary);
+            margin-right: 12px;
+            font-size: 1rem;
+        }
+
+        .mobile-nav-item.text-danger {
+            color: #e74a3b !important;
+        }
+
+        .mobile-nav-item.text-danger i {
+            color: #e74a3b;
+        }
+
+        .mobile-nav-item.text-danger:hover {
+            background-color: #fee;
+            border-left-color: #e74a3b;
+            color: #c82333 !important;
+        }
+
+        .mobile-nav-menu .dropdown-header {
+            background-color: #f8f9fc;
+            padding: 12px 20px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #5a5c69;
+            margin: 0;
+            border-top: 1px solid #eaecf4;
+            display: flex;
+            align-items: center;
+        }
+
+        .mobile-nav-menu .dropdown-header i {
+            margin-right: 8px;
+            color: var(--primary);
+        }
+
+        .mobile-nav-menu .dropdown-divider {
+            margin: 8px 0;
+        }
+
+        /* Mobile Menu Toggle Button */
+        #mobileMenuToggle {
+            padding: 10px 14px;
+            color: #5a5c69;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            font-size: 1.1rem;
+        }
+
+        #mobileMenuToggle:hover {
+            color: var(--primary);
+            background-color: #f8f9fc;
+            transform: scale(1.1);
+        }
+
+        #mobileMenuToggle:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 150, 136, 0.25);
+            outline: none;
+        }
+
+        #mobileMenuToggle:active {
+            transform: scale(0.95);
+        }
+
+        /* Hide sidebar completely on mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none !important;
+            }
+
+            #content-wrapper {
+                margin-left: 0 !important;
+            }
+
+            body.sidebar-toggled .sidebar {
+                display: none !important;
+            }
+
+            body.sidebar-toggled #content-wrapper {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* Mobile responsiveness enhancements */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                margin-left: 0 !important;
+            }
+
+        
+
+            .navbar-nav .nav-item {
+                margin-left: 0.5rem;
+                margin-right: 0.5rem;
+            }
+
+            .card-body {
+                padding: 1rem 0.75rem;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+
+            .badge {
+                font-size: 0.75rem;
+                padding: 0.35rem 0.5rem;
+            }
+
+            /* Mobile banner adjustments */
+            .banner-container {
+                margin-bottom: 0.75rem !important;
+            }
+
+            .banner-alert {
+                margin-bottom: 0.75rem !important;
+                padding: 1rem 0.75rem 0.75rem 0.75rem !important;
+                border-radius: 10px !important;
+            }
+
+            .banner-content-wrapper {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+
+            .banner-text-content {
+                width: 100% !important;
+                padding-right: 35px;
+            }
+
+            .banner-alert h6 {
+                font-size: 1rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            .banner-content {
+                font-size: 0.875rem !important;
+                line-height: 1.5 !important;
+                margin-bottom: 0.75rem !important;
+            }
+
+            .banner-image-wrapper {
+                margin-left: 0 !important;
+                margin-top: 0.75rem !important;
+                margin-bottom: 0.5rem;
+                align-self: center;
+                width: 100%;
+                text-align: center;
+            }
+
+            .banner-image-wrapper img {
+                width: 60px !important;
+                height: 60px !important;
+            }
+
+            .banner-link-btn {
+                width: 100% !important;
+                text-align: center;
+                padding: 0.5rem 1rem !important;
+                font-size: 0.875rem !important;
+                margin-top: 0.5rem !important;
+            }
+
+            .banner-alert .close {
+                top: 5px !important;
+                right: 5px !important;
+                font-size: 20px !important;
+                padding: 6px 8px !important;
+                background: rgba(255, 255, 255, 0.9) !important;
+                border-radius: 4px;
+                z-index: 15 !important;
+            }
+
+            /* Mobile cart and loan cards */
+            .loan-card .card-body {
+                padding: 1rem 0.75rem;
+            }
+
+            .loan-card .row.text-center .col-6 {
+                margin-bottom: 0.5rem;
+            }
+
+            /* Mobile stats cards */
+            .stats-card .card-body {
+                padding: 1rem;
+            }
+
+            .stats-card .h5 {
+                font-size: 1.5rem;
+            }
+
+            /* Mobile search */
+            .navbar-search {
+                width: 100% !important;
+                margin-top: 1rem;
+            }
+
+            .navbar-search .input-group {
+                width: 100%;
+            }
+
+            /* Search autocomplete styles */
+            #searchAutocomplete {
+                border: 1px solid #e3e6f0;
+                margin-top: 5px;
+            }
+
+            #searchAutocomplete .dropdown-item {
+                padding: 10px 15px;
+                border-bottom: 1px solid #f1f1f1;
+            }
+
+            #searchAutocomplete .dropdown-item:last-child {
+                border-bottom: none;
+            }
+
+            #searchAutocomplete .dropdown-item:hover {
+                background-color: #f8f9fc;
+            }
+
+            #searchAutocomplete .dropdown-divider {
+                margin: 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container-fluid {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+
+            .card-header h6 {
+                font-size: 1rem;
+            }
+
+            .btn-block {
+                margin-bottom: 0.5rem;
+            }
+
+            /* Mobile table improvements */
+            .table th,
+            .table td {
+                padding: 0.5rem 0.25rem;
+                font-size: 0.8rem;
+            }
+
+            /* Mobile loan cards stack vertically */
+            .col-xl-4.col-md-6.mb-4 {
+                margin-bottom: 1rem !important;
+            }
+
+            /* Mobile banner content - Enhanced */
+            .banner-alert {
+                padding: 0.875rem 0.625rem 0.625rem 0.625rem !important;
+                border-radius: 8px !important;
+            }
+
+            .banner-alert h6 {
+                font-size: 0.95rem !important;
+            }
+
+            .banner-content {
+                font-size: 0.8rem !important;
+                line-height: 1.4 !important;
+            }
+
+            .banner-image-wrapper img {
+                width: 50px !important;
+                height: 50px !important;
+            }
+
+            .banner-link-btn {
+                font-size: 0.8rem !important;
+                padding: 0.4rem 0.8rem !important;
+            }
+
+            .banner-alert .close {
+                font-size: 18px !important;
+                padding: 5px 7px !important;
+            }
+
+            /* Mobile navigation */
+            .navbar-nav .nav-link {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            /* Mobile dropdowns */
+            .dropdown-menu {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Touch-friendly buttons and links */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            .nav-link {
+                min-height: 44px;
+                padding: 0.75rem 1rem;
+            }
+
+            .card:hover {
+                transform: none;
+            }
+        }
+    </style>
+
+    <script>
+        // Initialize cart count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            
+            // Mobile menu: Close dropdown when clicking on a link
+            const mobileMenuItems = document.querySelectorAll('.mobile-nav-menu .mobile-nav-item');
+            mobileMenuItems.forEach(function(item) {
+                item.addEventListener('click', function() {
+                    // Close the dropdown menu using Bootstrap's dropdown API
+                    const dropdownToggle = document.getElementById('mobileMenuToggle');
+                    if (dropdownToggle) {
+                        $(dropdownToggle).dropdown('hide');
+                    }
+                });
+            });
+            
+            // Override sidebar toggle on mobile - use dropdown menu instead
+            $(document).on('click', '#sidebarToggleTop', function(e) {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // The dropdown is handled by Bootstrap's data-toggle="dropdown"
+                }
+            });
+            
+            // Prevent sidebar toggle behavior on mobile
+            if (window.innerWidth <= 768) {
+                $('body').removeClass('sidebar-toggled');
+                $('.sidebar').removeClass('toggled');
+            }
+            
+            // Update cart count when forms are submitted
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (form.action && (form.action.includes('/cart/') || form.action.includes('/panier/'))) {
+                    // Check if it's a cart-related form
+                    setTimeout(updateCartCount, 500);
+                }
+            });
+        });
+
+        // Function to update cart count badge
+        function updateCartCount() {
+            fetch('{{ path("app_cart_count") }}')
+                .then(response => response.json())
+                .then(data => {
+                    const cartBadge = document.querySelector('.cart-count');
+                    if (cartBadge) {
+                        cartBadge.textContent = data.count || 0;
+                        if (data.count > 0) {
+                            cartBadge.style.display = 'inline-block';
+                            // Add a pulse animation when updated (same as notifications)
+                            cartBadge.style.animation = 'pulse 0.5s ease-out';
+                            setTimeout(() => {
+                                cartBadge.style.animation = '';
+                            }, 500);
+                        } else {
+                            cartBadge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(error => console.error('Error updating cart count:', error));
+        }
+
+        // CSS for pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.2); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Listen for cart add events
+        document.addEventListener('cartUpdated', function() {
+            updateCartCount();
+        });
+    </script>
+
+</body>
+</html>

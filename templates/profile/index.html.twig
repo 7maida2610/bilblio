@@ -1,0 +1,765 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Mon Profil - Biblio{% endblock %}
+
+{% block body %}
+    <style>
+        /* Modern Drag & Drop Upload Styles */
+        .upload-area {
+            border: 2px dashed #009688;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fc 0%, #e9ecef 100%);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #00796b;
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 150, 136, 0.15);
+        }
+
+        .upload-area.dragover {
+            border-color: #004d40;
+            background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+            color: white;
+        }
+
+        .upload-area.dragover .upload-icon i {
+            color: white;
+        }
+
+        .upload-area.dragover .upload-title,
+        .upload-area.dragover .upload-subtitle {
+            color: white;
+        }
+
+        .upload-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .upload-icon {
+            margin-bottom: 20px;
+        }
+
+        .upload-icon i {
+            font-size: 3rem;
+            color: #009688;
+            transition: all 0.3s ease;
+        }
+
+        .upload-title {
+            color: #009688;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .upload-subtitle {
+            color: #6c757d;
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .upload-link {
+            color: #009688;
+            font-weight: 600;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .upload-link:hover {
+            color: #00796b;
+        }
+
+        .upload-preview {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .preview-img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 3px solid #009688;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .preview-overlay {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .upload-preview:hover .preview-overlay {
+            opacity: 1;
+        }
+
+        .remove-preview {
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-info {
+            background: rgba(0, 150, 136, 0.1);
+            border: 1px solid rgba(0, 150, 136, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .upload-info i {
+            color: #009688;
+        }
+
+        /* Loading animation */
+        .upload-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+        }
+
+        .upload-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #009688;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error states */
+        .upload-error {
+            border-color: #dc3545 !important;
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%) !important;
+        }
+
+        .upload-error .upload-icon i {
+            color: #dc3545;
+        }
+
+        .upload-error .upload-title,
+        .upload-error .upload-subtitle {
+            color: #721c24;
+        }
+
+        /* Success states */
+        .upload-success {
+            border-color: #28a745 !important;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+        }
+
+        .upload-success .upload-icon i {
+            color: #28a745;
+        }
+
+        .upload-success .upload-title,
+        .upload-success .upload-subtitle {
+            color: #155724;
+        }
+    </style>
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-user text-primary mr-2"></i>Mon Profil
+            </h1>
+            <p class="mb-0 text-muted">Gérez vos informations personnelles</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Profile Overview -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-id-card mr-2"></i>Informations du Profil
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        {% if user.profilePicture %}
+                            <img src="{{ asset('uploads/profile_pictures/' ~ user.profilePicture) }}" alt="Photo de profil" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #6f42c1;">
+                        {% else %}
+                            <div class="bg-gradient-purple rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                                <i class="fas fa-user fa-3x text-white"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h5 class="font-weight-bold">{{ user.username ?: user.email }}</h5>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <div class="mb-2">
+                        <span class="badge badge-primary">{{ user.roles|join(', ')|replace({'ROLE_': ''}) }}</span>
+                    </div>
+                    <small class="text-muted">Membre depuis {{ user.createdAt|date('M Y') }}</small>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card shadow mt-3">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-bar mr-2"></i>Statistiques
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="h4 font-weight-bold text-primary">{{ stats.totalOrders }}</div>
+                            <small class="text-muted">Commandes</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="h4 font-weight-bold text-success">{{ stats.activeLoans }}</div>
+                            <small class="text-muted">Emprunts actifs</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="h4 font-weight-bold text-info">{{ stats.wishlistCount }}</div>
+                            <small class="text-muted">Dans la wishlist</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="h4 font-weight-bold text-warning">{{ stats.ownedBooksCount }}</div>
+                            <small class="text-muted">Livres possédés</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <div class="h5 font-weight-bold text-primary">{{ stats.totalSpent|number_format(2, ',', ' ') }} €</div>
+                        <small class="text-muted">Total dépensé</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Form -->
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-edit mr-2"></i>Modifier le Profil
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'class': 'user', 'enctype': 'multipart/form-data', 'data-turbo': 'false'}}) }}
+                        
+                        {# Display all form errors at the top #}
+                        {% if form.vars.errors|length > 0 %}
+                            <div class="alert alert-danger mb-3">
+                                <strong><i class="fas fa-exclamation-circle mr-2"></i>Erreurs de formulaire:</strong>
+                                {{ form_errors(form) }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="form-group row">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                {{ form_label(form.username, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.username, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.username) }}
+                            </div>
+                            <div class="col-sm-6">
+                                {{ form_label(form.email, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.email) }}
+                            </div>
+                        </div>
+
+                        <!-- Personal Information -->
+                        <div class="form-group row">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                {{ form_label(form.firstName, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.firstName, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.firstName) }}
+                            </div>
+                            <div class="col-sm-6">
+                                {{ form_label(form.lastName, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.lastName, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.lastName) }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.phone, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.phone, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.phone) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.profilePicture, null, {'label_attr': {'class': 'form-label'}}) }}
+
+                            <!-- Modern Drag & Drop Upload Area -->
+                            <div class="upload-area" id="profilePictureUpload">
+                                <div class="upload-content">
+                                    <div class="upload-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="upload-text">
+                                        <h5 class="upload-title">Glissez-déposez votre photo ici</h5>
+                                        <p class="upload-subtitle">ou <span class="upload-link">parcourez vos fichiers</span></p>
+                                    </div>
+                                </div>
+                                <!-- Preview is SIBLING of upload-content, not child -->
+                                <div class="upload-preview" id="uploadPreview" style="display: none;">
+                                    <img id="previewImage" src="" alt="Aperçu" class="preview-img">
+                                    <div class="preview-overlay">
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" id="removePreview">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {{ form_widget(form.profilePicture, {'attr': {'class': 'd-none', 'accept': 'image/*'}}) }}
+                            </div>
+
+                            <div class="upload-info mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Formats acceptés: JPG, PNG, GIF. Taille maximale: 5MB
+                                </small>
+                            </div>
+
+                            {{ form_help(form.profilePicture) }}
+                            {{ form_errors(form.profilePicture) }}
+                        </div>
+
+                        <!-- Billing Information Section -->
+                        <div class="card border-left-primary shadow mb-3 mt-4">
+                            <div class="card-header bg-light py-3" role="button" data-toggle="collapse" data-target="#billingAddressCollapse" aria-expanded="false">
+                                <h6 class="m-0 font-weight-bold text-primary">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>Informations de Facturation
+                                    <span class="float-right">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </span>
+                                </h6>
+                            </div>
+                            <div id="billingAddressCollapse" class="collapse show">
+                                <div class="card-body">
+                                    {% if user.billingAddress is not empty %}
+                                        <div class="alert alert-info mb-3">
+                                            <i class="fas fa-info-circle mr-2"></i>
+                                            <strong>Adresse actuelle:</strong><br>
+                                            {{ user.billingAddress['prenom']|default('') }} {{ user.billingAddress['nom']|default('') }}<br>
+                                            {% if user.billingAddress['adresse']|default('') %}{{ user.billingAddress['adresse'] }}<br>{% endif %}
+                                            {{ user.billingAddress['codePostal']|default('') }} {{ user.billingAddress['ville']|default('') }}<br>
+                                            {{ user.billingAddress['pays']|default('') }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-group row">
+                                        <div class="col-sm-6 mb-3 mb-sm-0">
+                                            {{ form_label(form.billingPrenom) }}
+                                            {{ form_widget(form.billingPrenom) }}
+                                        </div>
+                                        <div class="col-sm-6">
+                                            {{ form_label(form.billingNom) }}
+                                            {{ form_widget(form.billingNom) }}
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        {{ form_label(form.billingAdresse) }}
+                                        {{ form_widget(form.billingAdresse) }}
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <div class="col-sm-6 mb-3 mb-sm-0">
+                                            {{ form_label(form.billingCodePostal) }}
+                                            {{ form_widget(form.billingCodePostal) }}
+                                        </div>
+                                        <div class="col-sm-6">
+                                            {{ form_label(form.billingVille) }}
+                                            {{ form_widget(form.billingVille) }}
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        {{ form_label(form.billingPays) }}
+                                        {{ form_widget(form.billingPays) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Information Section -->
+                        <div class="card border-left-success shadow mb-3">
+                            <div class="card-header bg-light py-3" role="button" data-toggle="collapse" data-target="#shippingAddressCollapse" aria-expanded="false">
+                                <h6 class="m-0 font-weight-bold text-success">
+                                    <i class="fas fa-truck mr-2"></i>Informations de Livraison
+                                    <span class="float-right">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </span>
+                                </h6>
+                            </div>
+                            <div id="shippingAddressCollapse" class="collapse">
+                                <div class="card-body">
+                                    {% if user.shippingAddress is not empty %}
+                                        <div class="alert alert-success mb-3">
+                                            <i class="fas fa-info-circle mr-2"></i>
+                                            <strong>Adresse actuelle:</strong><br>
+                                            {{ user.shippingAddress['prenom']|default('') }} {{ user.shippingAddress['nom']|default('') }}<br>
+                                            {% if user.shippingAddress['adresse']|default('') %}{{ user.shippingAddress['adresse'] }}<br>{% endif %}
+                                            {{ user.shippingAddress['codePostal']|default('') }} {{ user.shippingAddress['ville']|default('') }}<br>
+                                            {{ user.shippingAddress['pays']|default('') }}
+                                        </div>
+                                    {% endif %}
+                                    <button type="button" class="btn btn-sm btn-info mb-3" id="copyBillingToShipping">
+                                        <i class="fas fa-copy mr-1"></i>Copier depuis la facturation
+                                    </button>
+                                    <div class="form-group row">
+                                        <div class="col-sm-6 mb-3 mb-sm-0">
+                                            {{ form_label(form.shippingPrenom) }}
+                                            {{ form_widget(form.shippingPrenom) }}
+                                        </div>
+                                        <div class="col-sm-6">
+                                            {{ form_label(form.shippingNom) }}
+                                            {{ form_widget(form.shippingNom) }}
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        {{ form_label(form.shippingAdresse) }}
+                                        {{ form_widget(form.shippingAdresse) }}
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <div class="col-sm-6 mb-3 mb-sm-0">
+                                            {{ form_label(form.shippingCodePostal) }}
+                                            {{ form_widget(form.shippingCodePostal) }}
+                                        </div>
+                                        <div class="col-sm-6">
+                                            {{ form_label(form.shippingVille) }}
+                                            {{ form_widget(form.shippingVille) }}
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        {{ form_label(form.shippingPays) }}
+                                        {{ form_widget(form.shippingPays) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-save mr-2"></i>Enregistrer les modifications
+                            </button>
+                        </div>
+
+                        <div class="form-group">
+                            <a href="{{ path('app_forgot_password') }}" class="btn btn-secondary btn-block">
+                                <i class="fas fa-lock mr-2"></i>Réinitialiser le mot de passe
+                            </a>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mt-4">
+                <div class="col-md-3 mb-3">
+                    <a href="{{ path('app_profile_orders') }}" class="btn btn-outline-primary btn-block">
+                        <i class="fas fa-shopping-cart mr-2"></i>Mes Commandes
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="{{ path('app_loan_index') }}" class="btn btn-outline-info btn-block">
+                        <i class="fas fa-book-reader mr-2"></i>Mes Emprunts
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="{{ path('app_borrowing_my_calendar') }}" class="btn btn-outline-warning btn-block">
+                        <i class="fas fa-calendar-alt mr-2"></i>Calendrier d'Emprunts
+                    </a>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <a href="{{ path('app_profile_wishlist') }}" class="btn btn-outline-danger btn-block">
+                        <i class="fas fa-heart mr-2"></i>Wishlist
+                    </a>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6 mb-3">
+                    <a href="{{ path('app_profile_owned_books') }}" class="btn btn-outline-success btn-block">
+                        <i class="fas fa-book mr-2"></i>Mes Livres
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a href="{{ path('app_user_favorites') }}" class="btn btn-outline-secondary btn-block">
+                        <i class="fas fa-star mr-2"></i>Auteurs Favoris
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drag & Drop Upload JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('profilePictureUpload');
+            
+            // Find the actual file input - try multiple methods
+            let actualFileInput = document.getElementById('profilePictureInput');
+            if (!actualFileInput) {
+                actualFileInput = document.getElementById('profile_profilePicture');
+            }
+            if (!actualFileInput) {
+                // Fallback: search by name attribute (most reliable)
+                actualFileInput = document.querySelector('input[name="profile[profilePicture]"]');
+            }
+            if (!actualFileInput) {
+                // Last resort: search for file input inside upload area
+                const inputs = uploadArea.querySelectorAll('input[type="file"]');
+                if (inputs.length > 0) {
+                    actualFileInput = inputs[0];
+                }
+            }
+            
+            if (!actualFileInput) {
+                console.error('File input not found!');
+                return;
+            }
+            
+            const uploadContent = uploadArea.querySelector('.upload-content');
+            const uploadIcon = uploadArea.querySelector('.upload-icon i');
+            const uploadTitle = uploadArea.querySelector('.upload-title');
+            const uploadSubtitle = uploadArea.querySelector('.upload-subtitle');
+            const uploadLink = uploadArea.querySelector('.upload-link');
+            const uploadPreview = document.getElementById('uploadPreview');
+            const previewImage = document.getElementById('previewImage');
+            const removePreview = document.getElementById('removePreview');
+
+            // Debug info
+            console.log('Profile picture upload initialized');
+            console.log('Actual file input found:', actualFileInput, 'ID:', actualFileInput.id, 'Name:', actualFileInput.name);
+
+            // Prevent defaults for drag-drop ONLY on uploadArea (not body to avoid form issues)
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            // Only prevent default for drag events on body to prevent opening file in browser
+            ['dragenter', 'dragover', 'drop'].forEach(eventName => {
+                document.body.addEventListener(eventName, function(e) {
+                    // Only prevent if not inside a form/button submission context
+                    if (e.type === 'dragenter' || e.type === 'dragover' || e.type === 'drop') {
+                        if (!uploadArea.contains(e.target)) {
+                            e.preventDefault();
+                        }
+                    }
+                }, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight(e) {
+                uploadArea.classList.add('dragover');
+                console.log('Drag highlight added');
+            }
+
+            function unhighlight(e) {
+                uploadArea.classList.remove('dragover');
+                console.log('Drag highlight removed');
+            }
+
+            uploadArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                console.log('Files dropped:', files.length);
+                if (files.length > 0) {
+                    handleFiles(files);
+                }
+            }
+
+            // Click to browse files
+            uploadLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Browse link clicked');
+                actualFileInput.click();
+            });
+
+            uploadArea.addEventListener('click', function(e) {
+                // Only trigger file input if clicking on upload area but not on remove button
+                if (!removePreview.contains(e.target)) {
+                    console.log('Upload area clicked');
+                    actualFileInput.click();
+                }
+            });
+
+            // File input change
+            actualFileInput.addEventListener('change', function(e) {
+                console.log('File input changed, files count:', this.files.length);
+                if (this.files.length > 0) {
+                    handleFiles(this.files);
+                }
+            });
+
+            function handleFiles(files) {
+                const file = files[0];
+                console.log('Processing file:', file.name, 'Type:', file.type, 'Size:', file.size);
+
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    console.error('Invalid file type:', file.type);
+                    showError('Veuillez sélectionner un fichier image valide.');
+                    return;
+                }
+
+                // Validate file size (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    console.error('File too large:', file.size);
+                    showError('La taille du fichier ne doit pas dépasser 5MB.');
+                    return;
+                }
+
+                // Set file to input (this is crucial for form submission)
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                actualFileInput.files = dataTransfer.files;
+                console.log('File set to input element');
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    console.log('Preview generated');
+                    console.log('Preview image element:', previewImage);
+                    console.log('Preview container:', uploadPreview);
+                    previewImage.src = e.target.result;
+                    uploadContent.style.display = 'none';
+                    uploadPreview.style.display = 'block';
+                    uploadArea.classList.remove('upload-error');
+                    uploadArea.classList.add('upload-success');
+                    console.log('Preview should be visible now');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            function showError(message) {
+                console.error('Upload error:', message);
+                uploadArea.classList.remove('upload-success');
+                uploadArea.classList.add('upload-error');
+                uploadTitle.textContent = 'Erreur de fichier';
+                uploadSubtitle.innerHTML = `<span style="color: #721c24;">${message}</span>`;
+
+                setTimeout(() => {
+                    resetUploadArea();
+                }, 3000);
+            }
+
+            function resetUploadArea() {
+                uploadArea.classList.remove('upload-error', 'upload-success');
+                uploadTitle.textContent = 'Glissez-déposez votre photo ici';
+                uploadSubtitle.innerHTML = 'ou <span class="upload-link">parcourez vos fichiers</span>';
+                uploadContent.style.display = 'block';
+                uploadPreview.style.display = 'none';
+                actualFileInput.value = '';
+                console.log('Upload area reset');
+            }
+
+            // Remove preview
+            removePreview.addEventListener('click', function(e) {
+                e.stopPropagation();
+                console.log('Preview removed');
+                resetUploadArea();
+            });
+
+            // Form submission - ensure file is properly sent
+            const form = actualFileInput.closest('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    console.log('Form submitting...');
+                    console.log('File input:', actualFileInput);
+                    console.log('Files count:', actualFileInput.files.length);
+                    if (actualFileInput.files.length > 0) {
+                        console.log('File attached to form:', actualFileInput.files[0].name, 'Size:', actualFileInput.files[0].size);
+                    } else {
+                        console.log('No file selected for upload');
+                    }
+                });
+            } else {
+                console.error('Form not found for file input!');
+            }
+
+            // Copy billing to shipping functionality
+            const copyBillingBtn = document.getElementById('copyBillingToShipping');
+            if (copyBillingBtn) {
+                copyBillingBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Get billing form fields (using Symfony form field IDs)
+                    const billingPrenom = document.getElementById('profile_billingPrenom').value;
+                    const billingNom = document.getElementById('profile_billingNom').value;
+                    const billingAdresse = document.getElementById('profile_billingAdresse').value;
+                    const billingCodePostal = document.getElementById('profile_billingCodePostal').value;
+                    const billingVille = document.getElementById('profile_billingVille').value;
+                    const billingPays = document.getElementById('profile_billingPays').value;
+                    
+                    // Copy to shipping fields (using Symfony form field IDs)
+                    document.getElementById('profile_shippingPrenom').value = billingPrenom;
+                    document.getElementById('profile_shippingNom').value = billingNom;
+                    document.getElementById('profile_shippingAdresse').value = billingAdresse;
+                    document.getElementById('profile_shippingCodePostal').value = billingCodePostal;
+                    document.getElementById('profile_shippingVille').value = billingVille;
+                    document.getElementById('profile_shippingPays').value = billingPays;
+                    
+                    // Expand shipping section to show the copied data
+                    const shippingCollapse = document.getElementById('shippingAddressCollapse');
+                    if (shippingCollapse) {
+                        shippingCollapse.classList.add('show');
+                    }
+                    
+                    // Show success message
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success alert-dismissible fade show';
+                    alert.innerHTML = '<i class="fas fa-check-circle mr-2"></i><strong>Succès!</strong> Les données de facturation ont été copiées vers la livraison.';
+                    copyBillingBtn.parentElement.insertBefore(alert, copyBillingBtn);
+                    
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 3000);
+                });
+            }
+        });
+    </script>
+{% endblock %}

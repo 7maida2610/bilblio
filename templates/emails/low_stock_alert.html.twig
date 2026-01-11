@@ -1,0 +1,43 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block subject %}Low stock alert - Books need restocking{% endblock %}
+
+{% block body %}
+<h1>⚠️ Low Stock Alert</h1>
+
+<p>Dear Administrator,</p>
+
+<p>The following books are running low on stock and need to be restocked:</p>
+
+<div style="background: white; padding: 20px; border-radius: 5px; margin: 20px 0;">
+    <h2>📦 Books Requiring Restocking</h2>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f8f9fa;">
+                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">Book Title</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">Author</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">Current Stock</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for book in lowStockBooks %}
+            <tr>
+                <td style="border: 1px solid #dee2e6; padding: 8px;">{{ book.title }}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px;">{{ book.author }}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">{{ book.stock }}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                    <span style="color: {% if book.stock <= 5 %}red{% elseif book.stock <= 10 %}orange{% else %}green{% endif %};">{{ book.stock <= 5 ? 'Critical' : (book.stock <= 10 ? 'Low' : 'Normal') }}</span>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<p>Please take immediate action to restock these books to ensure availability for our users.</p>
+
+<p><a href="{{ url('admin') }}" class="button">Go to Admin Panel</a></p>
+
+<p>Best regards,<br>The BiblioApp System</p>
+{% endblock %}

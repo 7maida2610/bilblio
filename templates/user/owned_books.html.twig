@@ -1,0 +1,54 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}My Books{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">My Books</h1>
+    </div>
+
+    <div class="row">
+        {% for livre in ownedBooks %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body">
+                    {% if livre.image %}
+                        <img src="{{ asset('uploads/images/' ~ livre.image) }}"
+                             alt="{{ livre.titre }}"
+                             class="img-fluid rounded mb-2"
+                             style="height: 200px; width: 100%; object-fit: cover;">
+                    {% else %}
+                        <div class="text-center mb-2 bg-light rounded" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-book fa-3x text-gray-300"></i>
+                        </div>
+                    {% endif %}
+
+                    <h6 class="card-title">{{ livre.titre }}</h6>
+                    <p class="card-text small text-muted">
+                        {{ livre.auteur ? livre.auteur.prenom ~ ' ' ~ livre.auteur.nom : 'Auteur inconnu' }}
+                    </p>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ path('app_livre_show', {'id': livre.id}) }}" class="btn btn-primary btn-sm">View</a>
+                        <form action="{{ path('app_user_owned_books_remove', {'id': livre.id}) }}" method="post" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('remove-owned-' ~ livre.id) }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-book fa-3x text-gray-300 mb-3"></i>
+                <h5 class="text-muted">Your library is empty</h5>
+                <p class="text-muted">Start adding books to your collection!</p>
+                <a href="{{ path('app_livre_index') }}" class="btn btn-primary">Browse Books</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

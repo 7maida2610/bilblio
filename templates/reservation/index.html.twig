@@ -1,0 +1,270 @@
+{% extends "backendofficebase.html.twig" %}
+
+{% block title %}Mes Réservations - Biblio{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .reservation-card {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .reservation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 150, 136, 0.2) !important;
+    }
+
+    .stats-card {
+        transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 150, 136, 0.05);
+        transition: all 0.2s ease;
+    }
+
+    @media (max-width: 768px) {
+        .stats-card {
+            margin-bottom: 1rem;
+        }
+
+        .stats-card .card-body {
+            padding: 1rem;
+        }
+    }
+
+    .alert-sm {
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-fw fa-hourglass-end text-warning mr-2"></i>Mes Réservations
+            </h1>
+            <p class="mb-0 text-muted">Gérez vos réservations de livres en attente</p>
+        </div>
+        <div>
+            <a href="{{ path('app_loan_index') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-book-reader mr-1"></i>Mes Emprunts
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2 stats-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                <i class="fas fa-hourglass-end mr-1"></i>Réservations actives
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ activeReservations|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hourglass-end fa-2x" style="color: #FF6F00;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2 stats-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                <i class="fas fa-check-circle mr-1"></i>Réservations complétées
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ inactiveReservations|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x" style="color: #28a745;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2 stats-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                <i class="fas fa-list-check mr-1"></i>Total réservations
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ totalReservations }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-list-check fa-2x" style="color: #17a2b8;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Reservations Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-hourglass-end mr-2"></i>Réservations En Attente
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if activeReservations|length > 0 %}
+                        <div class="row">
+                            {% for reservation in activeReservations %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card shadow border-left-warning h-100 reservation-card">
+                                        <div class="card-body pb-0">
+                                            <!-- Cover -->
+                                            <div class="text-center mb-3">
+                                                {% if reservation.livre.image %}
+                                                    <img src="{{ asset('uploads/images/' ~ reservation.livre.image) }}" alt="{{ reservation.livre.titre }}" class="img-fluid rounded" style="max-height: 150px; object-fit: cover;">
+                                                {% else %}
+                                                    <div class="bg-light rounded p-4">
+                                                        <i class="fas fa-book fa-3x text-muted"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- Book Info -->
+                                            <h6 class="font-weight-bold text-truncate">{{ reservation.livre.titre }}</h6>
+                                            <p class="small text-muted text-truncate mb-2">
+                                                {{ reservation.livre.auteur.prenom }} {{ reservation.livre.auteur.nom }}
+                                            </p>
+
+                                            <!-- Position Badge -->
+                                            <div class="alert alert-warning alert-sm mb-2 py-2 px-3">
+                                                <i class="fas fa-list-ol mr-1"></i>
+                                                <strong>Position: #{{ reservation.position }}</strong>
+                                            </div>
+
+                                            <!-- Expected Availability Date -->
+                                            <div class="alert alert-info alert-sm mb-2 py-2 px-3">
+                                                <i class="fas fa-calendar-check mr-1"></i>
+                                                <strong>Disponible vers:</strong> {{ reservation.expectedAvailableDateFormatted }}
+                                            </div>
+
+                                            <!-- Request Date -->
+                                            <p class="small text-muted mb-0">
+                                                <i class="fas fa-calendar-alt mr-1"></i>
+                                                Réservé le {{ reservation.requestedAt|date('d/m/Y') }}
+                                            </p>
+                                        </div>
+                                        <div class="card-footer bg-transparent py-2 d-grid gap-2">
+                                            <a href="{{ path('app_reservation_view', {'id': reservation.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye mr-1"></i>Détails
+                                            </a>
+                                            <form method="POST" action="{{ path('app_reservation_cancel', {'id': reservation.id}) }}" style="display: inline;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ reservation.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Êtes-vous sûr ?');">
+                                                    <i class="fas fa-trash mr-1"></i>Annuler
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Vous n'avez pas de réservation en attente.
+                            <a href="{{ path('app_livre_index') }}" class="alert-link">Parcourir les livres</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Reservations -->
+    {% if inactiveReservations|length > 0 %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-success">
+                            <i class="fas fa-check-circle mr-2"></i>Réservations Complétées
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="completedReservationsTable">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th><i class="fas fa-book mr-1"></i>Livre</th>
+                                        <th><i class="fas fa-user mr-1"></i>Auteur</th>
+                                        <th><i class="fas fa-calendar-alt mr-1"></i>Date</th>
+                                        <th><i class="fas fa-cog mr-1"></i>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for reservation in inactiveReservations %}
+                                        <tr>
+                                            <td>{{ reservation.livre.titre }}</td>
+                                            <td>{{ reservation.livre.auteur.prenom }} {{ reservation.livre.auteur.nom }}</td>
+                                            <td>{{ reservation.requestedAt|date('d/m/Y') }}</td>
+                                            <td>
+                                                <a href="{{ path('app_livre_show', {'id': reservation.livre.id}) }}" class="btn btn-sm btn-info" title="Voir le livre">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Quick Links -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-calendar-alt mr-2"></i>Calendriers
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="font-weight-bold mb-2">Mon Calendrier de Réservations</h6>
+                            <p class="text-muted small mb-3">
+                                Visualisez toutes vos réservations en cours sur un calendrier
+                            </p>
+                            <a href="{{ path('app_reservation_my_calendar') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-calendar-alt mr-1"></i>Voir le calendrier
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

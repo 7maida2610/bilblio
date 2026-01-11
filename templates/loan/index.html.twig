@@ -1,0 +1,693 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Mes Emprunts - Biblio{% endblock %}
+
+{% block stylesheets %}
+<style>
+.loan-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.loan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 150, 136, 0.2) !important;
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.stats-card {
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 150, 136, 0.05);
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+
+/* Mobile responsiveness for loan system */
+@media (max-width: 768px) {
+    .stats-card {
+        margin-bottom: 1rem;
+    }
+
+    .stats-card .card-body {
+        padding: 1rem;
+    }
+
+    .stats-card .h5 {
+        font-size: 1.75rem;
+    }
+
+    .loan-card {
+        margin-bottom: 1rem;
+    }
+
+    .loan-card .card-body {
+        padding: 1rem;
+    }
+
+    .loan-card .card-title {
+        font-size: 1.1rem;
+    }
+
+    .loan-card .badge {
+        font-size: 0.75rem;
+    }
+
+    /* Mobile table improvements */
+    .table-responsive {
+        border: none;
+    }
+
+    .table-responsive .table {
+        margin-bottom: 0;
+    }
+
+    .table-responsive .table thead {
+        display: none;
+    }
+
+    .table-responsive .table tbody tr {
+        display: block;
+        border: 1px solid #e3e6f0;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .table-responsive .table tbody td {
+        display: block;
+        border: none;
+        padding: 0.5rem 0;
+        text-align: left;
+    }
+
+    .table-responsive .table tbody td:before {
+        content: attr(data-label) ": ";
+        font-weight: bold;
+        color: #009688;
+        display: inline-block;
+        min-width: 120px;
+    }
+
+    .table-responsive .table tbody td:first-child:before {
+        content: "";
+    }
+
+    .table-responsive .table tbody td:nth-child(2):before {
+        content: "";
+    }
+
+    .table-responsive .table tbody td:nth-child(3):before {
+        content: "";
+    }
+
+    .table-responsive .table tbody td:nth-child(4):before {
+        content: "";
+    }
+
+    .table-responsive .table tbody td:nth-child(5):before {
+        content: "";
+    }
+
+    .table-responsive .table tbody td:last-child {
+        border-top: 1px solid #e3e6f0;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    /* Mobile search */
+    .input-group {
+        flex-direction: column;
+    }
+
+    .input-group .input-group-prepend {
+        margin-bottom: 0.5rem;
+    }
+
+    .input-group .input-group-prepend .input-group-text {
+        width: 100%;
+        border-radius: 0.35rem 0.35rem 0 0;
+    }
+
+    .input-group .form-control {
+        border-radius: 0 0 0.35rem 0.35rem;
+    }
+
+    /* Mobile buttons */
+    .btn-block {
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-rounded {
+        border-radius: 25px;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .card-body {
+        padding: 1rem 0.75rem;
+    }
+
+    .loan-card .card-footer {
+        padding: 0.75rem;
+    }
+
+    .loan-card .btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+
+    /* Mobile loan cards in single column */
+    .col-xl-4.col-md-6.mb-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Mobile banner adjustments */
+    .banner-container {
+        margin: 0 -0.5rem 1rem -0.5rem;
+    }
+
+    .banner-alert {
+        border-radius: 12px;
+        margin: 0 0.5rem 1rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('loanSearch');
+    const loanRows = document.querySelectorAll('.loan-row');
+
+    if (searchInput && loanRows.length > 0) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+
+            loanRows.forEach(row => {
+                const bookTitle = row.dataset.bookTitle || '';
+                const author = row.dataset.author || '';
+                const isVisible = bookTitle.includes(searchTerm) || author.includes(searchTerm);
+
+                row.style.display = isVisible ? '' : 'none';
+
+                // Add fade effect
+                if (isVisible) {
+                    row.style.opacity = '1';
+                    row.style.transform = 'scale(1)';
+                } else {
+                    row.style.opacity = '0.3';
+                    row.style.transform = 'scale(0.98)';
+                }
+            });
+        });
+    }
+
+    // Add click effects to cards
+    const loanCards = document.querySelectorAll('.loan-card');
+    loanCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't trigger if clicking on a button/form
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'FORM' || e.target.closest('form')) {
+                return;
+            }
+
+            // Add ripple effect
+            const ripple = document.createElement('div');
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(255, 255, 255, 0.3)';
+            ripple.style.transform = 'scale(0)';
+            ripple.style.animation = 'ripple 0.6s linear';
+            ripple.style.left = (e.offsetX - 10) + 'px';
+            ripple.style.top = (e.offsetY - 10) + 'px';
+            ripple.style.width = '20px';
+            ripple.style.height = '20px';
+
+            this.style.position = 'relative';
+            this.appendChild(ripple);
+
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+
+    // Add CSS animation for ripple
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Auto-refresh overdue loans indicator
+    setInterval(() => {
+        const overdueBadges = document.querySelectorAll('.pulse');
+        overdueBadges.forEach(badge => {
+            badge.style.animation = badge.style.animation ? '' : 'pulse 2s infinite';
+        });
+    }, 10000);
+});
+</script>
+{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-book-reader text-primary mr-2"></i>Mes Emprunts
+            </h1>
+            <p class="mb-0 text-muted">Gérez vos emprunts de livres et suivez vos retours</p>
+        </div>
+        <div>
+            <a href="{{ path('app_livre_index') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus mr-1"></i>Emprunter un livre
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2 stats-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                <i class="fas fa-book-reader mr-1"></i>Emprunts actifs
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ activeLoans|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book-reader fa-2x" style="color: #009688;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2 stats-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                <i class="fas fa-check-circle mr-1"></i>Retournés ce mois
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% set returnedThisMonth = 0 %}
+                                {% for loan in loanHistory %}
+                                    {% if loan.status == 'returned' and loan.returnedAt is defined and loan.returnedAt|date('m-Y') == 'now'|date('m-Y') %}
+                                        {% set returnedThisMonth = returnedThisMonth + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ returnedThisMonth }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x" style="color: #4CAF50;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2 stats-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>En retard
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% set overdueCount = 0 %}
+                                {% for loan in activeLoans %}
+                                    {% if loan.isOverdue %}
+                                        {% set overdueCount = overdueCount + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ overdueCount }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x" style="color: #FF6F00;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2 stats-card">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                <i class="fas fa-history mr-1"></i>Total emprunté
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ loanHistory|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-history fa-2x" style="color: #36b9cc;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Loans -->
+    {% if activeLoans|length > 0 %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #009688 0%, #4CAF50 100%); color: white;">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-clock mr-2"></i>Emprunts en cours ({{ activeLoans|length }})
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for loan in activeLoans %}
+                            <div class="col-xl-4 col-md-6 mb-4">
+                                <div class="card h-100 shadow-sm loan-card {{ loan.isOverdue ? 'border-danger' : 'border-success' }}"
+                                     style="transition: all 0.3s ease; border-width: 2px !important;">
+                                    <div class="card-header py-2 bg-light position-relative">
+                                        {% if loan.livre.image %}
+                                            <img src="{{ asset('uploads/images/' ~ loan.livre.image) }}" alt="{{ loan.livre.titre }}"
+                                                 class="card-img-top rounded-0" style="height: 150px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="text-center py-4 bg-light">
+                                                <i class="fas fa-book fa-4x text-gray-300"></i>
+                                            </div>
+                                        {% endif %}
+                                        {% if loan.isOverdue %}
+                                            <div class="position-absolute" style="top: 10px; right: 10px;">
+                                                <span class="badge badge-danger pulse">
+                                                    <i class="fas fa-exclamation-triangle"></i> En retard
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-body">
+                                        <h6 class="card-title font-weight-bold text-dark mb-2">{{ loan.livre.titre }}</h6>
+                                        <p class="card-text small text-muted mb-3">
+                                            <i class="fas fa-user mr-1 text-primary"></i>
+                                            {{ loan.livre.auteur ? loan.livre.auteur.prenom ~ ' ' ~ loan.livre.auteur.nom : 'Auteur inconnu' }}
+                                        </p>
+
+                                        <div class="row text-center mb-3">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Statut</small>
+                                                <span class="badge badge-{{ loan.status == 'active' ? 'success' : (loan.status == 'overdue' ? 'danger' : 'warning') }} badge-pill px-2 py-1">
+                                                    <i class="fas fa-{{ loan.status == 'active' ? 'check-circle' : (loan.status == 'overdue' ? 'exclamation-triangle' : 'clock') }} mr-1"></i>
+                                                    {{ loan.statusLabel }}
+                                                </span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Échéance</small>
+                                                <span class="font-weight-bold {{ loan.isOverdue ? 'text-danger' : (loan.daysRemaining <= 3 ? 'text-warning' : 'text-success') }}">
+                                                    {% if loan.dueDate %}
+                                                        {{ loan.dueDate|date('d/m') }}
+                                                    {% else %}
+                                                        N/A
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {% if loan.loanStartDate %}
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar-plus mr-1"></i>Emprunté le {{ loan.loanStartDate|date('d/m/Y') }}
+                                            </small>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if loan.dueDate %}
+                                        <div class="mb-3">
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar-times mr-1"></i>À rendre avant le {{ loan.dueDate|date('d/m/Y') }}
+                                            </small>
+                                            {% if loan.daysRemaining is defined %}
+                                                {% if loan.daysRemaining <= 0 %}
+                                                    <div class="text-danger font-weight-bold small mt-1">
+                                                        <i class="fas fa-exclamation-triangle"></i> En retard de {{ loan.daysRemaining|abs }} jour(s)
+                                                    </div>
+                                                {% elseif loan.daysRemaining <= 3 %}
+                                                    <div class="text-warning font-weight-bold small mt-1">
+                                                        <i class="fas fa-clock"></i> {{ loan.daysRemaining }} jour(s) restant(s)
+                                                    </div>
+                                                {% else %}
+                                                    <div class="text-success small mt-1">
+                                                        <i class="fas fa-check"></i> {{ loan.daysRemaining }} jours restant(s)
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+
+                                        {% if loan.isOverdue %}
+                                        <div class="alert alert-danger py-2 mb-3 border-0" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); color: white;">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                            <strong>Attention !</strong> Ce livre est en retard. Veuillez le retourner rapidement.
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-footer p-3 bg-white border-0">
+                                        {% if loan.canBeReturned %}
+                                        <form method="post" action="{{ path('app_loan_return', {'id': loan.id}) }}" class="d-inline w-100" onsubmit="return confirm('Confirmer le retour de ce livre ?')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('return' ~ loan.id) }}">
+                                            <button type="submit" class="btn btn-success btn-block font-weight-bold"
+                                                    style="background: linear-gradient(135deg, #009688 0%, #4CAF50 100%); border: none; transition: all 0.3s ease;">
+                                                <i class="fas fa-undo mr-2"></i>Retourner le livre
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Links Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-calendar-alt mr-2"></i>Calendrier
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="font-weight-bold mb-2">Mon Calendrier d'Emprunts</h6>
+                            <p class="text-muted small mb-3">
+                                Visualisez tous vos emprunts en cours et passés sur un calendrier interactif
+                            </p>
+                            <a href="{{ path('app_borrowing_my_calendar') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-calendar-alt mr-1"></i>Voir le calendrier
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="font-weight-bold mb-2">Mes Réservations</h6>
+                            <p class="text-muted small mb-3">
+                                Consultez vos réservations de livres en attente
+                            </p>
+                            <a href="{{ path('app_reservation_index') }}" class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-hourglass-end mr-1"></i>Voir les réservations
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loan History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #009688 0%, #4CAF50 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold">
+                            <i class="fas fa-history mr-2"></i>Historique des emprunts
+                        </h6>
+                        {% if loanHistory|length > 0 %}
+                        <div class="input-group" style="width: 300px;">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-white border-0">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                            </div>
+                            <input type="text" class="form-control border-0" id="loanSearch" placeholder="Rechercher un livre...">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if loanHistory|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="loansTable">
+                                <thead style="background: rgba(0, 150, 136, 0.1);">
+                                    <tr>
+                                        <th style="border: none; font-weight: 600; color: #009688;">
+                                            <i class="fas fa-book mr-1"></i>Livre
+                                        </th>
+                                        <th style="border: none; font-weight: 600; color: #009688;">
+                                            <i class="fas fa-user mr-1"></i>Auteur
+                                        </th>
+                                        <th style="border: none; font-weight: 600; color: #009688;">
+                                            <i class="fas fa-calendar-plus mr-1"></i>Date de demande
+                                        </th>
+                                        <th style="border: none; font-weight: 600; color: #009688;">
+                                            <i class="fas fa-info-circle mr-1"></i>Statut
+                                        </th>
+                                        <th style="border: none; font-weight: 600; color: #009688;">
+                                            <i class="fas fa-calendar-check mr-1"></i>Date de retour
+                                        </th>
+                                        <th style="border: none; font-weight: 600; color: #009688;">
+                                            <i class="fas fa-cogs mr-1"></i>Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for loan in loanHistory %}
+                                        <tr class="loan-row" data-book-title="{{ loan.livre.titre|lower }}" data-author="{{ (loan.livre.auteur ? loan.livre.auteur.prenom ~ ' ' ~ loan.livre.auteur.nom : '')|lower }}">
+                                            <td data-label="Livre" style="border: none; vertical-align: middle;">
+                                                <div class="d-flex align-items-center">
+                                                    {% if loan.livre.image %}
+                                                        <img src="{{ asset('uploads/images/' ~ loan.livre.image) }}" alt="{{ loan.livre.titre }}"
+                                                             class="rounded mr-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #f8f9fa;">
+                                                    {% else %}
+                                                        <div class="bg-light rounded mr-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                            <i class="fas fa-book text-gray-400"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div>
+                                                        <div class="font-weight-bold text-dark">{{ loan.livre.titre }}</div>
+                                                        <small class="text-muted">{{ loan.livre.categorie ? loan.livre.categorie.designation : 'Sans catégorie' }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td data-label="Auteur" style="border: none; vertical-align: middle;">
+                                                <span class="font-weight-medium">{{ loan.livre.auteur ? loan.livre.auteur.prenom ~ ' ' ~ loan.livre.auteur.nom : 'Auteur inconnu' }}</span>
+                                            </td>
+                                            <td data-label="Date de demande" style="border: none; vertical-align: middle;">
+                                                <span class="badge badge-light text-dark px-2 py-1">
+                                                    <i class="fas fa-clock mr-1"></i>{{ loan.requestedAt|date('d/m/Y') }}
+                                                </span>
+                                                <br><small class="text-muted">{{ loan.requestedAt|date('H:i') }}</small>
+                                            </td>
+                                            <td data-label="Statut" style="border: none; vertical-align: middle;">
+                                                {% set statusConfig = {
+                                                    'returned': {'class': 'success', 'icon': 'check-circle', 'text': 'Retourné'},
+                                                    'cancelled': {'class': 'secondary', 'icon': 'times-circle', 'text': 'Annulé'},
+                                                    'active': {'class': 'success', 'icon': 'play-circle', 'text': 'En cours'},
+                                                    'pending': {'class': 'warning', 'icon': 'clock', 'text': 'En attente'},
+                                                    'overdue': {'class': 'danger', 'icon': 'exclamation-triangle', 'text': 'En retard'},
+                                                    'rejected': {'class': 'danger', 'icon': 'times', 'text': 'Rejeté'}
+                                                } %}
+                                                {% set config = statusConfig[loan.status] is defined ? statusConfig[loan.status] : {'class': 'secondary', 'icon': 'question-circle', 'text': loan.statusLabel} %}
+                                                <span class="badge badge-{{ config.class }} badge-pill px-3 py-2">
+                                                    <i class="fas fa-{{ config.icon }} mr-1"></i>{{ config.text }}
+                                                </span>
+                                            </td>
+                                            <td data-label="Date de retour" style="border: none; vertical-align: middle;">
+                                                {% if loan.returnedAt %}
+                                                    <span class="text-success font-weight-bold">
+                                                        <i class="fas fa-check mr-1"></i>{{ loan.returnedAt|date('d/m/Y') }}
+                                                    </span>
+                                                {% elseif loan.status == 'active' %}
+                                                    <span class="badge badge-success badge-pill px-2 py-1">
+                                                        <i class="fas fa-running mr-1"></i>En cours
+                                                    </span>
+                                                {% elseif loan.status == 'cancelled' %}
+                                                    <span class="text-muted">
+                                                        <i class="fas fa-ban mr-1"></i>Annulé
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td data-label="Actions" style="border: none; vertical-align: middle;">
+                                                {% if loan.canBeCancelled %}
+                                                <form method="post" action="{{ path('app_loan_cancel', {'id': loan.id}) }}" class="d-inline" onsubmit="return confirm('Annuler cette demande d\'emprunt ?')">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ loan.id) }}">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm btn-rounded">
+                                                        <i class="fas fa-times mr-1"></i>Annuler
+                                                    </button>
+                                                </form>
+                                                {% elseif loan.status == 'returned' %}
+                                                <span class="text-success">
+                                                    <i class="fas fa-check-circle mr-1"></i>Terminé
+                                                </span>
+                                                {% else %}
+                                                <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination could be added here if needed -->
+
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="fas fa-book-reader fa-5x" style="color: #009688; opacity: 0.3;"></i>
+                            </div>
+                            <h4 class="text-gray-600 mb-3 font-weight-bold">Aucun emprunt trouvé</h4>
+                            <p class="text-muted mb-4">Vous n'avez pas encore emprunté de livres. Commencez votre aventure littéraire !</p>
+                            <a href="{{ path('app_livre_index') }}" class="btn btn-lg font-weight-bold"
+                               style="background: linear-gradient(135deg, #009688 0%, #4CAF50 100%); border: none; color: white; padding: 12px 30px; border-radius: 25px; transition: all 0.3s ease;">
+                                <i class="fas fa-book mr-2"></i>Découvrir les livres disponibles
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

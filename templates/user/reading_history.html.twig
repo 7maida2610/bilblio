@@ -1,0 +1,61 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Reading History{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Reading History</h1>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Your Reading Progress</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Book Title</th>
+                            <th>Author</th>
+                            <th>Progress</th>
+                            <th>Last Read</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for progress in readingHistory %}
+                        <tr>
+                            <td>{{ progress.livre.titre }}</td>
+                            <td>{{ progress.livre.auteur ? progress.livre.auteur.prenom ~ ' ' ~ progress.livre.auteur.nom : 'Auteur inconnu' }}</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ progress.progressPercentage }}%">{{ progress.progressPercentage }}%</div>
+                                </div>
+                            </td>
+                            <td>{{ progress.lastReadAt|date('d/m/Y H:i') }}</td>
+                            <td>
+                                {% if progress.isCompleted %}
+                                    <span class="badge badge-success">Completed</span>
+                                {% else %}
+                                    <span class="badge badge-warning">In Progress</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ path('app_livre_show', {'id': progress.livre.id}) }}" class="btn btn-sm btn-primary">Continue Reading</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No reading history yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Détail du Log d'Activité{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-eye mr-2"></i>Détail du Log d'Activité
+        </h1>
+        <div>
+            <a href="{{ path('app_activity_logs_index') }}" class="btn btn-secondary mr-2">
+                <i class="fas fa-arrow-left mr-2"></i>Retour à la liste
+            </a>
+            <a href="{{ path('app_backoffice_dashboard') }}" class="btn btn-primary">
+                <i class="fas fa-home mr-2"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-file-alt mr-2"></i>Log d'Activité #{{ activity_log.id }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <div class="card border-left-primary shadow h-100">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">
+                                        <i class="fas fa-info-circle mr-2"></i>Informations Générales
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <strong>ID:</strong>
+                                        <span class="badge badge-primary ml-2">{{ activity_log.id }}</span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <strong>Action:</strong>
+                                        <span class="badge badge-info ml-2">{{ activity_log.action }}</span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <strong>Date de création:</strong>
+                                        <br>
+                                        <span class="text-muted">{{ activity_log.createdAt|date('d/m/Y à H:i:s') }}</span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <strong>Utilisateur:</strong>
+                                        {% if activity_log.user %}
+                                            <div class="d-flex align-items-center mt-2">
+                                                <i class="fas fa-user-circle fa-2x text-primary mr-3"></i>
+                                                <div>
+                                                    <div class="font-weight-bold">{{ activity_log.user.username }}</div>
+                                                    <small class="text-muted">{{ activity_log.user.email }}</small>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">Utilisateur inconnu</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Technical Information -->
+                        <div class="col-md-6">
+                            <div class="card border-left-success shadow h-100">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-success">
+                                        <i class="fas fa-cogs mr-2"></i>Informations Techniques
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if activity_log.ipAddress %}
+                                    <div class="mb-3">
+                                        <strong>Adresse IP:</strong>
+                                        <br>
+                                        <code>{{ activity_log.ipAddress }}</code>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if activity_log.userAgent %}
+                                    <div class="mb-3">
+                                        <strong>User Agent:</strong>
+                                        <br>
+                                        <small class="text-muted">{{ activity_log.userAgent|slice(0, 100) ~ (activity_log.userAgent|length > 100 ? '...' : '') }}</small>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="mb-3">
+                                        <strong>Statut:</strong>
+                                        <span class="badge badge-success ml-2">Actif</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    {% if activity_log.description %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-left-warning shadow">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-warning">
+                                        <i class="fas fa-comment mr-2"></i>Description
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-0">{{ activity_log.description }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Metadata -->
+                    {% if activity_log.metadata %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-left-info shadow">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-info">
+                                        <i class="fas fa-database mr-2"></i>Métadonnées
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <pre class="bg-light p-3 rounded"><code>{{ activity_log.metadata|json_encode(constant('JSON_PRETTY_PRINT')) }}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

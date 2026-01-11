@@ -1,0 +1,44 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Emprunt en retard{% endblock %}
+
+{% block body %}
+<h2>🚨 Emprunt en retard</h2>
+
+<p>Bonjour {{ user.username ?? user.email }},</p>
+
+<p style="color: #d32f2f; font-weight: bold;">URGENT : Votre date de retour est dépassée. Veuillez retourner le livre immédiatement.</p>
+
+<div style="background: #ffebee; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #c62828;">
+    <h3 style="margin-top: 0; color: #c62828;">{{ book.titre }}</h3>
+    <p>
+        <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}<br>
+        <strong>Date limite dépassée :</strong> <span style="color: #d32f2f; font-weight: bold;">{{ dueDate|date('d/m/Y') }}</span><br>
+        <strong>Jours en retard :</strong> <span style="color: #d32f2f; font-weight: bold;">{{ daysOverdue }} jour(s)</span>
+    </p>
+</div>
+
+<div style="background: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <h4 style="margin-top: 0;">💰 Frais de retard :</h4>
+    <p>
+        Des frais de retard s'accumulent à chaque jour supplémentaire. 
+        <strong>Veuillez retourner le livre au plus tôt pour minimiser les frais.</strong>
+    </p>
+</div>
+
+<h4>⚡ Agir immédiatement :</h4>
+<ol>
+    <li>Retournez le livre à la bibliothèque dès que possible</li>
+    <li>Contactez la bibliothèque si vous ne pouvez pas retourner le livre</li>
+    <li>Consultez votre compte pour voir les frais accumulés</li>
+</ol>
+
+<div style="background: #e8f5e9; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <p style="margin: 0;">
+        <strong>📞 Besoin d'aide ?</strong> Contactez-nous immédiatement pour discuter de solutions possibles.
+    </p>
+</div>
+
+<p>Cordialement,<br>
+L'équipe BiblioApp</p>
+{% endblock %}

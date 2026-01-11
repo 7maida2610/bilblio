@@ -1,0 +1,190 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Gestion des Préférences - Biblio{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-sliders-h text-primary mr-2"></i>Gestion des Préférences de Bannière
+            </h1>
+            <p class="mb-0 text-muted">{{ banner.title }}</p>
+        </div>
+        <a href="{{ path('app_admin_banner_details', {id: banner.id}) }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm"></i> Retour aux détails
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-info text-uppercase mb-1">Total Utilisateurs</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-warning text-uppercase mb-1">Masqué par</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ dismissedTotal }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-success text-uppercase mb-1">Taux de Rejet</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">
+                        {% if total > 0 %}
+                            {{ ((dismissedTotal / total) * 100)|round(2) }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filtres</h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ path('app_admin_banner_preferences', {id: banner.id}) }}" class="form-inline">
+                <div class="form-check mr-3">
+                    <input type="checkbox" id="dismissed_only" name="dismissed_only" value="1" 
+                           {% if dismissedOnly %}checked{% endif %} class="form-check-input">
+                    <label class="form-check-label" for="dismissed_only">
+                        Uniquement les utilisateurs qui ont masqué
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Filtrer
+                </button>
+                <a href="{{ path('app_admin_banner_preferences', {id: banner.id}) }}" class="btn btn-secondary ml-2">
+                    <i class="fas fa-redo"></i> Réinitialiser
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Preferences Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list mr-2"></i>Préférences des Utilisateurs
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if preferences|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Email</th>
+                                <th>Statut</th>
+                                <th>Masqué le</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for preference in preferences %}
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {% if preference.user.firstName or preference.user.lastName %}
+                                            {{ preference.user.firstName }} {{ preference.user.lastName }}
+                                        {% else %}
+                                            {{ preference.user.email }}
+                                        {% endif %}
+                                    </strong>
+                                </td>
+                                <td>{{ preference.user.email }}</td>
+                                <td>
+                                    {% if preference.hidden %}
+                                        <span class="badge badge-warning">Masqué</span>
+                                    {% else %}
+                                        <span class="badge badge-success">Visible</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if preference.hiddenAt %}
+                                        {{ preference.hiddenAt|date('d/m/Y H:i') }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ path('app_admin_banner_reset_user', {bannerId: banner.id, userId: preference.user.id}) }}" style="display:inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('reset_user') }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary" title="Réinitialiser la préférence">
+                                            <i class="fas fa-sync"></i> Réinitialiser
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if pageSize < (dismissedOnly ? dismissedTotal : total) %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('app_admin_banner_preferences', {id: banner.id, page: page - 1, dismissed_only: dismissedOnly ? 1 : 0}) }}">Précédent</a>
+                            </li>
+                        {% endif %}
+
+                        {% for p in range(1, totalPages) %}
+                            <li class="page-item {% if p == page %}active{% endif %}">
+                                <a class="page-link" href="{{ path('app_admin_banner_preferences', {id: banner.id, page: p, dismissed_only: dismissedOnly ? 1 : 0}) }}">{{ p }}</a>
+                            </li>
+                        {% endfor %}
+
+                        {% if page < totalPages %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('app_admin_banner_preferences', {id: banner.id, page: page + 1, dismissed_only: dismissedOnly ? 1 : 0}) }}">Suivant</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Aucune préférence trouvée.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Reset All Card -->
+    <div class="card shadow mb-4 border-left-warning">
+        <div class="card-header py-3 bg-warning">
+            <h6 class="m-0 font-weight-bold text-white">
+                <i class="fas fa-exclamation-triangle mr-2"></i>Actions Dangereuses
+            </h6>
+        </div>
+        <div class="card-body">
+            <p>Réinitialiser toutes les préférences pour cette bannière permettra à tous les utilisateurs de la voir à nouveau.</p>
+            <form method="POST" action="{{ path('app_admin_banner_reset_preferences', {id: banner.id}) }}" style="display:inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('reset' ~ banner.id) }}">
+                <button type="submit" class="btn btn-warning" onclick="return confirm('Êtes-vous sûr de vouloir réinitialiser TOUTES les préférences pour cette bannière ?')">
+                    <i class="fas fa-redo"></i> Réinitialiser Toutes les Préférences
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

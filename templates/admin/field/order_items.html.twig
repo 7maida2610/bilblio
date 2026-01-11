@@ -1,0 +1,15 @@
+<div class="order-items-summary">
+    <strong>{{ value|length }} article(s)</strong>
+    <div class="mt-2">
+        {% for item in value %}
+            <div class="d-flex align-items-center mb-1">
+                {% if item.livre.image %}
+                    <img src="{{ asset('uploads/images/' ~ item.livre.image) }}" alt="{{ item.livre.titre }}" class="img-thumbnail mr-2" style="width: 30px; height: 30px; object-fit: cover;">
+                {% endif %}
+                <small class="text-truncate">
+                    {{ item.livre.titre }} (x{{ item.quantity }})
+                </small>
+            </div>
+        {% endfor %}
+    </div>
+</div>

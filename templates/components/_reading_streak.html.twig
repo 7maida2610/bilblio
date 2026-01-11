@@ -1,0 +1,206 @@
+{# templates/components/_reading_streak.html.twig #}
+{% if streakStats is defined %}
+<div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #009688 0%, #4CAF50 100%); color: white; border-radius: 15px;">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <h5 class="font-weight-bold mb-1">
+                    <i class="fas fa-fire mr-2"></i>Série de Lecture
+                </h5>
+                <p class="mb-0 opacity-75 small">{{ streakStats.streak_status }}</p>
+            </div>
+            <div class="text-center">
+                <div class="display-4 font-weight-bold mb-0">{{ streakStats.current_streak }}</div>
+                <small class="opacity-75">jours</small>
+            </div>
+        </div>
+
+        <div class="row text-center mb-3">
+            <div class="col-4">
+                <div class="h6 mb-0">{{ streakStats.longest_streak }}</div>
+                <small class="opacity-75">Record</small>
+            </div>
+            <div class="col-4">
+                <div class="h6 mb-0">{{ streakStats.monthly_activities }}</div>
+                <small class="opacity-75">Ce mois</small>
+            </div>
+            <div class="col-4">
+                <div class="h6 mb-0">{{ streakStats.total_activities }}</div>
+                <small class="opacity-75">Total</small>
+            </div>
+        </div>
+
+        {# Weekly activity visualization #}
+        <div class="mb-3">
+            <h6 class="font-weight-bold mb-3">
+                <i class="fas fa-chart-line mr-1"></i>Activité de la semaine
+            </h6>
+            <div class="d-flex justify-content-between align-items-end" style="height: 60px;">
+                {% for day in streakStats.weekly_activity %}
+                    <div class="text-center flex-fill mx-1">
+                        <div class="bg-white rounded-pill mb-1 position-relative"
+                             style="height: {{ (day.count > 0 ? (day.count * 8) + 10 : 8) }}px; min-height: 8px; transition: all 0.3s ease;"
+                             data-toggle="tooltip"
+                             title="{{ day.day }}: {{ day.count }} activité{{ day.count > 1 ? 's' : '' }}">
+                            {% if day.count > 0 %}
+                                <div class="position-absolute w-100 h-100 rounded-pill"
+                                     style="background: linear-gradient(135deg, #FF6F00 0%, #FF9800 100%); opacity: 0.9;"></div>
+                            {% endif %}
+                        </div>
+                        <small class="d-block text-white opacity-75" style="font-size: 10px;">{{ day.day }}</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Motivational message #}
+        {% if motivationalMessage is defined %}
+        <div class="alert alert-light border-0 rounded-pill py-2 px-3" style="background: rgba(255,255,255,0.2); color: white;">
+            <i class="fas fa-lightbulb mr-2"></i>
+            <small class="font-weight-medium">{{ motivationalMessage }}</small>
+        </div>
+        {% endif %}
+
+        {# Achievements preview #}
+        {% if achievements is defined and achievements|length > 0 %}
+        <div class="mt-3">
+            <h6 class="font-weight-bold mb-2">
+                <i class="fas fa-trophy mr-1"></i>Réalisations
+            </h6>
+            <div class="d-flex flex-wrap">
+                {% for achievement in achievements|slice(0, 3) %}
+                    <div class="mr-2 mb-2">
+                        <span class="badge badge-pill px-2 py-1 {{ achievement.unlocked ? 'badge-light text-' ~ achievement.color : 'badge-secondary' }}"
+                              style="{{ achievement.unlocked ? 'background: rgba(255,255,255,0.9);' : '' }}">
+                            <i class="{{ achievement.icon }} mr-1"></i>
+                            <small>{{ achievement.title }}</small>
+                        </span>
+                    </div>
+                {% endfor %}
+                {% if achievements|length > 3 %}
+                    <div class="mr-2 mb-2">
+                        <span class="badge badge-pill px-2 py-1 badge-light text-primary"
+                              style="background: rgba(255,255,255,0.9);">
+                            <i class="fas fa-plus mr-1"></i>
+                            <small>+{{ achievements|length - 3 }}</small>
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Reading streak specific styles */
+.streak-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.streak-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: streakGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes streakGlow {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1); }
+}
+
+/* Enhanced tooltip for streak bars */
+[data-toggle="tooltip"] {
+    cursor: pointer;
+}
+
+/* Achievement badges animation */
+.badge {
+    transition: all 0.3s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+/* Mobile responsiveness for streak component */
+@media (max-width: 768px) {
+    .streak-card .card-body {
+        padding: 1rem !important;
+    }
+
+    .streak-card .display-4 {
+        font-size: 2rem !important;
+    }
+
+    .streak-card .d-flex.justify-content-between.align-items-end {
+        height: 50px !important;
+    }
+
+    .streak-card .bg-white.rounded-pill {
+        margin-bottom: 0.25rem !important;
+    }
+
+    .streak-card small {
+        font-size: 9px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .streak-card .row.text-center .col-4 {
+        margin-bottom: 0.5rem;
+    }
+
+    .streak-card .d-flex.flex-wrap .mr-2.mb-2 {
+        margin-right: 0.25rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .streak-card .badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+}
+</style>
+
+<script>
+// Initialize tooltips for streak bars
+document.addEventListener('DOMContentLoaded', function() {
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // Add click animation to achievement badges
+    document.querySelectorAll('.streak-card .badge').forEach(function(badge) {
+        badge.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    });
+
+    // Animate streak number on load
+    const streakNumber = document.querySelector('.streak-card .display-4');
+    if (streakNumber) {
+        const finalNumber = parseInt(streakNumber.textContent);
+        streakNumber.textContent = '0';
+
+        let currentNumber = 0;
+        const increment = finalNumber > 100 ? 5 : finalNumber > 50 ? 2 : 1;
+        const interval = setInterval(() => {
+            currentNumber += increment;
+            if (currentNumber >= finalNumber) {
+                currentNumber = finalNumber;
+                clearInterval(interval);
+            }
+            streakNumber.textContent = currentNumber;
+        }, 50);
+    }
+});
+</script>
+{% endif %}

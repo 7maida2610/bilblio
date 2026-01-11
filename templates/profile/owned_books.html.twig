@@ -1,0 +1,307 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Mes Livres - Biblio{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-book text-primary mr-2"></i>Mes Livres
+            </h1>
+            <p class="mb-0 text-muted">Vos livres achetés et leur progression de lecture</p>
+        </div>
+        <a href="{{ path('app_livre_index') }}" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i>Acheter plus de livres
+        </a>
+    </div>
+
+    {% if ownedBooks|length > 0 %}
+        <div class="row">
+            {% for livre in ownedBooks %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow h-100 owned-book-card">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                            <h6 class="mb-0 font-weight-bold text-primary" style="font-size: 0.9rem;">
+                                {{ livre.titre }}
+                            </h6>
+                            {% if livre.pdf %}
+                                <button class="btn btn-success btn-sm" onclick="readBook({{ livre.id }})">
+                                    <i class="fas fa-book-open mr-1"></i>Lire
+                                </button>
+                            {% endif %}
+                        </div>
+
+                        <div class="position-relative">
+                            {% if livre.image %}
+                                <img src="{{ asset('uploads/images/' ~ livre.image) }}"
+                                     alt="{{ livre.titre }}"
+                                     class="card-img-top"
+                                     style="height: 180px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                                     style="height: 180px;">
+                                    <i class="fas fa-book fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+
+                            <!-- Reading status badge -->
+                            {% set readingProgress = user.readingProgress.filter(progress => progress.livre.id == livre.id)|first %}
+                            {% if readingProgress %}
+                                {% if readingProgress.isCompleted %}
+                                    <div class="badge badge-success position-absolute" style="top: 10px; right: 10px;">
+                                        <i class="fas fa-check-circle mr-1"></i>Lu
+                                    </div>
+                                {% else %}
+                                    <div class="badge badge-info position-absolute" style="top: 10px; right: 10px;">
+                                        <i class="fas fa-bookmark mr-1"></i>En cours
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="badge badge-secondary position-absolute" style="top: 10px; right: 10px;">
+                                    <i class="fas fa-eye mr-1"></i>Non lu
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-body">
+                            <p class="card-text text-muted small mb-2">
+                                <i class="fas fa-user mr-1"></i>{{ livre.auteur.prenom }} {{ livre.auteur.nom }}
+                            </p>
+                            <p class="card-text text-muted small mb-3">
+                                <i class="fas fa-building mr-1"></i>{{ livre.editeur.nomEditeur }}
+                            </p>
+
+                            <!-- Reading Progress -->
+                            {% if readingProgress %}
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-muted">Progression</small>
+                                        <small class="font-weight-bold text-primary">
+                                            {{ readingProgress.progressPercentage }}%
+                                        </small>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-primary"
+                                             role="progressbar"
+                                             style="width: {{ readingProgress.progressPercentage }}%"
+                                             aria-valuenow="{{ readingProgress.progressPercentage }}"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    {% if readingProgress.currentPage %}
+                                        <small class="text-muted mt-1 d-block">
+                                            Page {{ readingProgress.currentPage }} sur {{ livre.nbPages }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            <!-- Reading Goals -->
+                            {% set activeGoals = user.readingGoals.filter(goal => goal.endDate > date() and goal.goalType == 'books') %}
+                            {% if activeGoals|length > 0 %}
+                                <div class="mb-3">
+                                    <small class="text-muted d-block mb-1">Objectif de lecture</small>
+                                    {% for goal in activeGoals %}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small>{{ goal.targetValue }} livres</small>
+                                            <small class="font-weight-bold text-success">
+                                                {{ goal.currentValue }}/{{ goal.targetValue }}
+                                            </small>
+                                        </div>
+                                        <div class="progress mt-1" style="height: 6px;">
+                                            <div class="progress-bar bg-success"
+                                                 role="progressbar"
+                                                 style="width: {{ (goal.currentValue / goal.targetValue * 100) > 100 ? 100 : (goal.currentValue / goal.targetValue * 100) }}%">
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-2 mt-auto">
+                                <a href="{{ path('app_livre_show', {'id': livre.id}) }}"
+                                   class="btn btn-outline-primary btn-sm flex-fill">
+                                    <i class="fas fa-eye mr-1"></i>Détails
+                                </a>
+                                {% if readingProgress %}
+                                    <button class="btn btn-outline-info btn-sm"
+                                            onclick="updateProgress({{ livre.id }}, {{ readingProgress.currentPage ?: 0 }}, {{ livre.nbPages }})">
+                                        <i class="fas fa-edit mr-1"></i>Mettre à jour
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-outline-success btn-sm"
+                                            onclick="startReading({{ livre.id }})">
+                                        <i class="fas fa-play mr-1"></i>Commencer
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if readingProgress and readingProgress.lastReadAt %}
+                            <div class="card-footer bg-light py-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock mr-1"></i>Dernière lecture: {{ readingProgress.lastReadAt|date('d/m/Y') }}
+                                </small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Reading Statistics -->
+        <div class="row mt-4">
+            <div class="col-lg-12">
+                <div class="card shadow">
+                    <div class="card-header py-3 bg-light">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-chart-bar mr-2"></i>Statistiques de lecture
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3 mb-3">
+                                <div class="h4 font-weight-bold text-primary">{{ ownedBooks|length }}</div>
+                                <small class="text-muted">Livres possédés</small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="h4 font-weight-bold text-success">
+                                    {{ ownedBooks|filter(livre => user.readingProgress.filter(p => p.livre.id == livre.id and p.isCompleted)|first)|length }}
+                                </div>
+                                <small class="text-muted">Livres lus</small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="h4 font-weight-bold text-info">
+                                    {{ ownedBooks|filter(livre => user.readingProgress.filter(p => p.livre.id == livre.id and not p.isCompleted)|first)|length }}
+                                </div>
+                                <small class="text-muted">En cours de lecture</small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="h4 font-weight-bold text-warning">
+                                    {{ ownedBooks|filter(livre => not user.readingProgress.filter(p => p.livre.id == livre.id)|first)|length }}
+                                </div>
+                                <small class="text-muted">Non commencés</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card shadow">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-book fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted mb-3">Vous n'avez pas encore de livres</h4>
+                <p class="text-muted mb-4">Achetez votre premier livre pour commencer votre collection personnelle.</p>
+                <a href="{{ path('app_livre_index') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-shopping-cart mr-2"></i>Acheter des livres
+                </a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function readBook(livreId) {
+    // Open PDF in new tab/window
+    window.open(`{{ path('app_livre_show', {'id': 'LIVRE_ID'}) }}`.replace('LIVRE_ID', livreId) + '?read=pdf', '_blank');
+}
+
+function startReading(livreId) {
+    if (confirm('Commencer la lecture de ce livre ?')) {
+        fetch(`{{ path('app_user_reading_progress_update', {'id': 'LIVRE_ID'}) }}`.replace('LIVRE_ID', livreId), {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'progress_percentage=1&_token={{ csrf_token('update-progress') }}'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur lors de la mise à jour');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur lors de la mise à jour');
+        });
+    }
+}
+
+function updateProgress(livreId, currentPage, totalPages) {
+    const newPage = prompt(`Page actuelle (${currentPage}/${totalPages}). Nouvelle page:`, currentPage);
+    if (newPage !== null && newPage !== '') {
+        const pageNum = parseInt(newPage);
+        if (pageNum >= 0 && pageNum <= totalPages) {
+            const progressPercentage = Math.round((pageNum / totalPages) * 100);
+
+            fetch(`{{ path('app_user_reading_progress_update', {'id': 'LIVRE_ID'}) }}`.replace('LIVRE_ID', livreId), {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `progress_percentage=${progressPercentage}&current_page=${pageNum}&_token={{ csrf_token('update-progress') }}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erreur lors de la mise à jour');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur lors de la mise à jour');
+            });
+        } else {
+            alert('Numéro de page invalide');
+        }
+    }
+}
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.owned-book-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.owned-book-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.owned-book-card .card-img-top {
+    border-radius: 0;
+}
+
+.progress {
+    border-radius: 4px;
+}
+
+.gap-2 > * + * {
+    margin-left: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+</style>
+{% endblock %}

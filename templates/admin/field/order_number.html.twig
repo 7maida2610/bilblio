@@ -1,0 +1,7 @@
+{% if field.value %}
+    <a href="{{ path('app_admin_order_show', {'id': entity.getInstance().id}) }}" class="text-decoration-none">
+        <strong>{{ field.value }}</strong>
+    </a>
+{% else %}
+    <span class="text-muted">N/A</span>
+{% endif %}

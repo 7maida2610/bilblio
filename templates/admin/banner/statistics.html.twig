@@ -1,0 +1,188 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_body %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-0">
+                        <i class="fa fa-bar-chart"></i> Statistiques: {{ banner.title }}
+                    </h3>
+                    <small class="text-muted">ID: #{{ banner.id }}</small>
+                </div>
+                <a href="{{ ea_url({'action': 'detail', 'entityId': banner.id}) }}" class="btn btn-secondary">
+                    <i class="fa fa-arrow-left"></i> Retour aux détails
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h2 class="text-primary mb-0">{{ totalPreferences }}</h2>
+                    <small class="text-muted">Utilisateurs ayant vu cette bannière</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h2 class="text-danger mb-0">{{ dismissedCount }}</h2>
+                    <small class="text-muted">Utilisateurs ayant fermé</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h2 class="text-warning mb-0">{{ dismissalRate }}%</h2>
+                    <small class="text-muted">Taux de fermeture</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h2 class="text-success mb-0">{{ totalPreferences - dismissedCount }}</h2>
+                    <small class="text-muted">Utilisateurs ayant conservé</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner Information -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fa fa-banner"></i> Informations de la Bannière</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Titre:</dt>
+                        <dd class="col-sm-8">{{ banner.title }}</dd>
+
+                        <dt class="col-sm-4">Type:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge badge-{{ banner.type == 'promotion' ? 'success' : (banner.type == 'warning' ? 'warning' : (banner.type == 'announcement' ? 'info' : 'primary')) }}">
+                                {{ banner.typeLabel }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4">Position:</dt>
+                        <dd class="col-sm-8">{{ banner.positionLabel }}</dd>
+
+                        <dt class="col-sm-4">Priorité:</dt>
+                        <dd class="col-sm-8">{{ banner.priority ?? 'N/A' }}</dd>
+
+                        <dt class="col-sm-4">Statut:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge badge-{{ banner.status == 'active' ? 'success' : (banner.status == 'inactive' ? 'secondary' : (banner.status == 'scheduled' ? 'warning' : 'danger')) }}">
+                                {{ banner.statusLabel }}
+                            </span>
+                        </dd>
+
+                        {% if banner.startDate %}
+                            <dt class="col-sm-4">Début:</dt>
+                            <dd class="col-sm-8">{{ banner.startDate | format_datetime(locale='fr') }}</dd>
+                        {% endif %}
+
+                        {% if banner.endDate %}
+                            <dt class="col-sm-4">Fin:</dt>
+                            <dd class="col-sm-8">{{ banner.endDate | format_datetime(locale='fr') }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fa fa-pie-chart"></i> Analyse des Préférences</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div style="width: 200px; height: 200px; margin: 0 auto;">
+                            <canvas id="dismissalChart"></canvas>
+                        </div>
+                    </div>
+                    <hr>
+                    <p class="text-muted small mb-0">
+                        <i class="fa fa-info-circle"></i> Cette page montre les statistiques de dismissal
+                        (fermeture) de bannière par les utilisateurs.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Public Target -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fa fa-users"></i> Configuration du Public Cible</h6>
+                </div>
+                <div class="card-body">
+                    {% if banner.targetAudience | length > 0 %}
+                        <p class="mb-2"><strong>Rôles autorisés à voir cette bannière:</strong></p>
+                        <div>
+                            {% for audience in banner.targetAudience %}
+                                <span class="badge badge-secondary">{{ audience }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted"><i class="fa fa-globe"></i> <strong>Configuration:</strong> Visible par tous les utilisateurs (pas de restriction)</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js for visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    function initBannerChart() {
+        const ctx = document.getElementById('dismissalChart');
+        if (!ctx) return;
+        
+        // Destroy existing chart if it exists
+        if (window.bannerChart) {
+            window.bannerChart.destroy();
+        }
+        
+        window.bannerChart = new Chart(ctx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Conservée', 'Fermée'],
+                datasets: [{
+                    data: [{{ totalPreferences - dismissedCount }}, {{ dismissedCount }}],
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderColor: ['#fff', '#fff'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Support both regular page load and Turbo navigation
+    document.addEventListener('DOMContentLoaded', initBannerChart);
+    document.addEventListener('turbo:load', initBannerChart);
+    document.addEventListener('turbo:render', initBannerChart);
+</script>
+{% endblock %}

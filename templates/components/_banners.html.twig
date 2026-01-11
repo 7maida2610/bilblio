@@ -1,0 +1,403 @@
+{# templates/components/_banners.html.twig #}
+{% if banners is defined and banners is not empty %}
+    {% for banner in banners %}
+        <div class="banner-container mb-3 {{ banner.cssClasses }}"
+             style="{{ banner.inlineStyles }}"
+             data-banner-id="{{ banner.id }}"
+             data-banner-position="{{ banner.position }}">
+
+            {% if banner.position == 'popup' %}
+                {# Popup banner - hidden by default, shown via JavaScript #}
+                <div class="banner-popup modal fade" id="banner-popup-{{ banner.id }}" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header {{ banner.type == 'promotion' ? 'bg-success' : (banner.type == 'warning' ? 'bg-warning' : (banner.type == 'announcement' ? 'bg-info' : 'bg-primary')) }} text-white">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-{{ banner.type == 'promotion' ? 'gift' : (banner.type == 'warning' ? 'exclamation-triangle' : (banner.type == 'announcement' ? 'bullhorn' : 'info-circle')) }} mr-2"></i>
+                                    {{ banner.title }}
+                                </h5>
+                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body p-4">
+                                {% if banner.image %}
+                                    <div class="text-center mb-3">
+                                        <img src="{{ asset('uploads/banners/' ~ banner.image) }}"
+                                             alt="{{ banner.title }}"
+                                             class="img-fluid rounded shadow-sm"
+                                             style="max-height: 200px;">
+                                    </div>
+                                {% endif %}
+
+                                {% if banner.content %}
+                                    <div class="banner-content">
+                                        {{ banner.content|raw }}
+                                    </div>
+                                {% endif %}
+
+                                {% if banner.link %}
+                                    <div class="text-center mt-3">
+                                        <a href="{{ banner.link }}" class="btn btn-primary btn-lg" target="_blank">
+                                            <i class="fas fa-external-link-alt mr-1"></i>
+                                            {{ banner.linkText ?: 'En savoir plus' }}
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                {# Regular banner #}
+                <div class="alert alert-{{ banner.type == 'promotion' ? 'success' : (banner.type == 'warning' ? 'warning' : (banner.type == 'announcement' ? 'info' : 'primary')) }}
+                           border-0 shadow-sm fade show banner-alert"
+                     role="alert"
+                     style="border-radius: 15px; position: relative; overflow: hidden;">
+
+                    {# Background pattern for visual appeal #}
+                    <div class="banner-bg-pattern"
+                         style="position: absolute; top: 0; right: 0; width: 100px; height: 100px; opacity: 0.1; background: radial-gradient(circle, currentColor 1px, transparent 1px); background-size: 20px 20px;"></div>
+
+                    <div class="d-flex align-items-start banner-content-wrapper">
+                        <div class="flex-grow-1 banner-text-content">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-{{ banner.type == 'promotion' ? 'gift' : (banner.type == 'warning' ? 'exclamation-triangle' : (banner.type == 'announcement' ? 'bullhorn' : 'info-circle')) }}
+                                   mr-2 fa-lg text-{{ banner.type == 'promotion' ? 'success' : (banner.type == 'warning' ? 'warning' : (banner.type == 'announcement' ? 'info' : 'primary')) }}"></i>
+                                <h6 class="font-weight-bold mb-0 text-{{ banner.type == 'promotion' ? 'success' : (banner.type == 'warning' ? 'warning' : (banner.type == 'announcement' ? 'info' : 'primary')) }}">
+                                    {{ banner.title }}
+                                </h6>
+                            </div>
+
+                            {% if banner.content %}
+                                <div class="banner-content mb-2">
+                                    {{ banner.content|raw }}
+                                </div>
+                            {% endif %}
+
+                            {% if banner.link %}
+                                <a href="{{ banner.link }}" class="btn btn-sm btn-outline-{{ banner.type == 'promotion' ? 'success' : (banner.type == 'warning' ? 'warning' : (banner.type == 'announcement' ? 'info' : 'primary')) }} font-weight-bold banner-link-btn" target="_blank">
+                                    <i class="fas fa-external-link-alt mr-1"></i>
+                                    {{ banner.linkText ?: 'En savoir plus' }}
+                                </a>
+                            {% endif %}
+                        </div>
+
+                        {% if banner.image %}
+                            <div class="ml-3 flex-shrink-0 banner-image-wrapper">
+                                <img src="{{ asset('uploads/banners/' ~ banner.image) }}"
+                                     alt="{{ banner.title }}"
+                                     class="rounded shadow-sm banner-image"
+                                     style="width: 80px; height: 80px; object-fit: cover;">
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Close button #}
+                    <button type="button" class="close position-absolute" style="top: 10px; right: 15px; cursor: pointer; z-index: 10; background: rgba(255,255,255,0.7); border: none; padding: 5px 8px; border-radius: 3px; font-size: 20px; opacity: 0.8; transition: all 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <style>
+    .banner-alert {
+        transition: all 0.3s ease;
+        border-left: 4px solid currentColor !important;
+        padding: 1.25rem 1rem 1rem 1rem !important;
+    }
+
+    .banner-alert:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+
+    .banner-content {
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    .banner-content p {
+        margin-bottom: 0.5rem;
+    }
+
+    .banner-content p:last-child {
+        margin-bottom: 0;
+    }
+
+    .banner-popup .modal-content {
+        border-radius: 15px;
+    }
+
+    .banner-bg-pattern {
+        pointer-events: none;
+    }
+
+    .banner-alert .close {
+        top: 8px !important;
+        right: 10px !important;
+        font-size: 18px !important;
+        padding: 4px 6px !important;
+        z-index: 15 !important;
+    }
+
+    /* Animation for banner appearance */
+    @keyframes bannerSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .banner-alert {
+        animation: bannerSlideIn 0.5s ease-out;
+    }
+
+    /* Mobile Responsive Styles for Banners */
+    @media (max-width: 768px) {
+        .banner-container {
+            margin-bottom: 1rem !important;
+        }
+
+        .banner-alert {
+            padding: 1rem 0.75rem 0.75rem 0.75rem !important;
+            border-radius: 10px !important;
+            margin-bottom: 0.75rem;
+        }
+
+        .banner-alert .d-flex {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            text-align: left !important;
+        }
+
+        .banner-alert .flex-grow-1 {
+            width: 100%;
+            padding-right: 35px;
+        }
+
+        .banner-alert .ml-3 {
+            margin-left: 0 !important;
+            margin-top: 1rem !important;
+            margin-bottom: 0.5rem;
+            align-self: center;
+        }
+
+        .banner-alert .ml-3 img {
+            width: 60px !important;
+            height: 60px !important;
+        }
+
+        .banner-alert h6 {
+            font-size: 1rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .banner-alert h6 i {
+            font-size: 1.1rem !important;
+        }
+
+        .banner-content {
+            font-size: 0.875rem !important;
+            line-height: 1.5 !important;
+            margin-bottom: 0.75rem !important;
+        }
+
+        .banner-alert .btn {
+            width: 100% !important;
+            text-align: center;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .banner-alert .close {
+            top: 5px !important;
+            right: 5px !important;
+            font-size: 20px !important;
+            padding: 6px 8px !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-radius: 4px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .banner-alert {
+            padding: 0.875rem 0.625rem 0.625rem 0.625rem !important;
+            border-radius: 8px !important;
+        }
+
+        .banner-alert h6 {
+            font-size: 0.95rem !important;
+        }
+
+        .banner-content {
+            font-size: 0.8rem !important;
+        }
+
+        .banner-alert .ml-3 img {
+            width: 50px !important;
+            height: 50px !important;
+        }
+
+        .banner-alert .btn {
+            font-size: 0.8rem !important;
+            padding: 0.4rem 0.8rem;
+        }
+    }
+    </style>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const isLoggedIn = {{ app.user ? 'true' : 'false' }};
+        let hiddenBannerIds = [];
+
+        // Load hidden banners from server if user is logged in
+        if (isLoggedIn) {
+            fetch('{{ path("api_banner_preferences") }}')
+                .then(response => response.json())
+                .then(data => {
+                    hiddenBannerIds = data.hiddenBannerIds || [];
+                    applyBannerPreferences();
+                    attachAllCloseListeners();
+                });
+        } else {
+            // Use localStorage for anonymous users
+            hiddenBannerIds = JSON.parse(localStorage.getItem('dismissedBanners') || '[]');
+            applyBannerPreferences();
+            attachAllCloseListeners();
+        }
+
+        function applyBannerPreferences() {
+            // Hide banners that user has dismissed
+            hiddenBannerIds.forEach(bannerId => {
+                const banner = document.querySelector(`[data-banner-id="${bannerId}"]`);
+                if (banner) {
+                    banner.style.display = 'none';
+                }
+            });
+        }
+
+        function attachAllCloseListeners() {
+            // Attach listeners to ALL close buttons
+            document.querySelectorAll('.banner-container .close').forEach(function(closeBtn) {
+                // Remove existing listeners by cloning
+                const newBtn = closeBtn.cloneNode(true);
+                closeBtn.parentNode.replaceChild(newBtn, closeBtn);
+                
+                // Attach new listener
+                attachCloseButtonListener(newBtn);
+            });
+        }
+
+        // Handle banner dismissal
+        function attachCloseButtonListener(closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.cancelBubble = true;
+                
+                const banner = this.closest('.banner-container');
+                if (!banner) {
+                    console.error('Could not find banner container');
+                    return;
+                }
+                
+                const bannerId = parseInt(banner.dataset.bannerId);
+                console.log('Dismissing banner:', bannerId);
+
+                if (isLoggedIn) {
+                    // Save to database for logged-in users
+                    const formData = new FormData();
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                    formData.append('_token', csrfToken);
+
+                    fetch(`{{ path('api_banner_hide', {'id': 'BANNER_ID'}) }}`.replace('BANNER_ID', bannerId), {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Server response:', data);
+                        if (data.success) {
+                            hideBanner(banner);
+                        } else {
+                            hideBanner(banner);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error hiding banner:', error);
+                        hideBanner(banner);
+                    });
+                } else {
+                    // Save to localStorage for anonymous users
+                    if (!hiddenBannerIds.includes(bannerId)) {
+                        hiddenBannerIds.push(bannerId);
+                        localStorage.setItem('dismissedBanners', JSON.stringify(hiddenBannerIds));
+                    }
+                    hideBanner(banner);
+                }
+
+                return false;
+            });
+        }
+
+        function hideBanner(banner) {
+            // Animate out
+            banner.style.transition = 'all 0.3s ease';
+            banner.style.opacity = '0';
+            banner.style.transform = 'translateY(-20px)';
+
+            setTimeout(function() {
+                banner.remove();
+            }, 300);
+        }
+
+        // Handle popup dismissal
+        document.querySelectorAll('.banner-popup').forEach(function(popup) {
+            const bannerId = parseInt(popup.id.replace('banner-popup-', ''));
+
+            popup.addEventListener('hidden.bs.modal', function() {
+                if (isLoggedIn) {
+                    // Save to database
+                    const formData = new FormData();
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                    formData.append('_token', csrfToken);
+
+                    fetch(`{{ path('api_banner_hide', {'id': 'BANNER_ID'}) }}`.replace('BANNER_ID', bannerId), {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .catch(error => console.error('Error saving banner preference:', error));
+                } else {
+                    // Save to localStorage
+                    if (!hiddenBannerIds.includes(bannerId)) {
+                        hiddenBannerIds.push(bannerId);
+                        localStorage.setItem('dismissedBanners', JSON.stringify(hiddenBannerIds));
+                    }
+                }
+            });
+
+            // Don't show if already hidden
+            if (!hiddenBannerIds.includes(bannerId)) {
+                // Show popup after a delay
+                setTimeout(function() {
+                    $(popup).modal('show');
+                }, 2000);
+            }
+        });
+    });
+    </script>
+{% endif %}

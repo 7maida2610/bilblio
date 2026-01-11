@@ -1,0 +1,46 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block subject %}Votre commande a été annulée - {{ order.orderNumber }}{% endblock %}
+
+{% block body %}
+<h1>❌ Commande annulée</h1>
+
+<p>Bonjour {{ user.username }},</p>
+
+<p>Nous vous informons que votre commande <strong>{{ order.orderNumber }}</strong> a été annulée.</p>
+
+<div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: #721c24;">Détails de l'annulation</h3>
+    <p><strong>Numéro de commande:</strong> {{ order.orderNumber }}</p>
+    <p><strong>Date d'annulation:</strong> {{ "now"|date('d/m/Y H:i') }}</p>
+    <p><strong>Montant de la commande:</strong> {{ order.totalAmount|number_format(2, ',', ' ') }} €</p>
+</div>
+
+<h3>Raison de l'annulation :</h3>
+<p>{{ order.cancellationReason ?: 'Non spécifiée' }}</p>
+
+<div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h4 style="color: #856404; margin-top: 0;">💰 Remboursement en cours</h4>
+    <p style="color: #856404;">Le remboursement du montant de {{ order.totalAmount|number_format(2, ',', ' ') }} € sera traité dans les 3-5 jours ouvrables.</p>
+    <p style="color: #856404;">Vous recevrez un email de confirmation une fois le remboursement effectué.</p>
+    <p style="color: #856404;"><strong>Méthode de remboursement :</strong> {{ order.paymentMethod ?: 'Carte bancaire' }}</p>
+</div>
+
+<h3>Articles concernés :</h3>
+<ul>
+{% for item in order.orderItems %}
+    <li><strong>{{ item.livre.titre }}</strong> - Quantité: {{ item.quantity }} - Prix: {{ item.price|number_format(2, ',', ' ') }} €</li>
+{% endfor %}
+</ul>
+
+<div style="background-color: #e7f3ff; border: 1px solid #b8daff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+    <h4 style="color: #004085; margin-top: 0;">🔄 Passer une nouvelle commande</h4>
+    <p style="color: #004085;">Vous souhaitez commander à nouveau ? Tous vos articles sont toujours disponibles dans notre catalogue.</p>
+    <p><a href="{{ url('app_livre_index') }}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Voir le catalogue</a></p>
+</div>
+
+<p>Nous sommes désolés pour ce désagrément et espérons pouvoir vous servir à nouveau prochainement.</p>
+<p>Si vous avez des questions concernant cette annulation ou le remboursement, n'hésitez pas à nous contacter.</p>
+
+<p>Cordialement,<br>L'équipe BiblioApp</p>
+{% endblock %}

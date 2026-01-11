@@ -1,0 +1,264 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Commande {{ order.orderNumber }} - Biblio{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-receipt mr-2"></i>Commande {{ order.orderNumber }}
+            </h1>
+            <p class="mb-0 text-muted">Détails de votre commande</p>
+        </div>
+        <div class="btn-group" role="group">
+            <a href="{{ path('app_order_print', {'id': order.id}) }}" class="btn btn-sm btn-primary" target="_blank">
+                <i class="fas fa-print mr-1"></i>Imprimer
+            </a>
+            <a href="{{ path('app_order_invoice', {'id': order.id}) }}" class="btn btn-sm btn-success" target="_blank">
+                <i class="fas fa-file-pdf mr-1"></i>Facture
+            </a>
+            <a href="{{ path('app_profile_orders') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left mr-1"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Order Details -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-shopping-cart mr-2"></i>Détails de la commande
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for item in order.orderItems %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            {% if item.livre.image %}
+                                <img src="{{ asset('uploads/images/' ~ item.livre.image) }}" alt="{{ item.livre.titre }}" class="img-thumbnail mr-3" style="width: 60px; height: 60px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center mr-3" style="width: 60px; height: 60px; border-radius: 5px;">
+                                    <i class="fas fa-book text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h6 class="mb-1">{{ item.livre.titre }}</h6>
+                                <p class="text-muted small mb-1">
+                                    Auteur: {{ item.livre.auteur ? item.livre.auteur.prenom ~ ' ' ~ item.livre.auteur.nom : 'N/A' }}
+                                </p>
+                                <p class="text-muted small mb-0">
+                                    Quantité: {{ item.quantity }} × {{ item.unitPriceFormatted }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <strong>{{ item.subtotalFormatted }}</strong>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="border p-3 rounded">
+                                <h6 class="font-weight-bold mb-2">Adresse de livraison</h6>
+                                {% if order.shippingAddress %}
+                                    <p class="mb-1">{{ order.shippingAddress['nom']|default('') }} {{ order.shippingAddress['prenom']|default('') }}</p>
+                                    <p class="mb-1">{{ order.shippingAddress['adresse']|default('') }}</p>
+                                    <p class="mb-1">{{ order.shippingAddress['codePostal']|default('') }} {{ order.shippingAddress['ville']|default('') }}</p>
+                                    <p class="mb-0">{{ order.shippingAddress['pays']|default('') }}</p>
+                                {% else %}
+                                    <p class="text-muted">Non spécifiée</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border p-3 rounded">
+                                <h6 class="font-weight-bold mb-2">Adresse de facturation</h6>
+                                {% if order.billingAddress %}
+                                    <p class="mb-1">{{ order.billingAddress['nom']|default('') }} {{ order.billingAddress['prenom']|default('') }}</p>
+                                    <p class="mb-1">{{ order.billingAddress['adresse']|default('') }}</p>
+                                    <p class="mb-1">{{ order.billingAddress['codePostal']|default('') }} {{ order.billingAddress['ville']|default('') }}</p>
+                                    <p class="mb-0">{{ order.billingAddress['pays']|default('') }}</p>
+                                {% else %}
+                                    <p class="text-muted">Non spécifiée</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-calculator mr-2"></i>Résumé
+                    </h6>
+                    <div class="btn-group" role="group">
+                        <a href="{{ path('app_order_print', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary" title="Imprimer la commande">
+                            <i class="fas fa-print"></i>
+                        </a>
+                        <a href="{{ path('app_order_invoice', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary" title="Télécharger la facture">
+                            <i class="fas fa-file-pdf"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Sous-total:</span>
+                        <span>{{ order.totalAmountFormatted }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Frais de port:</span>
+                        <span>Gratuit</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong class="text-primary">{{ order.totalAmountFormatted }}</strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted">Statut de la commande:</small>
+                        <br>
+                        {% if order.status == 'pending' %}
+                            <span class="badge badge-warning">En attente</span>
+                        {% elseif order.status == 'paid' %}
+                            <span class="badge badge-info">Payée</span>
+                        {% elseif order.status == 'processing' %}
+                            <span class="badge badge-primary">En traitement</span>
+                        {% elseif order.status == 'shipped' %}
+                            <span class="badge badge-warning">Expédiée</span>
+                        {% elseif order.status == 'delivered' %}
+                            <span class="badge badge-success">Livrée</span>
+                        {% elseif order.status == 'cancelled' %}
+                            <span class="badge badge-danger">Annulée</span>
+                        {% elseif order.status == 'refunded' %}
+                            <span class="badge badge-secondary">Remboursée</span>
+                        {% else %}
+                            <span class="badge badge-light">{{ order.statusLabel }}</span>
+                        {% endif %}
+                    </div>
+
+                    {% if order.notes %}
+                    <div class="mb-3">
+                        <small class="text-muted">Notes:</small>
+                        <p class="mb-0 small">{{ order.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Order Timeline -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-history mr-2"></i>Historique
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Commande créée</h6>
+                                <p class="timeline-text">{{ order.createdAt|date('d/m/Y H:i') }}</p>
+                            </div>
+                        </div>
+
+                        {% if order.paidAt %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Paiement effectué</h6>
+                                <p class="timeline-text">{{ order.paidAt|date('d/m/Y H:i') }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if order.shippedAt %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Commande expédiée</h6>
+                                <p class="timeline-text">{{ order.shippedAt|date('d/m/Y H:i') }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if order.deliveredAt %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Commande livrée</h6>
+                                <p class="timeline-text">{{ order.deliveredAt|date('d/m/Y H:i') }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #e9ecef;
+}
+
+.timeline-content {
+    background: #f8f9fc;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border-left: 3px solid #e9ecef;
+}
+
+.timeline-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #5a5c69;
+}
+
+.timeline-text {
+    font-size: 12px;
+    color: #858796;
+    margin-bottom: 0;
+}
+</style>
+{% endblock %}

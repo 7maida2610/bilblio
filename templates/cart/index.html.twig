@@ -1,0 +1,657 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Mon Panier - Biblio{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.cart-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.cart-item {
+    background: var(--surface);
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 150, 136, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.cart-item:hover {
+    box-shadow: 0 8px 25px rgba(0, 150, 136, 0.2);
+    transform: translateY(-3px);
+}
+
+.cart-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #009688, #FF6F00);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cart-item:hover::before {
+    opacity: 1;
+}
+
+.quantity-input {
+    width: 80px;
+    text-align: center;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.quantity-input:focus {
+    border-color: #009688;
+    box-shadow: 0 0 0 0.2rem rgba(0, 150, 136, 0.25);
+}
+
+.cart-summary {
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    border-radius: 15px;
+    padding: 30px;
+    position: sticky;
+    top: 20px;
+    box-shadow: 0 4px 20px rgba(0, 150, 136, 0.1);
+    border: 1px solid #e0e0e0;
+    animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 80px 20px;
+    animation: fadeIn 1s ease-out;
+}
+
+.empty-cart i {
+    font-size: 5rem;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    animation: bounce 2s infinite;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+.empty-cart-icon {
+    position: relative;
+    display: inline-block;
+}
+
+.empty-cart-float {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    pointer-events: none;
+}
+
+.empty-cart-float i {
+    position: absolute;
+    font-size: 1.5rem;
+    opacity: 0.7;
+    animation: floatAround 6s ease-in-out infinite;
+}
+
+.empty-cart-float i:nth-child(1) {
+    top: -10px;
+    left: -10px;
+    animation-delay: 0s;
+    color: #009688;
+}
+
+.empty-cart-float i:nth-child(2) {
+    top: -5px;
+    right: -15px;
+    animation-delay: 2s;
+    color: #FF6F00;
+}
+
+.empty-cart-float i:nth-child(3) {
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation-delay: 4s;
+    color: #e74a3b;
+}
+
+@keyframes floatAround {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg) scale(1);
+    }
+    25% {
+        transform: translateY(-10px) rotate(90deg) scale(1.1);
+    }
+    50% {
+        transform: translateY(-5px) rotate(180deg) scale(0.9);
+    }
+    75% {
+        transform: translateY(-15px) rotate(270deg) scale(1.2);
+    }
+}
+
+.btn-cart-action {
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-cart-action:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-cart-action:active {
+    transform: scale(0.95);
+}
+
+.btn-cart-action i {
+    transition: transform 0.3s ease;
+}
+
+.btn-cart-action:hover i {
+    transform: scale(1.2);
+}
+
+.price-highlight {
+    background: linear-gradient(45deg, #009688, #FF6F00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 5px rgba(0, 150, 136, 0.5); }
+    to { text-shadow: 0 0 20px rgba(0, 150, 136, 0.8), 0 0 30px rgba(255, 111, 0, 0.6); }
+}
+
+.cart-icon-bounce {
+    animation: cartBounce 0.6s ease;
+}
+
+@keyframes cartBounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-5px); }
+    60% { transform: translateY(-3px); }
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #009688;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.success-animation {
+    animation: successPulse 0.6s ease;
+}
+
+@keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-shopping-cart text-primary mr-2"></i>Mon Panier
+                </h1>
+                <p class="mb-0 text-muted">Gérez vos articles et continuez vos achats</p>
+            </div>
+            <a href="{{ path('app_livre_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Continuer mes achats
+            </a>
+        </div>
+
+    <div class="cart-container">
+        {% if cart.cartItems|length > 0 %}
+            <div class="row">
+                <!-- Cart Items -->
+                <div class="col-lg-8">
+                    {% for item in cart.cartItems %}
+                        <div class="cart-item">
+                            <div class="row no-gutters">
+                                <!-- Book Image -->
+                                <div class="col-md-3">
+                                    {% if item.livre.image %}
+                                        <img src="{{ asset('uploads/images/' ~ item.livre.image) }}" alt="{{ item.livre.titre }}" class="img-fluid h-100" style="object-fit: cover; min-height: 150px;">
+                                    {% else %}
+                                        <div class="d-flex align-items-center justify-content-center h-100 bg-light" style="min-height: 150px;">
+                                            <i class="fas fa-book fa-3x text-gray-300"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Book Details -->
+                                <div class="col-md-6 p-3">
+                                    <h5 class="font-weight-bold mb-2">
+                                        <i class="fas fa-book text-primary mr-2"></i>{{ item.livre.titre }}
+                                    </h5>
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-user-edit text-info mr-1"></i>
+                                        {{ item.livre.auteur ? item.livre.auteur.prenom ~ ' ' ~ item.livre.auteur.nom : 'Auteur inconnu' }}
+                                    </p>
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-tags text-warning mr-1"></i>{{ item.livre.categorie ? item.livre.categorie.designation : 'N/A' }}
+                                    </p>
+
+                                    {% if item.livre.stockVente > 10 %}
+                                        <span class="badge badge-success badge-lg">
+                                            <i class="fas fa-check-circle mr-1"></i> En stock ({{ item.livre.stockVente }} disponibles)
+                                        </span>
+                                    {% elseif item.livre.stockVente > 0 %}
+                                        <span class="badge badge-warning badge-lg">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i> Stock faible ({{ item.livre.stockVente }} disponibles)
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-danger badge-lg">
+                                            <i class="fas fa-times-circle mr-1"></i> Épuisé
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Quantity and Price -->
+                                <div class="col-md-3 p-3 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <form method="post" action="{{ path('app_cart_update', {'id': item.id}) }}" class="d-flex align-items-center mb-3 update-form">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('update-cart-' ~ item.id) }}">
+                                            <label class="mr-2 mb-0 small font-weight-bold">
+                                                <i class="fas fa-hashtag text-primary mr-1"></i>Quantité:
+                                            </label>
+                                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.availableStock }}" class="form-control form-control-sm quantity-input mr-2">
+                                            <button type="submit" class="btn btn-outline-primary btn-sm btn-cart-action update-btn">
+                                                <i class="fas fa-sync-alt"></i>
+                                            </button>
+                                        </form>
+
+                                        <div class="text-right price-section">
+                                            <div class="font-weight-bold price-highlight h6 mb-0">{{ item.subtotalFormatted }}</div>
+                                            <small class="text-muted">
+                                                <i class="fas fa-euro-sign mr-1"></i>{{ item.unitPrice|number_format(2, ',', ' ') }} € / unité
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <form method="post" action="{{ path('app_cart_remove', {'id': item.id}) }}" onsubmit="return confirm('Retirer cet article du panier ?')" class="text-right">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('remove-cart-' ~ item.id) }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm btn-cart-action remove-btn">
+                                            <i class="fas fa-trash-alt mr-1"></i>Retirer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Clear Cart -->
+                    <div class="text-center mb-4">
+                        <form method="post" action="{{ path('app_cart_clear') }}" onsubmit="return confirm('Vider complètement le panier ?')" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('clear-cart') }}">
+                            <button type="submit" class="btn btn-outline-warning">
+                                <i class="fas fa-trash-alt mr-1"></i>Vider le panier
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Cart Summary -->
+                <div class="col-lg-4">
+                    <div class="cart-summary">
+                        <h5 class="font-weight-bold mb-4 text-center">
+                            <i class="fas fa-shopping-bag text-primary mr-2"></i> Récapitulatif de Commande
+                        </h5>
+
+                        <div class="summary-item d-flex justify-content-between mb-3 p-3 bg-light rounded">
+                            <span>
+                                <i class="fas fa-boxes text-info mr-2"></i>Articles ({{ cart.totalItems }})
+                            </span>
+                            <span class="font-weight-bold">{{ cart.totalPriceFormatted }}</span>
+                        </div>
+
+                        <div class="summary-item d-flex justify-content-between mb-3 p-3 bg-success bg-opacity-10 rounded">
+                            <span>
+                                <i class="fas fa-truck text-success mr-2"></i>Livraison
+                            </span>
+                            <span class="text-success font-weight-bold">
+                                <i class="fas fa-check-circle mr-1"></i>Gratuite
+                            </span>
+                        </div>
+
+                        <hr class="my-4" style="border-top: 2px solid #009688;">
+
+                        <div class="total-section d-flex justify-content-between mb-4 p-3 bg-primary bg-opacity-10 rounded">
+                            <strong class="h4 text-primary">
+                                <i class="fas fa-calculator mr-2"></i>Total
+                            </strong>
+                            <strong class="h4 price-highlight">{{ cart.totalPriceFormatted }}</strong>
+                        </div>
+
+                        <a href="{{ path('app_checkout') }}" class="btn btn-primary btn-lg btn-block mb-3 btn-cart-action checkout-btn">
+                            <i class="fas fa-credit-card mr-2"></i> Procéder au paiement
+                        </a>
+
+                        <div class="text-center security-info">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt text-success mr-1"></i>
+                                <i class="fas fa-lock mr-1"></i> Paiement 100% sécurisé SSL
+                            </small>
+                            <br>
+                            <small class="text-muted mt-1 d-block">
+                                <i class="fas fa-lock text-warning mr-1"></i>
+                                Chiffrement 256-bit
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Empty Cart -->
+            <div class="empty-cart">
+                <div class="empty-cart-icon mb-4">
+                    <i class="fas fa-shopping-cart"></i>
+                    <div class="empty-cart-float">
+                        <i class="fas fa-book"></i>
+                        <i class="fas fa-heart"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <h4 class="text-gray-600 mb-3">
+                    <i class="fas fa-shopping-basket mr-2"></i>Votre panier est vide
+                </h4>
+                <p class="text-muted mb-4">
+                    <i class="fas fa-shopping-bag mr-1"></i> Découvrez notre collection de livres et commencez vos achats !
+                </p>
+                <a href="{{ path('app_livre_index') }}" class="btn btn-primary btn-lg btn-cart-action empty-cart-btn">
+                    <i class="fas fa-compass mr-2"></i> Explorer la bibliothèque
+                </a>
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-lightbulb text-warning mr-1"></i>
+                        Astuce: Utilisez les filtres pour trouver vos livres préférés
+                    </small>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    </div> <!-- End of container-fluid -->
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Enhanced cart functionality with real-time updates
+document.addEventListener('DOMContentLoaded', function() {
+    // Update cart count in navbar
+    function updateCartCount() {
+        fetch('{{ path('app_cart_count') }}')
+            .then(response => response.json())
+            .then(data => {
+                const cartBadges = document.querySelectorAll('.cart-count');
+                cartBadges.forEach(badge => {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'inline' : 'none';
+                });
+            })
+            .catch(error => console.error('Error updating cart count:', error));
+    }
+
+    // Real-time quantity updates
+    document.querySelectorAll('.update-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const button = form.querySelector('.update-btn');
+            const originalIcon = button.innerHTML;
+            const quantityInput = form.querySelector('input[name="quantity"]');
+            const newQuantity = parseInt(quantityInput.value);
+
+            // Show loading state
+            button.innerHTML = '<div class="loading-spinner"></div>';
+            button.disabled = true;
+
+            // Prepare form data
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the cart item display
+                    updateCartDisplay(data.cart);
+
+                    // Show success animation
+                    button.classList.add('success-animation');
+                    setTimeout(() => {
+                        button.classList.remove('success-animation');
+                    }, 600);
+
+                    // Show notification
+                    showNotification('Quantité mise à jour!', 'success');
+                } else {
+                    showNotification('Erreur lors de la mise à jour', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Erreur de connexion', 'danger');
+            })
+            .finally(() => {
+                // Reset button state
+                button.innerHTML = originalIcon;
+                button.disabled = false;
+                updateCartCount();
+            });
+        });
+    });
+
+    // Enhanced remove functionality
+    document.querySelectorAll('.remove-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            const form = this.closest('form');
+            const cartItem = this.closest('.cart-item');
+
+            // Add bounce animation to cart icon
+            const cartIcon = document.querySelector('.fa-shopping-cart');
+            if (cartIcon) {
+                cartIcon.classList.add('cart-icon-bounce');
+                setTimeout(() => cartIcon.classList.remove('cart-icon-bounce'), 600);
+            }
+
+            // Add fade out animation to item
+            cartItem.style.transition = 'all 0.5s ease';
+            cartItem.style.opacity = '0.5';
+            cartItem.style.transform = 'scale(0.95)';
+        });
+    });
+
+    // Quantity input enhancements
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            const max = parseInt(this.max);
+
+            if (value > max) {
+                this.value = max;
+                showNotification('Quantité ajustée au stock disponible', 'warning');
+            }
+
+            if (value < 1) {
+                this.value = 1;
+            }
+        });
+
+        input.addEventListener('focus', function() {
+            this.select();
+        });
+    });
+
+    // Checkout button enhancement
+    const checkoutBtn = document.querySelector('.checkout-btn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('mouseenter', function() {
+            this.innerHTML = '<i class="fas fa-rocket mr-2"></i> Allons-y !';
+        });
+
+        checkoutBtn.addEventListener('mouseleave', function() {
+            this.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Procéder au paiement';
+        });
+    }
+
+    // Initialize cart count
+    updateCartCount();
+
+    // Add entrance animations
+    document.querySelectorAll('.cart-item').forEach((item, index) => {
+        item.style.animationDelay = (index * 0.1) + 's';
+        item.classList.add('animate-slide-in');
+    });
+});
+
+// Update cart display after AJAX operations
+function updateCartDisplay(cartData) {
+    // Update total items count
+    const totalItemsElements = document.querySelectorAll('[data-total-items]');
+    totalItemsElements.forEach(el => {
+        el.textContent = cartData.totalItems;
+    });
+
+    // Update total price
+    const totalPriceElements = document.querySelectorAll('[data-total-price]');
+    totalPriceElements.forEach(el => {
+        el.textContent = cartData.totalPriceFormatted;
+    });
+
+    // Update individual item subtotals if needed
+    // This would require more specific data from the backend
+}
+
+// Notification system
+function showNotification(message, type) {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.cart-notification');
+    existingNotifications.forEach(function(notification) {
+        notification.remove();
+    });
+
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} cart-notification position-fixed`;
+    notification.style.cssText = `
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border-radius: 10px;
+        animation: slideInRight 0.5s ease;
+        border: none;
+    `;
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <span class="flex-grow-1">${message}</span>
+            <button type="button" class="close ml-2" onclick="this.parentElement.parentElement.remove()">
+                <span>&times;</span>
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto remove after 3 seconds
+    setTimeout(function() {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOutRight 0.5s ease';
+            setTimeout(function() {
+                notification.remove();
+            }, 500);
+        }
+    }, 3000);
+}
+
+// Add notification animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    .cart-notification .close {
+        border: none;
+        background: none;
+        font-size: 1.2rem;
+        opacity: 0.7;
+    }
+    .cart-notification .close:hover {
+        opacity: 1;
+    }
+    .animate-slide-in {
+        animation: slideInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

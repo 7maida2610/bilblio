@@ -1,0 +1,168 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}{{ isEdit ? 'Modifier' : 'Créer' }} une Bannière - Biblio{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-image text-primary mr-2"></i>{{ isEdit ? 'Modifier' : 'Créer' }} une Bannière
+            </h1>
+            <p class="mb-0 text-muted">{{ isEdit ? 'Modifiez les détails de la bannière' : 'Créez une nouvelle bannière' }}</p>
+        </div>
+        <a href="{{ path('app_admin_banner_custom') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations de la Bannière</h6>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+
+                    <div class="form-group">
+                        {{ form_label(form.title) }}
+                        {{ form_widget(form.title) }}
+                        {% if form.title.vars.errors|length > 0 %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.title.vars.errors %}
+                                    {{ error.message }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.content) }}
+                        {{ form_widget(form.content) }}
+                        <small class="form-text text-muted">Utilisez le HTML pour le formatage</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.type) }}
+                                {{ form_widget(form.type) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.position) }}
+                                {{ form_widget(form.position) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.status) }}
+                                {{ form_widget(form.status) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.priority) }}
+                                {{ form_widget(form.priority) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.startDate) }}
+                                {{ form_widget(form.startDate) }}
+                                <small class="form-text text-muted">Date de début de publication</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.endDate) }}
+                                {{ form_widget(form.endDate) }}
+                                <small class="form-text text-muted">Date de fin de publication</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.link) }}
+                        {{ form_widget(form.link) }}
+                        <small class="form-text text-muted">URL de destination (optionnel)</small>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.linkText) }}
+                        {{ form_widget(form.linkText) }}
+                        <small class="form-text text-muted">Texte du bouton / lien</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Public Cible</label>
+                        <div class="ml-3">
+                            {{ form_widget(form.targetAudience) }}
+                        </div>
+                        <small class="form-text text-muted">Laissez vide pour afficher à tous</small>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {{ isEdit ? 'Mettre à jour' : 'Créer' }} la Bannière
+                        </button>
+                        <a href="{{ path('app_admin_banner_custom') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Aide</h6>
+                </div>
+                <div class="card-body">
+                    <h6>Conseils</h6>
+                    <ul class="small">
+                        <li><strong>Type:</strong> Détermine le style et l'icône de la bannière</li>
+                        <li><strong>Position:</strong> Où la bannière apparaît sur la page</li>
+                        <li><strong>Statut:</strong> Contrôle si la bannière est visible</li>
+                        <li><strong>Priorité:</strong> Plus élevée = s'affiche en premier</li>
+                        <li><strong>Dates:</strong> Programmez l'apparition/disparition automatique</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6>Types de Bannière</h6>
+                    <ul class="small">
+                        <li><span class="badge badge-success">Promotion</span> - Offres spéciales</li>
+                        <li><span class="badge badge-warning">Avertissement</span> - Informations importantes</li>
+                        <li><span class="badge badge-info">Annonce</span> - Nouvelles</li>
+                        <li><span class="badge badge-primary">Info</span> - Information générale</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-check {
+        display: block;
+        padding-left: 0;
+    }
+    
+    .form-check label {
+        margin-right: 20px;
+    }
+</style>
+{% endblock %}

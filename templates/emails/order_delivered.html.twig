@@ -1,0 +1,52 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block subject %}Votre commande a été livrée - {{ order.orderNumber }}{% endblock %}
+
+{% block body %}
+<h1>✅ Commande livrée avec succès !</h1>
+
+<p>Bonjour {{ user.username }},</p>
+
+<p>Parfait ! Votre commande <strong>{{ order.orderNumber }}</strong> a été livrée à l'adresse indiquée.</p>
+
+<div style="background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: #0c5460;">📦 Livraison confirmée</h3>
+    <p><strong>Numéro de commande:</strong> {{ order.orderNumber }}</p>
+    <p><strong>Date de livraison:</strong> {{ "now"|date('d/m/Y H:i') }}</p>
+    <p><strong>Adresse de livraison:</strong><br>
+    {{ order.shippingAddress|nl2br }}</p>
+</div>
+
+<h3>Livres reçus :</h3>
+<ul>
+{% for item in order.orderItems %}
+    <li>
+        <strong>{{ item.livre.titre }}</strong>
+        {% if item.livre.auteur %}
+            - {{ item.livre.auteur.prenom }} {{ item.livre.auteur.nom }}
+        {% endif %}
+        (Quantité: {{ item.quantity }})
+    </li>
+{% endfor %}
+</ul>
+
+<div style="background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h4 style="margin-top: 0; color: #009688;">⭐ Partagez votre expérience</h4>
+    <p>Vous avez aimé ces livres ? N'hésitez pas à laisser un avis sur notre plateforme !</p>
+    <p>Vos commentaires nous aident à améliorer nos recommandations et aident d'autres lecteurs à découvrir de nouveaux ouvrages.</p>
+    <p><a href="{{ url('app_user_profile') }}" style="background-color: #009688; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Laisser un avis</a></p>
+</div>
+
+<div style="background-color: #e7f3ff; border: 1px solid #b8daff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+    <h4 style="color: #004085; margin-top: 0;">🔄 Votre prochain achat</h4>
+    <p style="color: #004085;">Profitez de votre expérience de lecture et découvrez nos autres ouvrages !</p>
+    <p><a href="{{ url('app_livre_index') }}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Continuer mes achats</a></p>
+</div>
+
+<p>Nous espérons que ces livres vous apporteront autant de plaisir que nous l'espérons !</p>
+<p>Si vous avez des questions ou des commentaires, n'hésitez pas à nous contacter.</p>
+
+<p>À très bientôt pour de nouvelles découvertes littéraires ! 📚✨</p>
+
+<p>Cordialement,<br>L'équipe BiblioApp</p>
+{% endblock %}

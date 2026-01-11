@@ -1,0 +1,23 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    secret: '%env(APP_SECRET)%'
+
+    # Note that the session will be started ONLY if you read or write from it.
+    session: true
+
+    # Enable standard CSRF protection (session-based, not stateless)
+    csrf_protection: true
+
+    #esi: true
+    #fragments: true
+
+when@dev:
+    framework:
+        # Disable custom error controller in dev mode to see detailed error messages
+        error_controller: null
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file

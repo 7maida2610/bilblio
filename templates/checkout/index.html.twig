@@ -1,0 +1,723 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Finaliser ma Commande - Biblio{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .checkout-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .order-summary-card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 150, 136, 0.1);
+        border: 1px solid #e0e0e0;
+    }
+
+    .payment-card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 150, 136, 0.1);
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+
+    .payment-card:hover {
+        box-shadow: 0 4px 15px rgba(0, 150, 136, 0.2);
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .order-item:hover {
+        background-color: #f9f9f9;
+        padding-left: 10px;
+    }
+
+    .order-item-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-right: 15px;
+    }
+
+    .order-item-info {
+        flex: 1;
+    }
+
+    .order-item-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .order-item-meta {
+        font-size: 0.85rem;
+        color: #999;
+    }
+
+    .price-badge {
+        background: linear-gradient(135deg, #009688 0%, #26A69A 100%);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: 600;
+    }
+
+    #payment-element {
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        background: #f9f9f9;
+    }
+
+    #payment-message {
+        display: none;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    #payment-message.error {
+        background-color: rgba(244, 67, 54, 0.1);
+        color: #d32f2f;
+        border: 1px solid #d32f2f;
+    }
+
+    #payment-message.success {
+        background-color: rgba(76, 175, 80, 0.1);
+        color: #388e3c;
+        border: 1px solid #388e3c;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        font-size: 0.95rem;
+    }
+
+    .summary-row.total {
+        border-top: 2px solid #e0e0e0;
+        border-bottom: 2px solid #e0e0e0;
+        padding: 15px 0;
+        margin: 15px 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .summary-row.total .price {
+        background: linear-gradient(135deg, #009688 0%, #FF6F00 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .btn-pay {
+        background: linear-gradient(135deg, #009688 0%, #26A69A 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 15px 30px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-pay:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 150, 136, 0.3);
+        color: white;
+    }
+
+    .btn-pay:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .security-badges {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .security-badge {
+        text-align: center;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .security-badge i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .security-badge-text {
+        font-size: 0.85rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .stripe-logo {
+        margin-top: 15px;
+        text-align: center;
+        border-top: 1px solid #e0e0e0;
+        padding-top: 15px;
+    }
+
+    .stripe-logo small {
+        color: #999;
+        font-size: 0.8rem;
+    }
+
+    .payment-method-card {
+        cursor: pointer;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+
+    .payment-method-card:hover {
+        border-color: #009688;
+        box-shadow: 0 2px 8px rgba(0, 150, 136, 0.15);
+    }
+
+    .payment-method-card.active {
+        border-color: #009688;
+        background-color: rgba(0, 150, 136, 0.05);
+        box-shadow: 0 2px 8px rgba(0, 150, 136, 0.2);
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.8s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-credit-card text-primary mr-2"></i>Finaliser ma Commande
+                </h1>
+                <p class="mb-0 text-muted">Vérifiez vos articles et procédez au paiement</p>
+            </div>
+            <a href="{{ path('app_cart_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour au panier
+            </a>
+        </div>
+
+        <div class="checkout-container">
+            <div class="row">
+                <!-- Order Summary -->
+                <div class="col-lg-5 mb-4">
+                    <div class="order-summary-card">
+                        <div class="p-4 border-bottom">
+                            <h5 class="m-0 font-weight-bold">
+                                <i class="fas fa-shopping-bag text-primary mr-2"></i>Récapitulatif de Commande
+                            </h5>
+                        </div>
+                        <div class="p-4">
+                            <!-- Items List -->
+                            {% for item in cart.cartItems %}
+                            <div class="order-item">
+                                <div style="display: flex; align-items: center; flex: 1;">
+                                    {% if item.livre.image %}
+                                        <img src="{{ asset('uploads/images/' ~ item.livre.image) }}" alt="{{ item.livre.titre }}" class="order-item-image">
+                                    {% else %}
+                                        <div class="order-item-image bg-light d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="order-item-info">
+                                        <div class="order-item-title">{{ item.livre.titre }}</div>
+                                        <div class="order-item-meta">
+                                            <span class="badge badge-light">Qty: <strong>{{ item.quantity }}</strong></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="price-badge">{{ item.subtotalFormatted }}</div>
+                            </div>
+                            {% endfor %}
+
+                            <!-- Summary -->
+                            <div style="margin-top: 20px;">
+                                <div class="summary-row">
+                                    <span>Sous-total:</span>
+                                    <span>{{ cart.totalPriceFormatted }}</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Frais de port:</span>
+                                    <span class="badge badge-success badge-pill">Gratuit</span>
+                                </div>
+                                <div class="summary-row total">
+                                    <span>Total à payer:</span>
+                                    <span class="price">{{ cart.totalPriceFormatted }}</span>
+                                </div>
+                            </div>
+
+                            {% if hasUnavailableItems %}
+                            <div class="alert alert-warning mb-0">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <strong>Attention:</strong> Certains articles ne sont plus en stock.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Form -->
+                <div class="col-lg-7">
+                    <div class="payment-card">
+                        <div class="p-4 border-bottom" style="background: linear-gradient(135deg, #009688 0%, #26A69A 100%); color: white; border-radius: 10px 10px 0 0;">
+                            <h5 class="m-0 font-weight-bold">
+                                <i class="fas fa-lock mr-2"></i>Informations de Paiement
+                            </h5>
+                        </div>
+
+                        <!-- Billing Information Section - Show only for non-Stripe -->
+                        <div class="p-4 bg-light border-bottom" id="billing-info-section" style="display: none;">
+                            <h6 class="mb-3 font-weight-bold text-primary">
+                                <i class="fas fa-map-marker-alt mr-2"></i>Informations de Facturation
+                            </h6>
+                            {% if billingInfo.adresse ?? false %}
+                                <div class="alert alert-info mb-3">
+                                    <strong>Adresse sauvegardée:</strong><br>
+                                    <span id="billing-display">
+                                        {{ billingInfo.prenom|default('') }} {{ billingInfo.nom|default('') }}<br>
+                                        {{ billingInfo.adresse }}<br>
+                                        {% if billingInfo.codePostal %}{{ billingInfo.codePostal }}{% endif %} 
+                                        {% if billingInfo.ville %}{{ billingInfo.ville }}{% endif %}<br>
+                                        {% if billingInfo.pays %}{{ billingInfo.pays }}{% endif %}
+                                    </span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary mb-2" id="edit-billing-btn">
+                                    <i class="fas fa-edit mr-1"></i>Modifier
+                                </button>
+                            {% else %}
+                                <p class="text-muted mb-3"><small><i class="fas fa-info-circle mr-1"></i>Aucune adresse de facturation sauvegardée. Veuillez mettre à jour votre <a href="{{ path('app_profile') }}" target="_blank">profil</a>.</small></p>
+                            {% endif %}
+                            
+                            <!-- Editable Billing Form (hidden by default) -->
+                            <div id="billing-form-section" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <input type="text" class="form-control form-control-sm" id="billing-prenom" placeholder="Prénom" value="{{ billingInfo.prenom|default('') }}">
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <input type="text" class="form-control form-control-sm" id="billing-nom" placeholder="Nom" value="{{ billingInfo.nom|default('') }}">
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <input type="text" class="form-control form-control-sm" id="billing-adresse" placeholder="Adresse" value="{{ billingInfo.adresse|default('') }}">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <input type="text" class="form-control form-control-sm" id="billing-codePostal" placeholder="Code Postal" value="{{ billingInfo.codePostal|default('') }}">
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <input type="text" class="form-control form-control-sm" id="billing-ville" placeholder="Ville" value="{{ billingInfo.ville|default('') }}">
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <input type="text" class="form-control form-control-sm" id="billing-pays" placeholder="Pays" value="{{ billingInfo.pays|default('') }}">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-success" id="save-billing-btn">
+                                    <i class="fas fa-check mr-1"></i>Confirmer
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="cancel-billing-btn">
+                                    <i class="fas fa-times mr-1"></i>Annuler
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method Selection -->
+                        <div class="p-4 border-bottom">
+                            <h6 class="mb-3 font-weight-bold text-primary">
+                                <i class="fas fa-dollar-sign mr-2"></i>Méthode de Paiement
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-method-card active" data-method="stripe">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-credit-card fa-2x text-primary mb-2"></i>
+                                            <h6 class="mb-1">Carte Bancaire</h6>
+                                            <small class="text-muted">(Stripe)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-method-card" data-method="bank_transfer">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-university fa-2x text-info mb-2"></i>
+                                            <h6 class="mb-1">Virement</h6>
+                                            <small class="text-muted">Bancaire</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-method-card" data-method="cash">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-coins fa-2x text-warning mb-2"></i>
+                                            <h6 class="mb-1">À la Livraison</h6>
+                                            <small class="text-muted">Paiement en espèces</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-method-card" data-method="manual">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-hand-holding-usd fa-2x text-success mb-2"></i>
+                                            <h6 class="mb-1">Paiement Manuel</h6>
+                                            <small class="text-muted">À confirmer</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="payment-method" name="payment_method" value="stripe">
+                        </div>
+                        
+                        <div class="p-4">
+                            <form id="payment-form">
+                                <div id="payment-element"></div>
+
+                                <div id="payment-message"></div>
+
+                                <button type="submit" id="submit-payment" class="btn btn-pay btn-lg btn-block" {% if hasUnavailableItems %}disabled{% endif %}>
+                                    <i class="fas fa-lock-open mr-2"></i>
+                                    <span id="button-text">Procéder au Paiement</span>
+                                </button>
+
+                                <!-- Security Info -->
+                                <div class="security-badges">
+                                    <div class="security-badge">
+                                        <i class="fas fa-shield-alt text-success"></i>
+                                        <div class="security-badge-text">100% Sécurisé</div>
+                                    </div>
+                                    <div class="security-badge">
+                                        <i class="fas fa-lock text-info"></i>
+                                        <div class="security-badge-text">Chiffré SSL</div>
+                                    </div>
+                                    <div class="security-badge">
+                                        <i class="fas fa-undo text-primary"></i>
+                                        <div class="security-badge-text">Satisfait ou Remboursé</div>
+                                    </div>
+                                </div>
+
+                                <div class="stripe-logo">
+                                    <small>💳 Paiement sécurisé par <strong>Stripe</strong></small>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+let clientSecret = null;
+let stripe = null;
+let elements = null;
+
+document.addEventListener('DOMContentLoaded', async function() {
+    // Payment method selection
+    const paymentMethodCards = document.querySelectorAll('.payment-method-card');
+    const paymentMethodInput = document.getElementById('payment-method');
+    const billingInfoSection = document.getElementById('billing-info-section');
+
+    paymentMethodCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove active class from all cards
+            paymentMethodCards.forEach(c => c.classList.remove('active'));
+            // Add active class to clicked card
+            this.classList.add('active');
+            // Update hidden input
+            const selectedMethod = this.getAttribute('data-method');
+            paymentMethodInput.value = selectedMethod;
+            console.log('Payment method selected:', selectedMethod);
+
+            // Show/Hide billing information based on payment method
+            // Show billing info for non-Stripe methods
+            if (selectedMethod === 'stripe') {
+                billingInfoSection.style.display = 'none';
+                console.log('Stripe selected - hiding billing info');
+            } else {
+                billingInfoSection.style.display = 'block';
+                console.log('Non-Stripe method selected - showing billing info');
+            }
+        });
+    });
+
+    stripe = Stripe('{{ stripe_publishable_key }}');
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit-payment');
+    const buttonText = document.getElementById('button-text');
+    const paymentMessage = document.getElementById('payment-message');
+
+    try {
+        // Only initialize Stripe if payment method is Stripe
+        const selectedPaymentMethod = paymentMethodInput.value;
+        
+        if (selectedPaymentMethod === 'stripe') {
+            // Step 1: Create payment intent first
+            console.log('Creating payment intent...');
+            const createResponse = await fetch('{{ path('app_checkout_create_payment_intent') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ payment_method: 'stripe' })
+            });
+
+            const createData = await createResponse.json();
+
+            if (!createResponse.ok) {
+                throw new Error(createData.error || 'Erreur lors de la création du paiement');
+            }
+
+            clientSecret = createData.clientSecret;
+            console.log('Payment intent created with secret:', clientSecret);
+
+            // Step 2: Now create elements and mount payment element
+            elements = stripe.elements({ clientSecret: clientSecret });
+            const paymentElement = elements.create('payment');
+            paymentElement.mount('#payment-element');
+            console.log('Payment element mounted');
+        } else {
+            console.log('Non-Stripe payment method selected, skipping Stripe setup');
+        }
+
+    } catch (error) {
+        console.error('Setup error:', error);
+        showMessage({
+            type: 'error',
+            message: 'Erreur lors du chargement du formulaire de paiement: ' + error.message
+        });
+        submitButton.disabled = true;
+    }
+
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const selectedPaymentMethod = paymentMethodInput.value;
+
+        // If payment method is not Stripe, submit form to create order directly
+        if (selectedPaymentMethod !== 'stripe') {
+            submitButton.disabled = true;
+            const originalText = buttonText.textContent;
+            buttonText.innerHTML = '<span class="loading-spinner"></span> Création de la commande...';
+
+            try {
+                const response = await fetch('{{ path('app_checkout_create_payment_intent') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: 'payment_method=' + encodeURIComponent(selectedPaymentMethod)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage({
+                        type: 'success',
+                        message: 'Commande créée avec succès ! Redirection...'
+                    });
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1500);
+                } else {
+                    showMessage({
+                        type: 'error',
+                        message: data.error || 'Erreur lors de la création de la commande'
+                    });
+                    submitButton.disabled = false;
+                    buttonText.textContent = originalText;
+                }
+            } catch (error) {
+                showMessage({
+                    type: 'error',
+                    message: error.message || 'Une erreur est survenue'
+                });
+                submitButton.disabled = false;
+                buttonText.textContent = originalText;
+            }
+            return;
+        }
+
+        if (!clientSecret || !stripe || !elements) {
+            showMessage({
+                type: 'error',
+                message: 'Le formulaire de paiement n\'est pas correctement chargé. Veuillez rafraîchir la page.'
+            });
+            return;
+        }
+
+        submitButton.disabled = true;
+        const originalText = buttonText.textContent;
+        buttonText.innerHTML = '<span class="loading-spinner"></span> Traitement du paiement...';
+
+        try {
+            console.log('Confirming payment...');
+            const { error, paymentIntent } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    return_url: '{{ url('app_checkout_success') }}',
+                },
+                redirect: 'if_required',
+            });
+
+            if (error) {
+                console.error('Payment error:', error);
+                showMessage({
+                    type: 'error',
+                    message: error.message || 'Le paiement a échoué. Veuillez réessayer.'
+                });
+                submitButton.disabled = false;
+                buttonText.textContent = originalText;
+            } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+                console.log('Payment succeeded');
+                showMessage({
+                    type: 'success',
+                    message: 'Paiement réussi ! Redirection...'
+                });
+                window.location.href = '{{ url('app_checkout_success') }}?payment_intent=' + paymentIntent.id;
+            } else if (paymentIntent && paymentIntent.status === 'requires_action') {
+                console.log('Payment requires action');
+                showMessage({
+                    type: 'info',
+                    message: 'Authentification supplémentaire requise. Veuillez suivre les instructions.'
+                });
+            } else {
+                console.log('Payment intent status:', paymentIntent?.status);
+                window.location.href = '{{ url('app_checkout_success') }}?payment_intent=' + paymentIntent.id;
+            }
+
+        } catch (error) {
+            console.error('Payment submission error:', error);
+            showMessage({
+                type: 'error',
+                message: error.message || 'Une erreur est survenue lors du paiement.'
+            });
+            submitButton.disabled = false;
+            buttonText.textContent = originalText;
+        }
+    });
+
+    function showMessage(options) {
+        paymentMessage.style.display = 'block';
+        
+        if (options.type === 'error') {
+            paymentMessage.className = 'alert alert-danger';
+            paymentMessage.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>' + options.message;
+        } else if (options.type === 'info') {
+            paymentMessage.className = 'alert alert-info';
+            paymentMessage.innerHTML = '<i class="fas fa-info-circle mr-2"></i>' + options.message;
+        } else if (options.type === 'success') {
+            paymentMessage.className = 'alert alert-success';
+            paymentMessage.innerHTML = '<i class="fas fa-check-circle mr-2"></i>' + options.message;
+        }
+    }
+});
+</script>
+
+<!-- Billing Info Edit Functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editBillingBtn = document.getElementById('edit-billing-btn');
+    const saveBillingBtn = document.getElementById('save-billing-btn');
+    const cancelBillingBtn = document.getElementById('cancel-billing-btn');
+    const billingFormSection = document.getElementById('billing-form-section');
+    const billingDisplay = document.getElementById('billing-display');
+
+    if (editBillingBtn && billingFormSection && billingDisplay) {
+        const billingDisplayContainer = billingDisplay.parentElement;
+
+        editBillingBtn.addEventListener('click', function() {
+            billingDisplayContainer.style.display = 'none';
+            editBillingBtn.style.display = 'none';
+            billingFormSection.style.display = 'block';
+        });
+
+        cancelBillingBtn.addEventListener('click', function() {
+            billingFormSection.style.display = 'none';
+            billingDisplayContainer.style.display = 'block';
+            editBillingBtn.style.display = 'block';
+        });
+
+        saveBillingBtn.addEventListener('click', function() {
+            // Collect billing info
+            const billingData = {
+                prenom: document.getElementById('billing-prenom').value,
+                nom: document.getElementById('billing-nom').value,
+                adresse: document.getElementById('billing-adresse').value,
+                codePostal: document.getElementById('billing-codePostal').value,
+                ville: document.getElementById('billing-ville').value,
+                pays: document.getElementById('billing-pays').value
+            };
+
+            // Create hidden input to pass with form
+            let billingInput = document.getElementById('billing-info-hidden');
+            if (!billingInput) {
+                billingInput = document.createElement('input');
+                billingInput.type = 'hidden';
+                billingInput.id = 'billing-info-hidden';
+                billingInput.name = 'billing_info_temp';
+                document.querySelector('form').appendChild(billingInput);
+            }
+            billingInput.value = JSON.stringify(billingData);
+
+            // Update displayed info
+            const displayText = `
+                ${billingData.prenom} ${billingData.nom}<br>
+                ${billingData.adresse}<br>
+                ${billingData.codePostal} ${billingData.ville}<br>
+                ${billingData.pays}
+            `;
+            billingDisplay.innerHTML = displayText;
+
+            billingFormSection.style.display = 'none';
+            billingDisplayContainer.style.display = 'block';
+            editBillingBtn.style.display = 'block';
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block subject %}Nouvelle commande reçue - {{ order.orderNumber }}{% endblock %}
+
+{% block body %}
+<h1>🛒 Nouvelle commande reçue</h1>
+
+<p>Une nouvelle commande a été passée sur la plateforme BiblioApp.</p>
+
+<div style="background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: #009688;">Détails de la commande</h3>
+    <p><strong>Numéro de commande:</strong> {{ order.orderNumber }}</p>
+    <p><strong>Date:</strong> {{ order.createdAt|date('d/m/Y H:i') }}</p>
+    <p><strong>Statut:</strong>
+        <span style="background-color: #ffc107; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;">
+            {{ order.status|title }}
+        </span>
+    </p>
+    <p><strong>Total:</strong> {{ order.totalAmount|number_format(2, ',', ' ') }} €</p>
+</div>
+
+<div style="background-color: #e7f3ff; border: 1px solid #b8daff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: #004085;">Informations client</h3>
+    <p><strong>Nom:</strong> {{ customer.username }}</p>
+    <p><strong>Email:</strong> {{ customer.email }}</p>
+    {% if customer.phone %}
+    <p><strong>Téléphone:</strong> {{ customer.phone }}</p>
+    {% endif %}
+</div>
+
+<div style="background-color: #f8f9fc; border: 1px solid #e3e6f0; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: #5a5c69;">Adresse de livraison</h3>
+    <p>{{ order.shippingAddress|nl2br }}</p>
+</div>
+
+<h3>Articles commandés :</h3>
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <thead>
+        <tr style="background-color: #f8f9fa;">
+            <th style="border: 1px solid #dee2e6; padding: 10px; text-align: left;">Titre</th>
+            <th style="border: 1px solid #dee2e6; padding: 10px; text-align: center;">Quantité</th>
+            <th style="border: 1px solid #dee2e6; padding: 10px; text-align: right;">Prix</th>
+            <th style="border: 1px solid #dee2e6; padding: 10px; text-align: right;">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in order.orderItems %}
+        <tr>
+            <td style="border: 1px solid #dee2e6; padding: 10px;">
+                <strong>{{ item.livre.titre }}</strong><br>
+                <small style="color: #6c757d;">
+                    {% if item.livre.auteur %}
+                        {{ item.livre.auteur.prenom }} {{ item.livre.auteur.nom }}
+                    {% endif %}
+                    {% if item.livre.isbn %} - ISBN: {{ item.livre.isbn }}{% endif %}
+                </small>
+            </td>
+            <td style="border: 1px solid #dee2e6; padding: 10px; text-align: center;">{{ item.quantity }}</td>
+            <td style="border: 1px solid #dee2e6; padding: 10px; text-align: right;">{{ item.price|number_format(2, ',', ' ') }} €</td>
+            <td style="border: 1px solid #dee2e6; padding: 10px; text-align: right; font-weight: bold;">{{ (item.price * item.quantity)|number_format(2, ',', ' ') }} €</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr style="background-color: #f8f9fa; font-weight: bold;">
+            <td colspan="3" style="border: 1px solid #dee2e6; padding: 10px; text-align: right;">Total</td>
+            <td style="border: 1px solid #dee2e6; padding: 10px; text-align: right;">{{ order.totalAmount|number_format(2, ',', ' ') }} €</td>
+        </tr>
+    </tfoot>
+</table>
+
+<div style="background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+    <h4 style="color: #0c5460; margin-top: 0;">📋 Actions requises</h4>
+    <ul style="color: #0c5460;">
+        <li>Vérifier la disponibilité des articles en stock</li>
+        <li>Confirmer le paiement</li>
+        <li>Préparer la commande pour l'expédition</li>
+        <li>Mettre à jour le statut de la commande</li>
+    </ul>
+</div>
+
+<p>
+    <a href="{{ url('admin') }}" style="background-color: #009688; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin-right: 10px;">
+        Accéder au panneau d'administration
+    </a>
+    <a href="{{ url('admin_order_detail', {'id': order.id}) }}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+        Voir les détails de la commande
+    </a>
+</p>
+
+<p>Cordialement,<br>Le système BiblioApp</p>
+{% endblock %}

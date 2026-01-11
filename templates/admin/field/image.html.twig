@@ -1,0 +1,9 @@
+{# templates/admin/field/image.html.twig #}
+{% set imageValue = field.value %}
+{% if imageValue %}
+    <img src="{{ asset('uploads/images/' ~ imageValue) }}" alt="{{ field.label }}" class="img-thumbnail" style="max-width: 60px; max-height: 60px; object-fit: cover;">
+{% else %}
+    <span class="text-muted">
+        <i class="fas fa-image fa-2x"></i>
+    </span>
+{% endif %}

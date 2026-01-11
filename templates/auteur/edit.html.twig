@@ -1,0 +1,118 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Modifier l'Auteur - {{ auteur.prenom }} {{ auteur.nom }}{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-user-edit text-primary mr-2"></i>Modifier l'Auteur
+            </h1>
+            <p class="mb-0 text-muted">Modification des informations de {{ auteur.prenom }} {{ auteur.nom }}</p>
+        </div>
+        <div>
+            <a href="{{ path('app_auteur_show', {'id': auteur.id}) }}" class="d-none d-sm-inline-block btn btn-info btn-sm shadow-sm mr-2">
+                <i class="fas fa-eye fa-sm text-white-50"></i> Voir Profil
+            </a>
+            <a href="{{ path('app_auteur_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+
+    <!-- Current Author Info Banner -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient-info text-white shadow">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-user fa-2x text-info"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h5 class="font-weight-bold mb-1">{{ auteur.prenom }} {{ auteur.nom }}</h5>
+                            <p class="mb-1 opacity-75">
+                                <i class="fas fa-book mr-1"></i>{{ auteur.livres|length }} livre{{ auteur.livres|length > 1 ? 's' : '' }} publié{{ auteur.livres|length > 1 ? 's' : '' }}
+                            </p>
+                            <small class="opacity-75">ID: {{ auteur.id }}</small>
+                        </div>
+                        <div class="col-md-2 text-right">
+                            <i class="fas fa-edit fa-3x opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-edit mr-2"></i>Modifier les Informations
+            </h6>
+        </div>
+        <div class="card-body">
+            {{ include('auteur/_form.html.twig') }}
+        </div>
+    </div>
+
+    <!-- Author Books Preview -->
+    {% if auteur.livres|length > 0 %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-success">
+                <i class="fas fa-book mr-2"></i>Livres de cet Auteur ({{ auteur.livres|length }})
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle mr-2"></i>
+                <strong>Note:</strong> Les modifications apportées à cet auteur n'affecteront pas ses livres existants.
+                Pour modifier les informations des livres, allez dans la section Livres.
+            </div>
+            <div class="row">
+                {% for livre in auteur.livres|slice(0, 6) %}
+                <div class="col-md-4 mb-3">
+                    <div class="card border-left-success">
+                        <div class="card-body py-2">
+                            <h6 class="card-title mb-1">{{ livre.titre|slice(0, 25) ~ (livre.titre|length > 25 ? '...' : '') }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-tag mr-1"></i>{{ livre.categorie ? livre.categorie.designation : 'N/A' }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if auteur.livres|length > 6 %}
+                <div class="col-12 text-center">
+                    <small class="text-muted">... et {{ auteur.livres|length - 6 }} autres livres</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Delete Card -->
+    <div class="card shadow mb-4 border-left-danger">
+        <div class="card-header py-3 bg-danger text-white">
+            <h6 class="m-0 font-weight-bold">
+                <i class="fas fa-exclamation-triangle mr-2"></i>Zone de Danger
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-danger">
+                <i class="fas fa-warning mr-2"></i>
+                <strong>Attention:</strong> La suppression de cet auteur est irréversible.
+                {% if auteur.livres|length > 0 %}
+                Tous ses {{ auteur.livres|length }} livres seront également affectés.
+                {% endif %}
+            </div>
+            {{ include('auteur/_delete_form.html.twig') }}
+        </div>
+    </div>
+{% endblock %}

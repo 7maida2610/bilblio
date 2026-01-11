@@ -1,0 +1,195 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Utilisateurs Email - BiblioApp{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-users"></i> Email Users
+        </h1>
+        <a href="{{ path('backoffice_emails_index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour au Tableau de Bord Email
+        </a>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-users"></i> Gestion des Utilisateurs ({{ totalUsers }} total)
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Role</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.isVerified %}
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check"></i> Verified
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-warning">
+                                        <i class="fas fa-clock"></i> Unverified
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% for role in user.roles %}
+                                    {% if role == 'ROLE_ADMIN' %}
+                                        <span class="badge badge-danger">{{ role }}</span>
+                                    {% elseif role == 'ROLE_MODERATOR' %}
+                                        <span class="badge badge-info">{{ role }}</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">{{ role }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% if user.createdAt %}
+                                    {{ user.createdAt|date('Y-m-d H:i') }}
+                                {% else %}
+                                    <em>N/A</em>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    {% if not user.isVerified %}
+                                    <form method="post" action="{{ path('backoffice_send_verification', {userId: user.id}) }}" class="d-inline" onsubmit="return confirm('Envoyer un email de vérification à {{ user.email }} ?')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('backoffice_send_verification') }}">
+                                        <button type="submit" class="btn btn-sm btn-success" title="Envoyer email de vérification">
+                                            <i class="fas fa-envelope"></i> Send Verification
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-success small">
+                                        <i class="fas fa-check-circle"></i> Verified
+                                    </span>
+                                    {% endif %}
+
+                                    <form method="post" action="{{ path('backoffice_test_weekly_summary', {userId: user.id}) }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('backoffice_test_weekly_summary') }}">
+                                        <button type="submit" class="btn btn-sm btn-info" title="Envoyer résumé hebdomadaire">
+                                            <i class="fas fa-chart-line"></i>
+                                        </button>
+                                    </form>
+
+                                    <form method="post" action="{{ path('backoffice_test_recommendations', {userId: user.id}) }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('backoffice_test_recommendations') }}">
+                                        <button type="submit" class="btn btn-sm btn-warning" title="Envoyer recommandations">
+                                            <i class="fas fa-lightbulb"></i>
+                                        </button>
+                                    </form>
+
+                                    <form method="post" action="{{ path('backoffice_test_goal_achievement', {userId: user.id}) }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('backoffice_test_goal_achievement') }}">
+                                        <button type="submit" class="btn btn-sm btn-primary" title="Envoyer réalisation d'objectif">
+                                            <i class="fas fa-trophy"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if totalPages > 1 %}
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="User pagination">
+                    <ul class="pagination">
+                        {% if currentPage > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('admin_emails_users', {page: currentPage - 1}) }}">Previous</a>
+                        </li>
+                        {% endif %}
+
+                        {% for i in 1..totalPages %}
+                            {% if i >= currentPage - 2 and i <= currentPage + 2 %}
+                            <li class="page-item {% if i == currentPage %}active{% endif %}">
+                                <a class="page-link" href="{{ path('admin_emails_users', {page: i}) }}">{{ i }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if currentPage < totalPages %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('admin_emails_users', {page: currentPage + 1}) }}">Next</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Action Legend -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-info-circle"></i> Action Buttons
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-2">
+                    <button class="btn btn-success btn-sm" disabled>
+                        <i class="fas fa-envelope"></i> Send Verification
+                    </button>
+                    <small class="ml-2">Send verification email to unverified users</small>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <button class="btn btn-info btn-sm" disabled>
+                        <i class="fas fa-chart-line"></i>
+                    </button>
+                    <small class="ml-2">Send weekly reading summary</small>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <button class="btn btn-warning btn-sm" disabled>
+                        <i class="fas fa-lightbulb"></i>
+                    </button>
+                    <small class="ml-2">Send book recommendations</small>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <button class="btn btn-primary btn-sm" disabled>
+                        <i class="fas fa-trophy"></i>
+                    </button>
+                    <small class="ml-2">Send goal achievement notification</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DataTables JavaScript -->
+<script>
+$(document).ready(function() {
+    $('#dataTable').DataTable({
+        "pageLength": 25,
+        "ordering": true,
+        "searching": true,
+        "paging": false, // We handle pagination manually
+        "info": false
+    });
+});
+</script>
+{% endblock %}

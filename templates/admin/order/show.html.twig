@@ -1,0 +1,558 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Commande {{ order.orderNumber }} - Admin{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .status-badge {
+        padding: 10px 15px;
+        border-radius: 20px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .status-badge.pending {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+    }
+
+    .status-badge.paid {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #17a2b8;
+    }
+
+    .status-badge.processing {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+    }
+
+    .status-badge.shipped {
+        background-color: #d4edff;
+        color: #084298;
+        border: 1px solid #0d6efd;
+    }
+
+    .status-badge.delivered {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        border: 1px solid #198754;
+    }
+
+    .status-badge.cancelled {
+        background-color: #f8d7da;
+        color: #842029;
+        border: 1px solid #f5c2c7;
+    }
+
+    .status-badge.refunded {
+        background-color: #e2e3e5;
+        color: #383d41;
+        border: 1px solid #d3d6d8;
+    }
+
+    .status-selector {
+        position: relative;
+        display: inline-block;
+    }
+
+    .status-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        z-index: 1000;
+        min-width: 200px;
+        margin-top: 5px;
+    }
+
+    .status-dropdown.active {
+        display: block;
+    }
+
+    .status-option {
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .status-option:last-child {
+        border-bottom: none;
+    }
+
+    .status-option:hover {
+        background-color: #f5f5f5;
+    }
+
+    .status-option.selected {
+        background-color: #e8f4f8;
+        font-weight: 600;
+        color: #0d6efd;
+    }
+
+    .info-table {
+        width: 100%;
+    }
+
+    .info-table td {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-table td:last-child {
+        border-bottom: none;
+    }
+
+    .label {
+        font-weight: 600;
+        color: #333;
+        width: 40%;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(0,0,0,0.1);
+        border-radius: 50%;
+        border-top-color: #0d6efd;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 40px;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -46px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #dee2e6;
+        border: 2px solid white;
+    }
+
+    .timeline-item.active::before {
+        background: #0d6efd;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+    }
+
+    .timeline-item-time {
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    .timeline-item-title {
+        font-weight: 600;
+        margin: 5px 0;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-receipt mr-2"></i>Commande {{ order.orderNumber }}
+            </h1>
+            <p class="mb-0 text-muted">Gestion et suivi de la commande</p>
+        </div>
+        <div class="btn-group" role="group">
+            <a href="{{ path('app_order_print', {'id': order.id}) }}" class="btn btn-sm btn-info" target="_blank">
+                <i class="fas fa-print mr-1"></i>Imprimer
+            </a>
+            <a href="{{ path('app_order_invoice', {'id': order.id}) }}" class="btn btn-sm btn-warning" target="_blank">
+                <i class="fas fa-file-pdf mr-1"></i>Facture
+            </a>
+            <a href="{{ path('app_admin_orders_list') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left mr-1"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8 mb-4">
+            <!-- Order Summary Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle mr-2"></i>Informations de la Commande
+                    </h6>
+                    <div class="status-selector">
+                        <span class="status-badge {{ order.status }} status-trigger" style="cursor: pointer;">
+                            <i class="fas fa-circle mr-1"></i>{{ order.statusLabel }}
+                        </span>
+                        <div class="status-dropdown">
+                            {% for statusKey, statusLabel in {
+                                'pending': 'En attente',
+                                'paid': 'Payée',
+                                'processing': 'En traitement',
+                                'shipped': 'Expédiée',
+                                'delivered': 'Livrée',
+                                'cancelled': 'Annulée',
+                                'refunded': 'Remboursée'
+                            } %}
+                                <div class="status-option {% if statusKey == order.status %}selected{% endif %}" data-status="{{ statusKey }}">
+                                    <i class="fas fa-circle mr-2"></i>{{ statusLabel }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="font-weight-bold mb-3"><i class="fas fa-calendar mr-2 text-primary"></i>Dates</h6>
+                            <table class="info-table">
+                                <tr>
+                                    <td class="label">Créée le:</td>
+                                    <td>{{ order.createdAt|date('d/m/Y à H:i') }}</td>
+                                </tr>
+                                {% if order.paidAt %}
+                                <tr>
+                                    <td class="label">Payée le:</td>
+                                    <td>{{ order.paidAt|date('d/m/Y à H:i') }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if order.shippedAt %}
+                                <tr>
+                                    <td class="label">Expédiée le:</td>
+                                    <td>{{ order.shippedAt|date('d/m/Y à H:i') }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if order.deliveredAt %}
+                                <tr>
+                                    <td class="label">Livrée le:</td>
+                                    <td>{{ order.deliveredAt|date('d/m/Y à H:i') }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="font-weight-bold mb-3"><i class="fas fa-credit-card mr-2 text-primary"></i>Paiement</h6>
+                            <table class="info-table">
+                                <tr>
+                                    <td class="label">Montant:</td>
+                                    <td><strong class="text-success">{{ order.formattedTotalAmount }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="label">Devise:</td>
+                                    <td>{{ order.currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">Méthode:</td>
+                                    <td>{{ order.paymentMethodLabel }}</td>
+                                </tr>
+                                {% if order.stripePaymentIntentId %}
+                                <tr>
+                                    <td class="label">ID Stripe:</td>
+                                    <td><code style="font-size: 0.75rem;">{{ order.stripePaymentIntentId[:20] }}...</code></td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Articles Section -->
+                    <h6 class="font-weight-bold mb-3"><i class="fas fa-shopping-bag mr-2 text-primary"></i>Articles Commandés</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Livre</th>
+                                    <th class="text-center">Quantité</th>
+                                    <th class="text-right">Prix unitaire</th>
+                                    <th class="text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.orderItems %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.livre.image %}
+                                                <img src="{{ asset('uploads/images/' ~ item.livre.image) }}" alt="{{ item.livre.titre }}" class="rounded" style="width: 40px; height: 50px; object-fit: cover; margin-right: 10px;">
+                                            {% else %}
+                                                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 50px; margin-right: 10px;">
+                                                    <i class="fas fa-book text-muted small"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ item.livre.titre }}</strong><br>
+                                                <small class="text-muted">{{ item.livre.auteur ? item.livre.auteur.prenom ~ ' ' ~ item.livre.auteur.nom : 'Auteur inconnu' }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">{{ item.quantity }}</td>
+                                    <td class="text-right">{{ item.formattedUnitPrice }}</td>
+                                    <td class="text-right font-weight-bold">{{ item.formattedSubtotal }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="bg-light">
+                                <tr>
+                                    <th colspan="3" class="text-right">TOTAL:</th>
+                                    <th class="text-right"><strong class="text-primary" style="font-size: 1.1rem;">{{ order.formattedTotalAmount }}</strong></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <hr>
+
+                    <!-- Addresses Section -->
+                    <h6 class="font-weight-bold mb-3"><i class="fas fa-map-marker-alt mr-2 text-primary"></i>Adresses</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="bg-light p-3 rounded">
+                                <h6 class="font-weight-bold mb-2"><i class="fas fa-box"></i> Livraison</h6>
+                                {% if order.shippingAddress %}
+                                    <p class="mb-1"><strong>{{ order.shippingAddress['prenom']|default('') }} {{ order.shippingAddress['nom']|default('') }}</strong></p>
+                                    <p class="mb-1">{{ order.shippingAddress['adresse']|default('') }}</p>
+                                    <p class="mb-0">{{ order.shippingAddress['codePostal']|default('') }} {{ order.shippingAddress['ville']|default('') }}</p>
+                                    <p class="mb-0">{{ order.shippingAddress['pays']|default('') }}</p>
+                                {% else %}
+                                    <p class="text-muted">Non spécifiée</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-light p-3 rounded">
+                                <h6 class="font-weight-bold mb-2">💳 Facturation</h6>
+                                {% if order.billingAddress %}
+                                    <p class="mb-1"><strong>{{ order.billingAddress['prenom']|default('') }} {{ order.billingAddress['nom']|default('') }}</strong></p>
+                                    <p class="mb-1">{{ order.billingAddress['adresse']|default('') }}</p>
+                                    <p class="mb-0">{{ order.billingAddress['codePostal']|default('') }} {{ order.billingAddress['ville']|default('') }}</p>
+                                    <p class="mb-0">{{ order.billingAddress['pays']|default('') }}</p>
+                                {% else %}
+                                    <p class="text-muted">Non spécifiée</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4 mb-4">
+            <!-- Customer Info Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user mr-2"></i>Client
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    {% if order.user.profilePicture %}
+                        <img src="{{ asset('uploads/profile_pictures/' ~ order.user.profilePicture) }}" alt="Photo" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover; border: 3px solid #0d6efd;">
+                    {% else %}
+                        <div class="bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-user text-white fa-2x"></i>
+                        </div>
+                    {% endif %}
+                    <h6 class="font-weight-bold">{{ order.user.fullName ?: order.user.username }}</h6>
+                    <p class="text-muted small">{{ order.user.email }}</p>
+                    
+                    {% if order.user.phone %}
+                    <p class="text-muted small"><i class="fas fa-phone mr-1"></i>{{ order.user.phone }}</p>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <a href="{{ path('admin', {'entity': 'User', 'action': 'detail', 'id': order.user.id}) }}" class="btn btn-outline-primary btn-sm btn-block">
+                        <i class="fas fa-eye mr-1"></i>Voir le profil
+                    </a>
+                </div>
+            </div>
+
+            <!-- Timeline Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-history mr-2"></i>Historique
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item active">
+                            <div class="timeline-item-time">{{ order.createdAt|date('d/m/Y H:i') }}</div>
+                            <div class="timeline-item-title">Commande créée</div>
+                        </div>
+                        {% if order.paidAt %}
+                        <div class="timeline-item active">
+                            <div class="timeline-item-time">{{ order.paidAt|date('d/m/Y H:i') }}</div>
+                            <div class="timeline-item-title">Paiement reçu</div>
+                        </div>
+                        {% endif %}
+                        {% if order.shippedAt %}
+                        <div class="timeline-item active">
+                            <div class="timeline-item-time">{{ order.shippedAt|date('d/m/Y H:i') }}</div>
+                            <div class="timeline-item-title">Expédié</div>
+                        </div>
+                        {% endif %}
+                        {% if order.deliveredAt %}
+                        <div class="timeline-item active">
+                            <div class="timeline-item-time">{{ order.deliveredAt|date('d/m/Y H:i') }}</div>
+                            <div class="timeline-item-title">Livré</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Card -->
+            <div class="card shadow">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-sticky-note mr-2"></i>Notes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if order.notes %}
+                        <p>{{ order.notes }}</p>
+                    {% else %}
+                        <p class="text-muted"><em>Aucune note</em></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Status selector functionality
+    const statusTrigger = document.querySelector('.status-trigger');
+    const statusDropdown = document.querySelector('.status-dropdown');
+    const statusOptions = document.querySelectorAll('.status-option');
+
+    if (statusTrigger) {
+        statusTrigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            statusDropdown.classList.toggle('active');
+        });
+    }
+
+    statusOptions.forEach(option => {
+        option.addEventListener('click', async function() {
+            const newStatus = this.getAttribute('data-status');
+            const orderId = {{ order.id }};
+
+            // Show loading
+            const originalHtml = statusTrigger.innerHTML;
+            statusTrigger.innerHTML = '<span class="loading-spinner"></span>';
+            statusTrigger.style.pointerEvents = 'none';
+
+            try {
+                const response = await fetch(`/admin/orders/${orderId}/change-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `status=${encodeURIComponent(newStatus)}`
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update badge
+                    statusTrigger.innerHTML = `<i class="fas fa-circle mr-1"></i>${data.statusLabel}`;
+                    statusTrigger.className = `status-badge ${data.status} status-trigger`;
+                    
+                    // Update selected option
+                    statusOptions.forEach(opt => opt.classList.remove('selected'));
+                    document.querySelector(`[data-status="${data.status}"]`).classList.add('selected');
+                    
+                    // Close dropdown
+                    statusDropdown.classList.remove('active');
+                    
+                    // Show notification
+                    showNotification(data.message, 'success');
+                    
+                    // Reload page after 1.5 seconds to show timeline update
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification(data.error || 'Erreur', 'error');
+                    statusTrigger.innerHTML = originalHtml;
+                }
+            } catch (error) {
+                showNotification('Erreur: ' + error.message, 'error');
+                statusTrigger.innerHTML = originalHtml;
+            }
+
+            statusTrigger.style.pointerEvents = 'auto';
+        });
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.status-selector')) {
+            statusDropdown.classList.remove('active');
+        }
+    });
+
+    function showNotification(message, type) {
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                <i class="fas ${icon} mr-2"></i>${message}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', alertHtml);
+        
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            if (alerts.length > 0) {
+                alerts[alerts.length - 1].remove();
+            }
+        }, 4000);
+    }
+});
+</script>
+{% endblock %}

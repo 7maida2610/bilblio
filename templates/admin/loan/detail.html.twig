@@ -1,0 +1,306 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Détails Emprunt #{{ loan.id }} - Biblio{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-book-reader text-primary mr-2"></i>Emprunt #{{ loan.id }}
+            </h1>
+            <p class="text-muted small mb-0">Détails complets de l'emprunt</p>
+        </div>
+        <a href="{{ path('app_admin_loan_management') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+        </a>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row">
+        <!-- Main Details -->
+        <div class="col-lg-8">
+            <!-- General Info Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle"></i> Informations Générales
+                    </h6>
+                    {% set statusColors = {
+                        'requested': 'warning',
+                        'approved': 'info',
+                        'active': 'success',
+                        'overdue': 'danger',
+                        'returned': 'secondary',
+                        'cancelled': 'dark'
+                    } %}
+                    <span class="badge badge-{{ statusColors[loan.status] ?? 'secondary' }}" style="font-size: 0.9rem;">
+                        {{ loan.statusLabel }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <th class="text-gray-800" width="40%">ID</th>
+                                    <td><span class="font-weight-bold text-gray-800">#{{ loan.id }}</span></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-gray-800">Utilisateur</th>
+                                    <td>
+                                        <i class="fas fa-user text-muted mr-1"></i>
+                                        <span class="font-weight-bold">{{ loan.user.username }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-gray-800">Email</th>
+                                    <td><small>{{ loan.user.email }}</small></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <th class="text-gray-800" width="40%">Livre</th>
+                                    <td>
+                                        <i class="fas fa-book text-muted mr-1"></i>
+                                        <span class="font-weight-bold">{{ loan.livre.titre }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-gray-800">ISBN</th>
+                                    <td><small>{{ loan.livre.isbn ?? 'N/A' }}</small></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-gray-800">Stock Emprunt</th>
+                                    <td>
+                                        <span class="badge badge-{% if loan.livre.stockEmprunt > 0 %}success{% else %}danger{% endif %}">
+                                            {{ loan.livre.stockEmprunt }}
+                                        </span>
+                                        <small class="text-muted ml-1">(Vente: {{ loan.livre.stockVente }})</small>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-calendar-alt"></i> Timeline
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <th class="text-gray-800" width="50%">Demandé le</th>
+                                    <td><small>{{ loan.requestedAtFormatted }}</small></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-gray-800">Approuvé le</th>
+                                    <td><small>{{ loan.approvedAtFormatted }}</small></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-gray-800">Approuvé par</th>
+                                    <td>
+                                        {% if loan.approvedBy %}
+                                            <i class="fas fa-user-check text-success mr-1"></i>
+                                            <span class="font-weight-bold">{{ loan.approvedBy.username }}</span>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <th class="text-gray-800" width="50%">Début emprunt</th>
+                                    <td><small>{{ loan.loanStartDateFormatted }}</small></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-gray-800">Date retour prévue</th>
+                                    <td>
+                                        <small>{{ loan.dueDateFormatted }}</small>
+                                        {% if loan.daysRemaining is not null and loan.status in ['active', 'overdue'] %}
+                                            <br>
+                                            {% if loan.daysRemaining < 0 %}
+                                                <span class="badge badge-danger">
+                                                    <i class="fas fa-exclamation-triangle"></i> {{ loan.daysRemaining|abs }}j de retard
+                                                </span>
+                                            {% elseif loan.daysRemaining == 0 %}
+                                                <span class="badge badge-warning">
+                                                    <i class="fas fa-clock"></i> Aujourd'hui
+                                                </span>
+                                            {% else %}
+                                                <span class="badge badge-success">
+                                                    <i class="fas fa-hourglass-half"></i> {{ loan.daysRemaining }}j restants
+                                                </span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-gray-800">Retourné le</th>
+                                    <td><small>{{ loan.returnedAtFormatted }}</small></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    {% if loan.cancelledAt %}
+                        <div class="alert alert-danger mb-0 mt-2">
+                            <i class="fas fa-ban mr-2"></i>
+                            <strong>Annulé le:</strong> {{ loan.cancelledAt|date('d/m/Y H:i') }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if loan.notes %}
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-light">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-sticky-note"></i> Notes
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0 text-gray-800">{{ loan.notes }}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Actions Sidebar -->
+        <div class="col-lg-4">
+            <!-- Actions Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-cogs"></i> Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if loan.status == 'requested' %}
+                        <form method="POST" action="{{ path('app_admin_loan_approve_action', {'id': loan.id}) }}" class="mb-2">
+                            <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ loan.id) }}">
+                            <button type="submit" class="btn btn-success btn-block">
+                                <i class="fas fa-check"></i> Approuver l'emprunt
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ path('app_admin_loan_reject_action', {'id': loan.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ loan.id) }}">
+                            <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('Êtes-vous sûr de vouloir rejeter cet emprunt ?')">
+                                <i class="fas fa-times"></i> Rejeter l'emprunt
+                            </button>
+                        </form>
+                    {% elseif loan.status == 'approved' %}
+                        <form method="POST" action="{{ path('app_admin_loan_activate_action', {'id': loan.id}) }}" class="mb-2">
+                            <input type="hidden" name="_token" value="{{ csrf_token('activate' ~ loan.id) }}">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-play"></i> Activer l'emprunt
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ path('app_admin_loan_reject_action', {'id': loan.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ loan.id) }}">
+                            <button type="submit" class="btn btn-outline-danger btn-block" onclick="return confirm('Êtes-vous sûr de vouloir annuler cet emprunt ?')">
+                                <i class="fas fa-ban"></i> Annuler
+                            </button>
+                        </form>
+                    {% elseif loan.status in ['active', 'overdue'] %}
+                        <form method="POST" action="{{ path('app_admin_loan_return_action', {'id': loan.id}) }}" class="mb-2">
+                            <input type="hidden" name="_token" value="{{ csrf_token('return' ~ loan.id) }}">
+                            <button type="submit" class="btn btn-info btn-block">
+                                <i class="fas fa-undo"></i> Marquer comme retourné
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ path('app_admin_loan_extend_action', {'id': loan.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('extend' ~ loan.id) }}">
+                            <button type="submit" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-calendar-plus"></i> Prolonger (+14 jours)
+                            </button>
+                        </form>
+                    {% else %}
+                        <p class="text-muted text-center mb-0">
+                            <i class="fas fa-info-circle"></i> Aucune action disponible
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- User Info Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user"></i> Informations Utilisateur
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1 font-weight-bold text-gray-800">{{ loan.user.firstName ?? '' }} {{ loan.user.lastName ?? '' }}</p>
+                    <p class="mb-1"><i class="fas fa-envelope text-muted mr-2"></i><small>{{ loan.user.email }}</small></p>
+                    {% if loan.user.phone %}
+                        <p class="mb-0"><i class="fas fa-phone text-muted mr-2"></i><small>{{ loan.user.phone }}</small></p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Book Info Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-book"></i> Informations Livre
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1 font-weight-bold text-gray-800">{{ loan.livre.titre }}</p>
+                    {% if loan.livre.auteur %}
+                        <p class="mb-1"><i class="fas fa-pen text-muted mr-2"></i><small>{{ loan.livre.auteur }}</small></p>
+                    {% endif %}
+                    <p class="mb-1"><i class="fas fa-barcode text-muted mr-2"></i><small>{{ loan.livre.isbn ?? 'N/A' }}</small></p>
+                    <p class="mb-0">
+                        <i class="fas fa-copy text-muted mr-2"></i>
+                        <small>Stock Emprunt:</small>
+                        <span class="badge badge-{% if loan.livre.stockEmprunt > 0 %}success{% else %}danger{% endif %}">
+                            {{ loan.livre.stockEmprunt }}
+                        </span>
+                        <small class="text-muted">(Vente: {{ loan.livre.stockVente }})</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.6rem;
+    }
+    
+    .btn-block {
+        display: block;
+        width: 100%;
+    }
+    
+    .table-sm td, .table-sm th {
+        padding: 0.4rem;
+    }
+</style>
+{% endblock %}

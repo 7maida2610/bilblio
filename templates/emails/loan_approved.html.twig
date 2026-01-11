@@ -1,0 +1,49 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Emprunt approuvé{% endblock %}
+
+{% block body %}
+<h2>✅ Votre emprunt a été approuvé</h2>
+
+<p>Bonjour {{ user.username ?? user.email }},</p>
+
+<p>Excellente nouvelle ! Votre demande d'emprunt a été approuvée.</p>
+
+<div style="background: #e8f5e9; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <h3 style="margin-top: 0; color: #2e7d32;">{{ book.titre }}</h3>
+    <p>
+        <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}<br>
+        <strong>Catégorie :</strong> {{ book.categorie ? book.categorie.designation : 'Non spécifiée' }}<br>
+        <strong>ISBN :</strong> {{ book.isbn ?? 'Non disponible' }}
+    </p>
+</div>
+
+<div style="background: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #ff9800;">
+    <h4 style="margin-top: 0;">📅 Détails de l'emprunt :</h4>
+    <p style="margin: 5px 0;">
+        <strong>Approuvé le :</strong> {{ loan.approvedAt|date('d/m/Y à H:i') }}<br>
+        <strong>Date limite de retour :</strong> <span style="color: #d32f2f; font-weight: bold;">{{ dueDate|date('d/m/Y') }}</span><br>
+        <strong>Durée d'emprunt :</strong> Consultez les conditions de la bibliothèque
+    </p>
+</div>
+
+<h4>Ce que vous devez faire :</h4>
+<ol>
+    <li>Rendez-vous à la bibliothèque pour récupérer le livre</li>
+    <li>Présentez votre demande d'emprunt approuvée</li>
+    <li>Récupérez le livre et les détails du prêt</li>
+    <li>Retournez le livre avant la date limite
+</li>
+</ol>
+
+<div style="background: #f3e5f5; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <p style="margin: 0;">
+        <strong>⚠️ Important :</strong> Les retards peuvent entraîner des pénalités. Assurez-vous de retourner le livre à temps.
+    </p>
+</div>
+
+<p>Si vous avez des questions, n'hésitez pas à contacter la bibliothèque.</p>
+
+<p>Cordialement,<br>
+L'équipe BiblioApp</p>
+{% endblock %}

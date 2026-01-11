@@ -1,0 +1,48 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Emprunt retourné{% endblock %}
+
+{% block body %}
+<h2>✅ Emprunt retourné avec succès</h2>
+
+<p>Bonjour {{ user.username ?? user.email }},</p>
+
+<p>Merci ! Nous avons enregistré le retour de votre livre.</p>
+
+<div style="background: #e8f5e9; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <h3 style="margin-top: 0; color: #2e7d32;">{{ book.titre }}</h3>
+    <p>
+        <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}<br>
+        <strong>Retourné le :</strong> {{ returnedAt|date('d/m/Y à H:i') }}<br>
+        <strong>Statut :</strong> <span style="color: #2e7d32; font-weight: bold;">Retourné</span>
+    </p>
+</div>
+
+<h4>📊 Résumé de votre emprunt :</h4>
+<p>
+    Vous avez emprunté ce livre pendant {{ (loan.loanStartDate ? now|date('U') - loan.loanStartDate|date('U') : 0)|date('d') }} jours.
+    Merci pour votre lecture !
+</p>
+
+<div style="background: #e1f5fe; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <h4 style="margin-top: 0;">⭐ Partagez votre avis :</h4>
+    <p>Avez-vous aimé ce livre ? Laissez un avis pour aider d'autres lecteurs à découvrir les meilleurs livres.</p>
+    <p>
+        <a href="{{ app.request.host }}/livres/{{ book.id }}/avis" style="display: inline-block; background: #ff9800; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+            Laisser un avis
+        </a>
+    </p>
+</div>
+
+<h4>📚 Continuer votre lecture :</h4>
+<ul>
+    <li>Explorez d'autres livres dans nos collections</li>
+    <li>Consultez les recommandations personnalisées</li>
+    <li>Participez aux discussions de lecture</li>
+</ul>
+
+<p>À bientôt et merci d'avoir choisi BiblioApp !</p>
+
+<p>Cordialement,<br>
+L'équipe BiblioApp</p>
+{% endblock %}

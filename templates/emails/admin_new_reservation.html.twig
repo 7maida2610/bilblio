@@ -1,0 +1,36 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Nouvelle réservation{% endblock %}
+
+{% block body %}
+<h2>📋 Nouvelle réservation reçue</h2>
+
+<p>Bonjour,</p>
+
+<p>Une nouvelle réservation a été enregistrée pour un livre de votre collection.</p>
+
+<div style="background: #e3f2fd; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <h3 style="margin-top: 0;">Détails de la réservation :</h3>
+    <p>
+        <strong>Utilisateur :</strong> {{ user.username ?? user.email }}<br>
+        <strong>Email :</strong> {{ user.email }}<br>
+        <strong>Livre :</strong> {{ book.titre }}<br>
+        <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}<br>
+        <strong>Position dans la file :</strong> #{{ reservation.position }}<br>
+        <strong>Date de réservation :</strong> {{ reservation.requestedAt|date('d/m/Y à H:i') }}<br>
+        <strong>Statut :</strong> <span style="color: #2e7d32; font-weight: bold;">Confirmée</span>
+    </p>
+</div>
+
+<h4>ℹ️ Information :</h4>
+<p>L'utilisateur sera notifié automatiquement quand le livre sera disponible.</p>
+
+<p>
+    <a href="{{ app.request.host }}/admin/book-reservation" style="display: inline-block; background: #2196f3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">
+        Voir toutes les réservations
+    </a>
+</p>
+
+<p>Cordialement,<br>
+Système BiblioApp</p>
+{% endblock %}

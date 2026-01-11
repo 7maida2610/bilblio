@@ -1,0 +1,47 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Livre réservé disponible{% endblock %}
+
+{% block body %}
+<h2><i class="fas fa-gift"></i> Le livre réservé est maintenant disponible !</h2>
+
+<p>Bonjour {{ user.username ?? user.email }},</p>
+
+<p><strong>Excellente nouvelle !</strong> Le livre que vous aviez réservé est maintenant disponible.</p>
+
+<div style="background: #e8f5e9; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #4caf50;">
+    <h3 style="margin-top: 0; color: #2e7d32;">{{ book.titre }}</h3>
+    <p>
+        <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}<br>
+        <strong>Catégorie :</strong> {{ book.categorie ? book.categorie.designation : 'Non spécifiée' }}<br>
+        <strong>Stock disponible pour emprunt :</strong> {{ book.stockEmprunt }} exemplaire(s)
+    </p>
+</div>
+
+<div style="background: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #ff9800;">
+    <h4 style="margin-top: 0;"><i class="fas fa-clock"></i> Délai d'action :</h4>
+    <p style="margin: 5px 0;">
+        <strong>Vous avez 48 heures</strong> pour retirer le livre à la bibliothèque, 
+        sinon il sera proposé au prochain utilisateur en attente.
+    </p>
+</div>
+
+<h4><i class="fas fa-check-circle"></i> Ce que vous devez faire :</h4>
+<ol>
+    <li>Allez à la bibliothèque dans les 48 heures</li>
+    <li>Présentez votre réservation ou vérifiez en ligne</li>
+    <li>Récupérez votre livre</li>
+    <li>Commencez votre lecture !</li>
+</ol>
+
+<p>
+    <a href="{{ app.request.host }}/dashboard" style="display: inline-block; background: #4caf50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-top: 10px; font-weight: bold;">
+        Voir mes réservations
+    </a>
+</p>
+
+<p>Merci pour votre patience et bon lecteur !</p>
+
+<p>Cordialement,<br>
+L'équipe BiblioApp</p>
+{% endblock %}

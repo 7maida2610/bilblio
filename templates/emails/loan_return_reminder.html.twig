@@ -1,0 +1,39 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Rappel : Retour d'emprunt{% endblock %}
+
+{% block body %}
+<h2>⏰ Rappel : Retour d'emprunt</h2>
+
+<p>Bonjour {{ user.username ?? user.email }},</p>
+
+<p>Ce message vous rappelle que la date limite pour retourner votre emprunt approche.</p>
+
+<div style="background: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #ff9800;">
+    <h3 style="margin-top: 0;">{{ book.titre }}</h3>
+    <p>
+        <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}<br>
+        <strong>Date limite de retour :</strong> <span style="color: #d32f2f; font-weight: bold;">{{ dueDate|date('d/m/Y') }}</span><br>
+        <strong>Jours restants :</strong> <span style="color: #d32f2f; font-weight: bold;">{{ daysLeft }} jour(s)</span>
+    </p>
+</div>
+
+<h4>⚠️ Action requise :</h4>
+<p>Veuillez retourner ce livre à la bibliothèque avant la date limite pour éviter les pénalités de retard.</p>
+
+<h4>Options disponibles :</h4>
+<ul>
+    <li>✅ Retourner le livre en personne à la bibliothèque</li>
+    <li>📧 Demander une prolongation (si disponible)</li>
+    <li>📝 Consulter votre compte pour plus de détails</li>
+</ul>
+
+<div style="background: #f3e5f5; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <p style="margin: 0;">
+        <strong>💰 Important :</strong> Les retards entraîneront des frais de pénalité de {{ book.prix ?? '5' }} € par jour supplémentaire.
+    </p>
+</div>
+
+<p>Cordialement,<br>
+L'équipe BiblioApp</p>
+{% endblock %}

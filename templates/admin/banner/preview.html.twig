@@ -1,0 +1,153 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Aperçu Bannière - Biblio{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-eye text-primary mr-2"></i>Aperçu de la Bannière
+            </h1>
+            <p class="mb-0 text-muted">{{ banner.title }}</p>
+        </div>
+        <a href="{{ path('app_admin_banner_custom') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Banner Preview -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Aperçu de la Bannière</h6>
+                </div>
+                <div class="card-body">
+                    <div class="banner-preview" style="padding: 20px; border: 1px solid #ddd; border-radius: 5px; background: #f8f9fa;">
+                        {% if banner.type == 'promotion' %}
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <h4 class="alert-heading">{{ banner.title }}</h4>
+                                {{ banner.content|raw }}
+                                {% if banner.link %}
+                                    <a href="{{ banner.link }}" class="btn btn-sm btn-success mt-3">{{ banner.linkText|default('En savoir plus') }}</a>
+                                {% endif %}
+                            </div>
+                        {% elseif banner.type == 'warning' %}
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                <h4 class="alert-heading">{{ banner.title }}</h4>
+                                {{ banner.content|raw }}
+                                {% if banner.link %}
+                                    <a href="{{ banner.link }}" class="btn btn-sm btn-warning mt-3">{{ banner.linkText|default('En savoir plus') }}</a>
+                                {% endif %}
+                            </div>
+                        {% elseif banner.type == 'announcement' %}
+                            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                <h4 class="alert-heading">{{ banner.title }}</h4>
+                                {{ banner.content|raw }}
+                                {% if banner.link %}
+                                    <a href="{{ banner.link }}" class="btn btn-sm btn-info mt-3">{{ banner.linkText|default('En savoir plus') }}</a>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                                <h4 class="alert-heading">{{ banner.title }}</h4>
+                                {{ banner.content|raw }}
+                                {% if banner.link %}
+                                    <a href="{{ banner.link }}" class="btn btn-sm btn-primary mt-3">{{ banner.linkText|default('En savoir plus') }}</a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Banner Details -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted small">Type</label>
+                        <p class="mb-0">
+                            <span class="badge badge-{{ banner.type == 'promotion' ? 'success' : (banner.type == 'warning' ? 'warning' : (banner.type == 'announcement' ? 'info' : 'primary')) }}">
+                                {{ banner.type }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Position</label>
+                        <p class="mb-0"><strong>{{ banner.position }}</strong></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Statut</label>
+                        <p class="mb-0">
+                            <span class="badge badge-{{ banner.status == 'active' ? 'success' : (banner.status == 'inactive' ? 'secondary' : (banner.status == 'scheduled' ? 'warning' : 'danger')) }}">
+                                {{ banner.status }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Priorité</label>
+                        <p class="mb-0"><strong>{{ banner.priority }}</strong></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Public Cible</label>
+                        <p class="mb-0">
+                            {% if banner.targetAudience|length > 0 %}
+                                {% for role in banner.targetAudience %}
+                                    <span class="badge badge-light">{{ role }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <small class="text-muted">Tous les utilisateurs</small>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    {% if banner.image %}
+                    <div class="mb-3">
+                        <label class="text-muted small">Image</label>
+                        <img src="{{ asset('uploads/banners/' ~ banner.image) }}" alt="{{ banner.title }}" class="img-fluid rounded" style="max-height: 150px;">
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Créé le</label>
+                        <p class="mb-0">{{ banner.createdAt|date('d/m/Y H:i') }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Modifié le</label>
+                        <p class="mb-0">{{ banner.updatedAt|date('d/m/Y H:i') }}</p>
+                    </div>
+
+                    <hr>
+
+                    <div class="text-center">
+                        <a href="{{ path('app_admin_banner_custom') }}" class="btn btn-sm btn-secondary btn-block">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .banner-preview {
+        min-height: 200px;
+    }
+</style>
+{% endblock %}

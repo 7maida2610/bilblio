@@ -1,0 +1,54 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block subject %}🎉 Félicitations ! Objectif de lecture atteint !{% endblock %}
+
+{% block body %}
+<h1>🎊 Félicitations {{ user.username }} !</h1>
+
+<p>Vous avez brillamment atteint votre objectif de lecture ! 🌟</p>
+
+<div style="background-color: #d4edda; border: 1px solid #c3e6cb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h2 style="color: #155724; margin-top: 0;">🏆 Vos succès :</h2>
+    <ul style="color: #155724;">
+    {% for goal in achievedGoals %}
+        <li style="margin-bottom: 10px;">
+            <strong>{{ goal.goalType|replace({'_': ' ', 'year': 'cette année', 'month': 'ce mois-ci'})|title }}</strong><br>
+            <span style="color: #0f5132;">✓ Atteint : {{ goal.currentValue }} / {{ goal.targetValue }}</span>
+            {% if goal.goalType == 'books_year' %}
+                <span style="color: #0f5132;">📚 livres lus cette année</span>
+            {% elseif goal.goalType == 'pages_month' %}
+                <span style="color: #0f5132;">📖 pages lues ce mois</span>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+</div>
+
+<div style="background-color: #e7f3ff; border: 1px solid #b8daff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="color: #004085; margin-top: 0;">📈 Statistiques de lecture</h3>
+    <p style="color: #004085;">Vous êtes un lecteur assidu ! Voici un aperçu de vos progrès récents :</p>
+    <ul style="color: #004085;">
+        <li><strong>Livres terminés ce mois :</strong> {{ user.monthlyBooksCompleted ?: 0 }}</li>
+        <li><strong>Pages lues ce mois :</strong> {{ user.monthlyPagesRead ?: 0 }}</li>
+        <li><strong>Série en cours :</strong> {{ user.currentReadingStreak ?: 0 }} jours consécutifs</li>
+    </ul>
+</div>
+
+<div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="color: #856404; margin-top: 0;">🎯 Prochains défis</h3>
+    <p style="color: #856404;">Prêt pour de nouveaux objectifs ? Voici quelques suggestions :</p>
+    <ul style="color: #856404;">
+        <li>Augmentez votre objectif mensuel de 20%</li>
+        <li>Essayez un nouveau genre littéraire</li>
+        <li>Participez à un défi de lecture communautaire</li>
+    </ul>
+    <p><a href="{{ url('app_user_goals') }}" style="background-color: #ffc107; color: #212529; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Définir de nouveaux objectifs</a></p>
+</div>
+
+<p>Continuez sur cette lancée ! 📚✨</p>
+<p>Chaque page tournée est une victoire personnelle.</p>
+
+<p>À très bientôt pour de nouvelles aventures littéraires !</p>
+
+<p>Cordialement,<br>L'équipe BiblioApp</p>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Paramètres d'Emprunt{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-cogs text-primary mr-2"></i>Paramètres d'Emprunt
+            </h1>
+            <p class="mb-0 text-muted">Personnalisez les messages d'emprunt affichés aux utilisateurs</p>
+        </div>
+        <a href="{{ path('app_livre_index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left mr-2"></i>Retour aux livres
+        </a>
+    </div>
+
+    <!-- Settings Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-light">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-edit mr-2"></i>Messages d'Emprunt
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ path('app_borrowing_settings') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('borrowing_settings') }}">
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <strong>Variables disponibles:</strong>
+                    <code>%position%</code> pour la position dans la file,
+                    <code>%date%</code> pour la date au format JJ/MM
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="available" class="font-weight-bold">
+                                <i class="fas fa-check-circle text-success mr-1"></i>Message "Disponible"
+                            </label>
+                            <input type="text" class="form-control" id="available" name="messages[available]"
+                                   value="{{ messages.available }}" placeholder="Disponible">
+                            <small class="form-text text-muted">Affiché quand le livre est disponible pour emprunt</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="unavailable" class="font-weight-bold">
+                                <i class="fas fa-ban text-secondary mr-1"></i>Message "Indisponible"
+                            </label>
+                            <input type="text" class="form-control" id="unavailable" name="messages[unavailable]"
+                                   value="{{ messages.unavailable }}" placeholder="Indisponible">
+                            <small class="form-text text-muted">Affiché quand le livre n'est pas disponible</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="borrow_now" class="font-weight-bold">
+                                <i class="fas fa-book-reader text-info mr-1"></i>Bouton "Emprunter maintenant"
+                            </label>
+                            <input type="text" class="form-control" id="borrow_now" name="messages[borrow_now]"
+                                   value="{{ messages.borrow_now }}" placeholder="Emprunter maintenant">
+                            <small class="form-text text-muted">Texte du bouton d'emprunt immédiat</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="reserve_later" class="font-weight-bold">
+                                <i class="fas fa-calendar-plus text-secondary mr-1"></i>Bouton "Réserver"
+                            </label>
+                            <input type="text" class="form-control" id="reserve_later" name="messages[reserve_later]"
+                                   value="{{ messages.reserve_later }}" placeholder="Réserver pour plus tard">
+                            <small class="form-text text-muted">Texte du bouton de réservation</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-2"></i>Enregistrer les paramètres
+                    </button>
+                    <a href="{{ path('app_borrowing_settings') }}" class="btn btn-outline-secondary ml-2">
+                        <i class="fas fa-undo mr-2"></i>Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-light">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-eye mr-2"></i>Aperçu des Messages
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card border-success">
+                        <div class="card-body text-center">
+                            <span class="badge badge-success badge-pill px-3 py-2 mb-2">
+                                <i class="fas fa-check-circle mr-1"></i>{{ messages.available }}
+                            </span>
+                            <p class="text-muted small">Livre disponible</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <div class="card border-warning">
+                        <div class="card-body text-center">
+                            <span class="badge badge-warning badge-pill px-3 py-2 mb-2">
+                                <i class="fas fa-list-ol mr-1"></i>File #3
+                            </span>
+                            <p class="text-muted small">Utilisateur en file d'attente</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <div class="card border-info">
+                        <div class="card-body text-center">
+                            <span class="badge badge-info badge-pill px-3 py-2 mb-2">
+                                <i class="fas fa-clock mr-1"></i>15/12
+                            </span>
+                            <p class="text-muted small">Prochaine disponibilité</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6 mb-3">
+                    <div class="card border-secondary">
+                        <div class="card-body text-center">
+                            <span class="badge badge-secondary badge-pill px-3 py-2 mb-2">
+                                <i class="fas fa-ban mr-1"></i>{{ messages.unavailable }}
+                            </span>
+                            <p class="text-muted small">Livre indisponible</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="card border-primary">
+                        <div class="card-body text-center">
+                            <button class="btn btn-info btn-sm mb-2">
+                                <i class="fas fa-book-reader mr-1"></i>{{ messages.borrow_now }}
+                            </button>
+                            <button class="btn btn-secondary btn-sm">
+                                <i class="fas fa-calendar-plus mr-1"></i>{{ messages.reserve_later }}
+                            </button>
+                            <p class="text-muted small mt-2">Boutons d'action</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Nouvelle demande d'emprunt{% endblock %}
+
+{% block body %}
+<h2>📋 Nouvelle demande d'emprunt</h2>
+
+<p>Bonjour,</p>
+
+<p>Une nouvelle demande d'emprunt a été reçue et attend votre approbation.</p>
+
+<div style="background: #e3f2fd; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <h3 style="margin-top: 0;">Détails de la demande :</h3>
+    <p>
+        <strong>Utilisateur :</strong> {{ user.username ?? user.email }}<br>
+        <strong>Email :</strong> {{ user.email }}<br>
+        <strong>Livre :</strong> {{ book.titre }}<br>
+        <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}<br>
+        <strong>Date de demande :</strong> {{ loan.requestedAt|date('d/m/Y à H:i') }}<br>
+        <strong>Statut :</strong> <span style="color: #ff9800; font-weight: bold;">En attente</span>
+    </p>
+</div>
+
+<h4>Actions disponibles :</h4>
+<p>
+    <a href="{{ app.request.host }}/admin/loan/{{ loan.id }}" style="display: inline-block; background: #4caf50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+        Approuver
+    </a>
+    <a href="{{ app.request.host }}/admin/loan/{{ loan.id }}" style="display: inline-block; background: #f44336; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+        Rejeter
+    </a>
+</p>
+
+<p><strong>Note :</strong> Veuillez vérifier l'historique de l'utilisateur avant de prendre une décision.</p>
+
+<p>Cordialement,<br>
+Système BiblioApp</p>
+{% endblock %}

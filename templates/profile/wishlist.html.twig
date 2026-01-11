@@ -1,0 +1,237 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Ma Liste d'Envies - Biblio{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-heart text-danger mr-2"></i>Ma Liste d'Envies
+            </h1>
+            <p class="mb-0 text-muted">Vos livres préférés</p>
+        </div>
+        <a href="{{ path('app_livre_index') }}" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i>Ajouter des livres
+        </a>
+    </div>
+
+    {% if wishlist|length > 0 %}
+        <div class="row">
+            {% for livre in wishlist %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card shadow h-100 wishlist-card">
+                        <div class="position-relative">
+                            {% if livre.image %}
+                                <img src="{{ asset('uploads/images/' ~ livre.image) }}"
+                                     alt="{{ livre.titre }}"
+                                     class="card-img-top"
+                                     style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                                     style="height: 200px;">
+                                    <i class="fas fa-book fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+
+                            <!-- Remove from wishlist button -->
+                            <button class="btn btn-danger btn-sm position-absolute"
+                                    style="top: 10px; right: 10px; border-radius: 50%; width: 35px; height: 35px; padding: 0;"
+                                    onclick="removeFromWishlist({{ livre.id }}, this)"
+                                    title="Retirer de la liste d'envies">
+                                <i class="fas fa-heart"></i>
+                            </button>
+
+                            <!-- Stock status for sale -->
+                            {% if livre.stockVente > 0 %}
+                                <div class="badge badge-success position-absolute" style="bottom: 10px; left: 10px;">
+                                    <i class="fas fa-check-circle mr-1"></i>En stock
+                                </div>
+                            {% else %}
+                                <div class="badge badge-danger position-absolute" style="bottom: 10px; left: 10px;">
+                                    <i class="fas fa-times-circle mr-1"></i>Épuisé
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title font-weight-bold text-dark mb-2" style="font-size: 0.9rem;">
+                                {{ livre.titre }}
+                            </h6>
+                            <p class="card-text text-muted small mb-2">
+                                <i class="fas fa-user mr-1"></i>{{ livre.auteur.prenom }} {{ livre.auteur.nom }}
+                            </p>
+                            <p class="card-text text-muted small mb-2">
+                                <i class="fas fa-building mr-1"></i>{{ livre.editeur.nomEditeur }}
+                            </p>
+
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="font-weight-bold text-primary h6 mb-0">
+                                        {{ livre.prix|number_format(2, ',', ' ') }} €
+                                    </span>
+                                    <div class="rating">
+                                        {% for i in 1..5 %}
+                                            <i class="fas fa-star text-warning" style="font-size: 0.7rem;"></i>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <a href="{{ path('app_livre_show', {'id': livre.id}) }}"
+                                       class="btn btn-outline-primary btn-sm flex-fill">
+                                        <i class="fas fa-eye mr-1"></i>Voir
+                                    </a>
+                                    {% if livre.stockVente > 0 %}
+                                        <form action="{{ path('app_cart_add', {'id': livre.id}) }}" method="post" class="d-inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('add-to-cart' ~ livre.id) }}">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-cart-plus mr-1"></i>Ajouter
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <button class="btn btn-secondary btn-sm" disabled>
+                                            <i class="fas fa-times mr-1"></i>Indisponible
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Wishlist Statistics -->
+        <div class="row mt-4">
+            <div class="col-lg-12">
+                <div class="card shadow">
+                    <div class="card-header py-3 bg-light">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-chart-bar mr-2"></i>Statistiques de votre liste d'envies
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4 mb-3">
+                                <div class="h4 font-weight-bold text-danger">{{ wishlist|length }}</div>
+                                <small class="text-muted">Livres dans la liste</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="h4 font-weight-bold text-success">
+                                    {{ wishlist|filter(livre => livre.stockVente > 0)|length }}
+                                </div>
+                                <small class="text-muted">Disponibles à l'achat</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="h4 font-weight-bold text-warning">
+                                    {{ wishlist|filter(livre => livre.stockVente == 0)|length }}
+                                </div>
+                                <small class="text-muted">Épuisés (vente)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card shadow">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-heart fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted mb-3">Votre liste d'envies est vide</h4>
+                <p class="text-muted mb-4">Ajoutez des livres à votre liste d'envies pour les retrouver facilement.</p>
+                <a href="{{ path('app_livre_index') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search mr-2"></i>Découvrir des livres
+                </a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function removeFromWishlist(livreId, button) {
+    if (confirm('Retirer ce livre de votre liste d\'envies ?')) {
+        fetch(`{{ path('app_user_wishlist_remove', {'id': 'LIVRE_ID'}) }}`.replace('LIVRE_ID', livreId), {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: '_token={{ csrf_token('remove-wishlist') }}'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the card with animation
+                const card = button.closest('.col-lg-3, .col-md-4, .col-sm-6');
+                card.style.transition = 'all 0.3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.8)';
+
+                setTimeout(() => {
+                    card.remove();
+                    // Check if no more cards
+                    const remainingCards = document.querySelectorAll('.wishlist-card');
+                    if (remainingCards.length === 0) {
+                        location.reload(); // Reload to show empty state
+                    }
+                }, 300);
+            } else {
+                alert('Erreur lors de la suppression');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur lors de la suppression');
+        });
+    }
+}
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.wishlist-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.wishlist-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.wishlist-card .card-img-top {
+    border-radius: 12px 12px 0 0;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+}
+
+.gap-2 > * + * {
+    margin-left: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+</style>
+{% endblock %}

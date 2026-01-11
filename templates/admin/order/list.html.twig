@@ -1,0 +1,451 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Gestion des Commandes - Admin{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .order-status-badge {
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .order-status-badge.pending {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+    }
+
+    .order-status-badge.paid {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #17a2b8;
+    }
+
+    .order-status-badge.processing {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+    }
+
+    .order-status-badge.shipped {
+        background-color: #d4edff;
+        color: #084298;
+        border: 1px solid #0d6efd;
+    }
+
+    .order-status-badge.delivered {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        border: 1px solid #198754;
+    }
+
+    .order-status-badge.cancelled {
+        background-color: #f8d7da;
+        color: #842029;
+        border: 1px solid #f5c2c7;
+    }
+
+    .order-status-badge.refunded {
+        background-color: #e2e3e5;
+        color: #383d41;
+        border: 1px solid #d3d6d8;
+    }
+
+    .status-selector {
+        position: relative;
+    }
+
+    .status-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        z-index: 1000;
+        min-width: 200px;
+        margin-top: 2px;
+    }
+
+    .status-dropdown.active {
+        display: block;
+    }
+
+    .status-option {
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .status-option:last-child {
+        border-bottom: none;
+    }
+
+    .status-option:hover {
+        background-color: #f5f5f5;
+    }
+
+    .status-option.selected {
+        background-color: #e8f4f8;
+        font-weight: 600;
+    }
+
+    .order-row {
+        transition: background-color 0.2s;
+    }
+
+    .order-row:hover {
+        background-color: #f9f9f9;
+    }
+
+    .order-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .order-table th {
+        background-color: #f8f9fa;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .order-table td {
+        padding: 12px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .order-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+    }
+
+    .action-btn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .action-btn.view {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .action-btn.view:hover {
+        background-color: #138496;
+    }
+
+    .action-btn.print {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .action-btn.print:hover {
+        background-color: #5a6268;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 20px;
+    }
+
+    .pagination a, .pagination span {
+        padding: 8px 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #0d6efd;
+    }
+
+    .pagination a:hover {
+        background-color: #e9ecef;
+    }
+
+    .pagination .active {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(0,0,0,0.1);
+        border-radius: 50%;
+        border-top-color: #0d6efd;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-shopping-cart text-primary mr-2"></i>Gestion des Commandes
+                </h1>
+                <p class="mb-0 text-muted">Total: {{ total }} commandes</p>
+            </div>
+            <a href="{{ path('app_admin_dashboard') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour au Dashboard
+            </a>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-list mr-2"></i>Liste des Commandes (Page {{ page }}/{{ totalPages }})
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if orders|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="order-table">
+                            <thead>
+                                <tr>
+                                    <th>Numéro</th>
+                                    <th>Client</th>
+                                    <th>Montant</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th>Méthode de paiement</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                    <tr class="order-row">
+                                        <td>
+                                            <strong>{{ order.orderNumber }}</strong>
+                                        </td>
+                                        <td>
+                                            <div>{{ order.user.fullName ?: order.user.email }}</div>
+                                            <small class="text-muted">{{ order.user.email }}</small>
+                                        </td>
+                                        <td>
+                                            <strong class="text-primary">{{ order.formattedTotalAmount }}</strong>
+                                        </td>
+                                        <td>
+                                            <small>{{ order.createdAt|date('d/m/Y H:i') }}</small>
+                                        </td>
+                                        <td class="status-selector" data-order-id="{{ order.id }}">
+                                            <span class="order-status-badge {{ order.status }} status-trigger" style="cursor: pointer;">
+                                                <i class="fas fa-circle mr-1"></i>{{ order.statusLabel }}
+                                            </span>
+                                            <div class="status-dropdown">
+                                                {% for statusKey, statusLabel in {
+                                                    'pending': 'En attente',
+                                                    'paid': 'Payée',
+                                                    'processing': 'En traitement',
+                                                    'shipped': 'Expédiée',
+                                                    'delivered': 'Livrée',
+                                                    'cancelled': 'Annulée',
+                                                    'refunded': 'Remboursée'
+                                                } %}
+                                                    <div class="status-option {% if statusKey == order.status %}selected{% endif %}" data-status="{{ statusKey }}">
+                                                        <i class="fas fa-circle mr-2"></i>{{ statusLabel }}
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small>{{ order.paymentMethodLabel }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{{ path('app_admin_order_show', {'id': order.id}) }}" class="action-btn view" title="Voir les détails">
+                                                    <i class="fas fa-eye"></i> Voir
+                                                </a>
+                                                <a href="{{ path('app_order_print', {'id': order.id}) }}" class="action-btn print" target="_blank" title="Imprimer">
+                                                    <i class="fas fa-print"></i> Imprimer
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if totalPages > 1 %}
+                        <div class="pagination">
+                            {% if page > 1 %}
+                                <a href="{{ path('app_admin_orders_list', {'page': 1}) }}">&laquo; Première</a>
+                                <a href="{{ path('app_admin_orders_list', {'page': page - 1}) }}">&lsaquo; Précédente</a>
+                            {% endif %}
+
+                            {% set start = max(1, page - 2) %}
+                            {% set end = min(totalPages, page + 2) %}
+
+                            {% if start > 1 %}
+                                <span>...</span>
+                            {% endif %}
+
+                            {% for p in start..end %}
+                                {% if p == page %}
+                                    <span class="active">{{ p }}</span>
+                                {% else %}
+                                    <a href="{{ path('app_admin_orders_list', {'page': p}) }}">{{ p }}</a>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if end < totalPages %}
+                                <span>...</span>
+                            {% endif %}
+
+                            {% if page < totalPages %}
+                                <a href="{{ path('app_admin_orders_list', {'page': page + 1}) }}">Suivante &rsaquo;</a>
+                                <a href="{{ path('app_admin_orders_list', {'page': totalPages}) }}">Dernière &raquo;</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Aucune commande trouvée.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle status selector clicks
+    document.querySelectorAll('.status-trigger').forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const selector = this.closest('.status-selector');
+            const dropdown = selector.querySelector('.status-dropdown');
+            
+            // Close other dropdowns
+            document.querySelectorAll('.status-dropdown.active').forEach(other => {
+                if (other !== dropdown) {
+                    other.classList.remove('active');
+                }
+            });
+            
+            dropdown.classList.toggle('active');
+        });
+    });
+
+    // Handle status option clicks
+    document.querySelectorAll('.status-option').forEach(option => {
+        option.addEventListener('click', async function() {
+            const selector = this.closest('.status-selector');
+            const orderId = selector.getAttribute('data-order-id');
+            const newStatus = this.getAttribute('data-status');
+            const trigger = selector.querySelector('.status-trigger');
+
+            // Show loading state
+            const originalHtml = trigger.innerHTML;
+            trigger.innerHTML = '<span class="loading-spinner"></span>';
+            trigger.style.pointerEvents = 'none';
+
+            try {
+                const response = await fetch(`/admin/orders/${orderId}/change-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `status=${encodeURIComponent(newStatus)}`
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update UI
+                    trigger.innerHTML = `<i class="fas fa-circle mr-1"></i>${data.statusLabel}`;
+                    trigger.className = `order-status-badge ${data.status} status-trigger`;
+                    
+                    // Update selected option
+                    selector.querySelectorAll('.status-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    selector.querySelector(`[data-status="${data.status}"]`).classList.add('selected');
+                    
+                    // Close dropdown
+                    selector.querySelector('.status-dropdown').classList.remove('active');
+                    
+                    // Show success message
+                    showNotification(data.message, 'success');
+                } else {
+                    showNotification(data.error || 'Erreur lors de la mise à jour', 'error');
+                    trigger.innerHTML = originalHtml;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Une erreur est survenue: ' + error.message, 'error');
+                trigger.innerHTML = originalHtml;
+            }
+
+            trigger.style.pointerEvents = 'auto';
+        });
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.status-selector')) {
+            document.querySelectorAll('.status-dropdown.active').forEach(dropdown => {
+                dropdown.classList.remove('active');
+            });
+        }
+    });
+
+    // Notification helper
+    function showNotification(message, type) {
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                <i class="fas ${icon} mr-2"></i>${message}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', alertHtml);
+        
+        // Auto-remove after 4 seconds
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            if (alerts.length > 0) {
+                alerts[alerts.length - 1].remove();
+            }
+        }, 4000);
+    }
+});
+</script>
+{% endblock %}

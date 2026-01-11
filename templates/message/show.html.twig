@@ -1,0 +1,139 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}{{ message.subject }} - Biblio{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-envelope-open text-primary mr-2"></i>Message
+            </h1>
+            <p class="text-muted small mb-0">{{ message.subject }}</p>
+        </div>
+        <a href="{{ path('app_messages_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour
+        </a>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for msg in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                {{ msg }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Message Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-light d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        {{ message.subject }}
+                    </h6>
+                    <small class="text-muted">{{ message.createdAt|date('d/m/Y H:i') }}</small>
+                </div>
+                <div class="card-body">
+                    <!-- Sender Info -->
+                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                        {% if message.sender.profilePicture %}
+                            <img class="rounded-circle mr-3" src="{{ asset('uploads/profile_pictures/' ~ message.sender.profilePicture) }}" 
+                                 alt="{{ message.sender.username }}" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% else %}
+                            <img class="rounded-circle mr-3" src="{{ asset('img/undraw_profile.svg') }}" 
+                                 alt="{{ message.sender.username }}" style="width: 50px; height: 50px;">
+                        {% endif %}
+                        <div>
+                            <div class="font-weight-bold text-gray-800">{{ message.sender.username }}</div>
+                            <small class="text-muted">{{ message.sender.email }}</small>
+                        </div>
+                        <div class="ml-auto text-right">
+                            <small class="text-muted d-block">
+                                <i class="fas fa-arrow-right mr-1"></i> À: {{ message.recipient.username }}
+                            </small>
+                            <small class="text-muted">{{ message.timeAgo }}</small>
+                        </div>
+                    </div>
+
+                    <!-- Message Content -->
+                    <div class="message-content text-gray-800" style="white-space: pre-wrap; line-height: 1.8;">{{ message.content }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Actions Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-cogs"></i> Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if message.sender != app.user %}
+                        <a href="{{ path('app_messages_new', {'replyTo': message.sender.id}) }}" class="btn btn-primary btn-block mb-2">
+                            <i class="fas fa-reply"></i> Répondre
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{{ path('app_messages_new') }}" class="btn btn-info btn-block mb-2">
+                        <i class="fas fa-pen"></i> Nouveau Message
+                    </a>
+
+                    <hr>
+
+                    <form method="POST" action="{{ path('app_messages_delete', {'id': message.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ message.id) }}">
+                        <button type="submit" class="btn btn-outline-danger btn-block" 
+                                onclick="return confirm('Supprimer ce message ?')">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle"></i> Informations
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                            <th class="text-gray-800">Envoyé le</th>
+                            <td><small>{{ message.createdAt|date('d/m/Y H:i') }}</small></td>
+                        </tr>
+                        <tr>
+                            <th class="text-gray-800">Lu</th>
+                            <td>
+                                {% if message.isRead %}
+                                    <span class="badge badge-success">Oui</span>
+                                    {% if message.readAt %}
+                                        <small class="text-muted d-block">{{ message.readAt|date('d/m/Y H:i') }}</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge badge-warning">Non</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-block {
+        display: block;
+        width: 100%;
+    }
+</style>
+{% endblock %}

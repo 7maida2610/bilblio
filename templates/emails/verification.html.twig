@@ -1,0 +1,28 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block subject %}Vérifiez votre adresse email - BiblioApp{% endblock %}
+
+{% block body %}
+<h2><i class="fas fa-hand-paper"></i> Bienvenue sur BiblioApp !</h2>
+
+<p>Bonjour {{ user.username ?? user.email }},</p>
+
+<p>Merci de vous être inscrit sur BiblioApp ! Pour commencer à explorer notre collection de livres et suivre votre progression de lecture, veuillez vérifier votre adresse email.</p>
+
+<p style="text-align: center;">
+    <a href="{{ verificationUrl }}" class="button"><i class="fas fa-check-circle"></i> Vérifier mon adresse email</a>
+</p>
+
+<div class="warning-box">
+    <p style="margin: 0;"><strong><i class="fas fa-clock"></i> Important :</strong> Ce lien expirera dans 24 heures pour des raisons de sécurité.</p>
+</div>
+
+<p>Si le bouton ne fonctionne pas, vous pouvez copier et coller ce lien dans votre navigateur :</p>
+<p style="word-break: break-all; background: #f5f5f5; padding: 10px; border-radius: 5px; font-size: 12px;">
+    <a href="{{ verificationUrl }}">{{ verificationUrl }}</a>
+</p>
+
+<p style="color: #666; font-size: 14px;">Si vous n'avez pas créé de compte sur BiblioApp, veuillez ignorer cet email.</p>
+
+<p>Cordialement,<br>L'équipe BiblioApp</p>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Détails de la Bannière - Biblio{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-info-circle text-primary mr-2"></i>Détails de la Bannière
+            </h1>
+            <p class="mb-0 text-muted">Visualisez les informations et les préférences des utilisateurs</p>
+        </div>
+        <a href="{{ path('app_admin_banner_custom') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Banner Information Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations de la Bannière</h6>
+                </div>
+                <div class="card-body">
+                    <h5>{{ banner.title }}</h5>
+                    <p class="text-muted">{{ banner.content|default('Aucun contenu') }}</p>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Type:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge badge-{{ banner.type == 'promotion' ? 'success' : (banner.type == 'warning' ? 'warning' : (banner.type == 'announcement' ? 'info' : 'primary')) }}">
+                                        {{ banner.typeLabel }}
+                                    </span>
+                                </dd>
+
+                                <dt class="col-sm-4">Position:</dt>
+                                <dd class="col-sm-8">{{ banner.positionLabel }}</dd>
+
+                                <dt class="col-sm-4">Statut:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge badge-{{ banner.status == 'active' ? 'success' : (banner.status == 'inactive' ? 'secondary' : (banner.status == 'scheduled' ? 'warning' : 'danger')) }}">
+                                        {{ banner.statusLabel }}
+                                    </span>
+                                </dd>
+
+                                <dt class="col-sm-4">Priorité:</dt>
+                                <dd class="col-sm-8">{{ banner.priority }}</dd>
+                            </dl>
+                        </div>
+
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Créé:</dt>
+                                <dd class="col-sm-8">{{ banner.createdAt|date('d/m/Y H:i') }}</dd>
+
+                                <dt class="col-sm-4">Par:</dt>
+                                <dd class="col-sm-8">{{ banner.createdBy.email }}</dd>
+
+                                {% if banner.startDate %}
+                                    <dt class="col-sm-4">Début:</dt>
+                                    <dd class="col-sm-8">{{ banner.startDate|date('d/m/Y H:i') }}</dd>
+                                {% endif %}
+
+                                {% if banner.endDate %}
+                                    <dt class="col-sm-4">Fin:</dt>
+                                    <dd class="col-sm-8">{{ banner.endDate|date('d/m/Y H:i') }}</dd>
+                                {% endif %}
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <a href="{{ path('app_admin_banner_edit', {id: banner.id}) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <a href="{{ path('app_admin_banner_preview', {id: banner.id}) }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i> Aperçu
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Who Dismissed Banner -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-users mr-2"></i>Utilisateurs qui ont masqué cette bannière ({{ dismissedCount }})
+                    </h6>
+                    {% if dismissedCount > 0 %}
+                    <form method="POST" action="{{ path('app_admin_banner_reset_preferences', {id: banner.id}) }}" style="display:inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('reset' ~ banner.id) }}">
+                        <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir réinitialiser toutes les préférences ?')">
+                            <i class="fas fa-redo"></i> Réinitialiser tous
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if preferences|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Utilisateur</th>
+                                        <th>Email</th>
+                                        <th>Masqué le</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for preference in preferences %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ preference.user.firstName }} {{ preference.user.lastName }}</strong>
+                                        </td>
+                                        <td>{{ preference.user.email }}</td>
+                                        <td>{{ preference.hiddenAt|date('d/m/Y H:i') }}</td>
+                                        <td>
+                                            <form method="POST" action="{{ path('app_admin_banner_reset_user', {bannerId: banner.id, userId: preference.user.id}) }}" style="display:inline;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('reset_user') }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-warning" title="Réinitialiser">
+                                                    <i class="fas fa-sync"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if pageSize < (dismissedCount) %}
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if page > 1 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('app_admin_banner_details', {id: banner.id, page: page - 1}) }}">Précédent</a>
+                                    </li>
+                                {% endif %}
+
+                                {% for p in range(1, totalPages) %}
+                                    <li class="page-item {% if p == page %}active{% endif %}">
+                                        <a class="page-link" href="{{ path('app_admin_banner_details', {id: banner.id, page: p}) }}">{{ p }}</a>
+                                    </li>
+                                {% endfor %}
+
+                                {% if page < totalPages %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ path('app_admin_banner_details', {id: banner.id, page: page + 1}) }}">Suivant</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Aucun utilisateur n'a masqué cette bannière pour le moment.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Statistics Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Statistiques</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="text-sm font-weight-bold text-primary text-uppercase mb-1">
+                            Utilisateurs ayant masqué
+                        </div>
+                        <div class="h3 mb-0 font-weight-bold text-gray-800">{{ dismissedCount }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Actions Rapides</h6>
+                </div>
+                <div class="card-body">
+                    <a href="{{ path('app_admin_banner_edit', {id: banner.id}) }}" class="btn btn-primary btn-block mb-2">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a href="{{ path('app_admin_banner_preferences', {id: banner.id}) }}" class="btn btn-info btn-block mb-2">
+                        <i class="fas fa-sliders-h"></i> Gérer les Préférences
+                    </a>
+                    {% if banner.status != 'active' %}
+                        <form method="POST" action="{{ path('app_admin_banner_activate', {id: banner.id}) }}" style="display:inline;" class="w-100">
+                            <input type="hidden" name="_token" value="{{ csrf_token('activate' ~ banner.id) }}">
+                            <button type="submit" class="btn btn-success btn-block mb-2">
+                                <i class="fas fa-check"></i> Activer
+                            </button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{{ path('app_admin_banner_deactivate', {id: banner.id}) }}" style="display:inline;" class="w-100">
+                            <input type="hidden" name="_token" value="{{ csrf_token('deactivate' ~ banner.id) }}">
+                            <button type="submit" class="btn btn-warning btn-block mb-2">
+                                <i class="fas fa-times"></i> Désactiver
+                            </button>
+                        </form>
+                    {% endif %}
+                    <form method="POST" action="{{ path('app_admin_banner_delete', {id: banner.id}) }}" style="display:inline;" class="w-100">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ banner.id) }}">
+                        <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('Êtes-vous sûr ?')">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

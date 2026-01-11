@@ -1,0 +1,419 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Mon Calendrier de Réservations - Biblio{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+<style>
+    .stats-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background-color: #fff;
+        border-radius: 0.35rem;
+        padding: 20px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.35rem 2.15rem 0 rgba(58, 59, 69, 0.2);
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 10px 0;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .text-primary { color: #009688 !important; }
+    .text-success { color: #28a745 !important; }
+    .text-warning { color: #ffc107 !important; }
+
+    .calendar-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: visible;
+    }
+
+    #calendar {
+        width: 100%;
+        min-width: 600px;
+    }
+
+    .fc {
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .fc .fc-button-primary:not(:disabled):not(.fc-button-active) {
+        background-color: #009688;
+        border-color: #009688;
+    }
+
+    .fc .fc-button-primary:not(:disabled):not(.fc-button-active):hover {
+        background-color: #00796b;
+        border-color: #00796b;
+    }
+
+    .fc .fc-button-primary:not(:disabled).fc-button-active {
+        background-color: #00796b;
+        border-color: #00796b;
+    }
+
+    .fc-daygrid-day.fc-day-other {
+        background-color: #f8f9fa;
+    }
+
+    .fc-event-title {
+        font-weight: 600;
+    }
+
+    .legend {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 0.35rem;
+        margin-bottom: 20px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+    }
+
+    /* Mobile Responsive Styles for Calendar */
+    @media (max-width: 768px) {
+        .calendar-container {
+            padding: 5px !important;
+            overflow-x: auto;
+            overflow-y: visible;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #calendar {
+            min-width: 600px;
+            width: 100%;
+        }
+
+        .stats-overview {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 15px !important;
+        }
+
+        .stat-card {
+            padding: 15px !important;
+        }
+
+        .stat-icon {
+            font-size: 1.5rem !important;
+        }
+
+        .stat-number {
+            font-size: 1.5rem !important;
+        }
+
+        .legend {
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+        }
+
+        /* FullCalendar Mobile Styles */
+        .fc {
+            font-size: 0.85rem !important;
+        }
+
+        .fc-header-toolbar {
+            flex-direction: column !important;
+            gap: 8px !important;
+            margin-bottom: 0.5em !important;
+        }
+
+        .fc-toolbar-chunk {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .fc-toolbar-chunk:first-child,
+        .fc-toolbar-chunk:last-child {
+            order: 2;
+        }
+
+        .fc-toolbar-chunk:nth-child(2) {
+            order: 1;
+            width: 100%;
+        }
+
+        .fc-button {
+            font-size: 0.7rem !important;
+            padding: 0.3rem 0.6rem !important;
+            margin: 2px !important;
+        }
+
+        .fc-toolbar-title {
+            font-size: 0.95rem !important;
+            margin: 0.5rem 0 !important;
+        }
+
+        .fc-daygrid-day {
+            min-height: 70px !important;
+            height: auto !important;
+        }
+
+        .fc-daygrid-day-number {
+            font-size: 0.8rem !important;
+            padding: 3px 4px !important;
+        }
+
+        .fc-event {
+            font-size: 0.65rem !important;
+            padding: 1px 3px !important;
+            margin: 1px 0 !important;
+            line-height: 1.3 !important;
+        }
+
+        .fc-event-title {
+            font-size: 0.65rem !important;
+            padding: 0 !important;
+        }
+
+        .fc-daygrid-event {
+            margin: 1px 0 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+
+        .fc-scrollgrid {
+            font-size: 0.8rem !important;
+        }
+
+        .fc-col-header-cell {
+            font-size: 0.7rem !important;
+            padding: 4px 2px !important;
+            font-weight: 600 !important;
+        }
+
+        .fc-col-header-cell-cushion {
+            padding: 2px !important;
+        }
+
+        .fc-daygrid-more-link {
+            font-size: 0.65rem !important;
+            padding: 2px 4px !important;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .calendar-container {
+            padding: 3px !important;
+        }
+
+        #calendar {
+            min-width: 500px;
+        }
+
+        .stats-overview {
+            grid-template-columns: 1fr !important;
+        }
+
+        .fc-button {
+            font-size: 0.65rem !important;
+            padding: 0.2rem 0.4rem !important;
+        }
+
+        .fc-toolbar-title {
+            font-size: 0.9rem !important;
+        }
+
+        .fc-daygrid-day {
+            min-height: 50px !important;
+        }
+
+        .fc-daygrid-day-number {
+            font-size: 0.75rem !important;
+        }
+
+        .fc-event {
+            font-size: 0.65rem !important;
+        }
+
+        .fc-col-header-cell {
+            font-size: 0.7rem !important;
+            padding: 3px 1px !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-calendar-alt text-warning mr-2"></i>Mon Calendrier de Réservations
+            </h1>
+            <p class="mb-0 text-muted">Visualisez toutes vos réservations en cours</p>
+        </div>
+        <a href="{{ path('app_reservation_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour aux réservations
+        </a>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+        <div class="stat-card">
+            <div class="stat-icon text-primary">
+                <i class="fas fa-hourglass-end"></i>
+            </div>
+            <div class="stat-number text-primary">{{ activeReservationsCount|default(0) }}</div>
+            <div class="stat-label">Réservations actives</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon text-success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-number text-success">{{ notifiedReservationsCount|default(0) }}</div>
+            <div class="stat-label">Notifications reçues</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon text-warning">
+                <i class="fas fa-list-check"></i>
+            </div>
+            <div class="stat-number text-warning">{{ totalReservationsCount|default(0) }}</div>
+            <div class="stat-label">Réservations au total</div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FF6F00;"></div>
+                    <span>Réservation en cours</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #28a745;"></div>
+                    <span>Livre disponible - Notification reçue</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-calendar mr-2"></i>Calendrier
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="calendar-container">
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+    function initReservationCalendar() {
+        var calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+        
+        // Clear any existing calendar
+        calendarEl.innerHTML = '';
+        
+        // Detect mobile device
+        const isMobile = window.innerWidth <= 768;
+        
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            height: 'auto',
+            headerToolbar: {
+                left: isMobile ? 'prev,next' : 'prev,next today',
+                center: 'title',
+                right: isMobile ? 'dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: {{ events|raw }},
+            eventClick: function(info) {
+                if (info.event.url) {
+                    window.location.href = info.event.url;
+                }
+            },
+            editable: false,
+            eventDisplay: 'block',
+            // Mobile optimizations
+            dayMaxEvents: isMobile ? 1 : true,
+            moreLinkClick: isMobile ? 'popover' : 'week',
+            // Responsive event rendering
+            eventContent: function(arg) {
+                if (isMobile) {
+                    return {
+                        html: '<div style="font-size: 0.65rem; line-height: 1.2; padding: 1px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">' + arg.event.title + '</div>'
+                    };
+                }
+                return {};
+            }
+        });
+        
+        calendar.render();
+        
+        // Handle window resize for responsive calendar
+        let resizeTimer;
+        const resizeHandler = function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                calendar.updateSize();
+            }, 250);
+        };
+        
+        window.addEventListener('resize', resizeHandler);
+    }
+    
+    // Support both regular page load and Turbo navigation
+    document.addEventListener('DOMContentLoaded', initReservationCalendar);
+    document.addEventListener('turbo:load', initReservationCalendar);
+    document.addEventListener('turbo:render', initReservationCalendar);
+</script>
+{% endblock %}

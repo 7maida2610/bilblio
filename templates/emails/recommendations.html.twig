@@ -1,0 +1,26 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block subject %}Book recommendations for you{% endblock %}
+
+{% block body %}
+<h1>Hello {{ user.username }}!</h1>
+
+<p>Based on your reading preferences, here are some book recommendations:</p>
+
+<div style="background: white; padding: 20px; border-radius: 5px; margin: 20px 0;">
+    <h2>📚 Recommended Books</h2>
+    <ul>
+    {% for recommendation in recommendations %}
+        <li>
+            <strong>{{ recommendation.title }}</strong> by {{ recommendation.author }}
+        </li>
+    {% endfor %}
+    </ul>
+</div>
+
+<p><a href="{{ url('app_livre_index') }}" class="button">Browse All Books</a></p>
+
+<p>Happy reading!</p>
+
+<p>Best regards,<br>The BiblioApp Team</p>
+{% endblock %}

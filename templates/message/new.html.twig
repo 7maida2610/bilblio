@@ -1,0 +1,75 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Nouveau Message - Biblio{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-pen text-primary mr-2"></i>Nouveau Message
+            </h1>
+            <p class="text-muted small mb-0">Composer un nouveau message</p>
+        </div>
+        <a href="{{ path('app_messages_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour
+        </a>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-light">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-envelope"></i> Composer
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ path('app_messages_new') }}">
+                <div class="form-group">
+                    <label for="recipient" class="font-weight-bold text-gray-800">Destinataire</label>
+                    <select name="recipient" id="recipient" class="form-control" required>
+                        <option value="">-- Sélectionner un destinataire --</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}" {% if replyTo == user.id %}selected{% endif %}>
+                                {{ user.username }} ({{ user.email }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject" class="font-weight-bold text-gray-800">Sujet</label>
+                    <input type="text" name="subject" id="subject" class="form-control" 
+                           placeholder="Sujet du message" required maxlength="255">
+                </div>
+
+                <div class="form-group">
+                    <label for="content" class="font-weight-bold text-gray-800">Message</label>
+                    <textarea name="content" id="content" class="form-control" rows="8" 
+                              placeholder="Écrivez votre message ici..." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ path('app_messages_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

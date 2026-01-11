@@ -1,0 +1,606 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Gestion des Auteurs{% endblock %}
+
+{% block body %}
+    <style>
+        /* Modern Author Card Styles */
+        .modern-author-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .modern-author-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .author-avatar {
+            transition: transform 0.3s ease;
+        }
+
+        .modern-author-card:hover .author-avatar {
+            transform: scale(1.05);
+        }
+
+        .author-stats {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            color: white;
+        }
+
+        .author-stats .stat-item {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .author-stats .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .author-stats .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .author-overlay {
+            background: rgba(0,0,0,0.7);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .modern-author-card:hover .author-overlay {
+            opacity: 1;
+        }
+
+        .quick-actions .btn {
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+
+        .quick-actions .btn:hover {
+            transform: scale(1.1);
+        }
+
+        .quick-actions .btn:active {
+            transform: scale(0.9);
+        }
+
+        .author-card-entrance {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quick-actions .btn {
+            border-radius: 50px !important;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 2px;
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .author-bio-preview {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .modern-author-card {
+                margin-bottom: 1rem;
+            }
+
+            .quick-actions {
+                flex-direction: row !important;
+                justify-content: center;
+            }
+
+            .quick-actions .btn {
+                margin: 0 2px;
+            }
+        }
+
+        /* Filter badges */
+        .filter-badge {
+            background: linear-gradient(135deg, #009688 0%, #4db6ac 100%);
+            color: white;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 0.25rem;
+            display: inline-block;
+        }
+
+        .filter-badge .badge-close {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        .filter-badge .badge-close:hover {
+            opacity: 1;
+        }
+    </style>
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-users text-primary mr-2"></i>Gestion des Auteurs
+        </h1>
+        <div>
+            <div class="btn-group mr-2" role="group">
+                <a href="{{ path('app_auteur_index', app.request.query.all|merge({'view': 'table'})) }}" class="btn btn-sm btn-outline-primary {% if app.request.get('view') != 'grid' %}active{% endif %}">
+                    <i class="fas fa-table"></i> Tableau
+                </a>
+                <a href="{{ path('app_auteur_index', app.request.query.all|merge({'view': 'grid'})) }}" class="btn btn-sm btn-outline-primary {% if app.request.get('view') == 'grid' or not app.request.get('view') %}active{% endif %}">
+                    <i class="fas fa-th"></i> Grille
+                </a>
+            </div>
+            {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_auteur_new') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Ajouter un Auteur
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Advanced Search and Filters -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-light">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-search mr-2"></i>Recherche et Filtres Avancés
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ path('app_auteur_index') }}" id="filterForm">
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label for="search" class="form-label font-weight-bold">
+                            <i class="fas fa-search mr-2 text-primary"></i>Recherche
+                        </label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-search text-primary"></i></span>
+                            </div>
+                            <input type="text" name="search" id="search" value="{{ search|default('') }}" class="form-control" placeholder="Prénom, nom, biographie...">
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="sort" class="form-label font-weight-bold">
+                            <i class="fas fa-sort mr-2 text-warning"></i>Trier par
+                        </label>
+                        <select name="sort" id="sort" class="form-control">
+                            <option value="a.nom" {{ app.request.get('sort') == 'a.nom' ? 'selected' }}>Nom (A-Z)</option>
+                            <option value="a.nom DESC" {{ app.request.get('sort') == 'a.nom DESC' ? 'selected' }}>Nom (Z-A)</option>
+                            <option value="a.prenom" {{ app.request.get('sort') == 'a.prenom' ? 'selected' }}>Prénom (A-Z)</option>
+                            <option value="a.prenom DESC" {{ app.request.get('sort') == 'a.prenom DESC' ? 'selected' }}>Prénom (Z-A)</option>
+                            <option value="a.createdAt DESC" {{ app.request.get('sort') == 'a.createdAt DESC' ? 'selected' }}>Plus récent</option>
+                            <option value="a.createdAt" {{ app.request.get('sort') == 'a.createdAt' ? 'selected' }}>Plus ancien</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary mr-2">
+                            <i class="fas fa-search mr-1"></i>Rechercher
+                        </button>
+                        <a href="{{ path('app_auteur_index') }}" class="btn btn-outline-secondary mr-2">
+                            <i class="fas fa-times mr-1"></i>Effacer les filtres
+                        </a>
+                        <div class="float-right">
+                            <small class="text-muted">{{ auteurs.getTotalItemCount }} auteur(s) trouvé(s)</small>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if app.request.get('view') == 'grid' or not app.request.get('view') %}
+        <!-- Modern Grid View -->
+        <div class="row">
+            {% for auteur in auteurs %}
+                <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow h-100 modern-author-card author-card-entrance">
+                        <!-- Author Avatar -->
+                        <div class="position-relative">
+                            {% if auteur.image %}
+                                <div class="card-img-top author-avatar" style="height: 200px; background-image: url('{{ asset('uploads/auteur_images/' ~ auteur.image) }}'); background-size: cover; background-position: center;"></div>
+                            {% else %}
+                                <div class="card-img-top d-flex align-items-center justify-content-center author-avatar" style="height: 200px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+                                    <div class="text-center text-white">
+                                        <i class="fas fa-user fa-4x mb-2"></i>
+                                        <h5 class="font-weight-bold mb-0">{{ auteur.prenom|first }}. {{ auteur.nom }}</h5>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- Quick Actions Overlay -->
+                            <div class="card-img-overlay d-flex align-items-center justify-content-center author-overlay">
+                                <div class="btn-group-vertical quick-actions">
+                                    <a href="{{ path('app_auteur_show', {'id': auteur.id}) }}" class="btn btn-primary btn-sm mb-1" title="Voir les détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if is_granted('ROLE_USER') %}
+                                    <form action="{{ path('app_user_favorites_add', {'id': auteur.id}) }}" method="post" class="mb-1" title="Ajouter aux favoris">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('add-favorite-' ~ auteur.id) }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+                                    <a href="{{ path('app_auteur_edit', {'id': auteur.id}) }}" class="btn btn-warning btn-sm mb-1" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if is_granted('ROLE_ADMIN') %}
+                                    <form method="post" action="{{ path('app_auteur_delete', {'id': auteur.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet auteur ?');" class="d-inline" title="Supprimer">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ auteur.id) }}">
+                                        <button class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title font-weight-bold text-truncate mb-2" title="{{ auteur.prenom }} {{ auteur.nom }}">
+                                <span class="author-name">{{ auteur.prenom }} {{ auteur.nom }}</span>
+                            </h6>
+
+                            {% if auteur.biographie %}
+                                <p class="card-text small text-muted mb-3 author-bio-preview">
+                                    {{ auteur.biographie }}
+                                </p>
+                            {% endif %}
+
+                            <!-- Author Stats -->
+                            <div class="author-stats">
+                                <div class="row">
+                                    <div class="col-6 stat-item">
+                                        <span class="stat-number">{{ auteur.livres|length }}</span>
+                                        <span class="stat-label">Livres</span>
+                                    </div>
+                                    <div class="col-6 stat-item">
+                                        <span class="stat-number">
+                                            {% set totalReviews = 0 %}
+                                            {% for livre in auteur.livres %}
+                                                {% set totalReviews = totalReviews + livre.reviews|length %}
+                                            {% endfor %}
+                                            {{ totalReviews }}
+                                        </span>
+                                        <span class="stat-label">Avis</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Average Rating -->
+                            {% set totalRating = 0 %}
+                            {% set reviewCount = 0 %}
+                            {% for livre in auteur.livres %}
+                                {% for review in livre.reviews %}
+                                    {% set totalRating = totalRating + review.rating %}
+                                    {% set reviewCount = reviewCount + 1 %}
+                                {% endfor %}
+                            {% endfor %}
+                            {% if reviewCount > 0 %}
+                                {% set avgRating = (totalRating / reviewCount)|round(1) %}
+                                <div class="mb-2">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <div class="rating-stars-small mr-2">
+                                            {% for i in 1..5 %}
+                                                <i class="fas fa-star {% if i <= avgRating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                            {% endfor %}
+                                        </div>
+                                        <small class="text-muted">({{ avgRating }})</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center py-5">
+                        <i class="fas fa-search fa-4x text-gray-300 mb-4"></i>
+                        <h4 class="text-gray-600 mb-3">Aucun auteur trouvé</h4>
+                        <p class="text-muted mb-4">Essayez de modifier vos critères de recherche ou de supprimer les filtres.</p>
+                        <a href="{{ path('app_auteur_index') }}" class="btn btn-primary">
+                            <i class="fas fa-times mr-2"></i>Effacer les filtres
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Enhanced Table View -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-light">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-table mr-2"></i>Liste des Auteurs
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-nowrap" width="100%" cellspacing="0">
+                        <thead class="bg-gradient-primary text-white">
+                            <tr>
+                                <th>{{ knp_pagination_sortable(auteurs, 'ID', 'a.id') }}</th>
+                                <th>{{ knp_pagination_sortable(auteurs, 'Prénom', 'a.prenom') }}</th>
+                                <th>{{ knp_pagination_sortable(auteurs, 'Nom', 'a.nom') }}</th>
+                                <th>Biographie</th>
+                                <th>Livres</th>
+                                <th>Note moyenne</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for auteur in auteurs %}
+                            {% set totalRating = 0 %}
+                            {% set reviewCount = 0 %}
+                            {% for livre in auteur.livres %}
+                                {% for review in livre.reviews %}
+                                    {% set totalRating = totalRating + review.rating %}
+                                    {% set reviewCount = reviewCount + 1 %}
+                                {% endfor %}
+                            {% endfor %}
+                            {% set avgRating = reviewCount > 0 ? (totalRating / reviewCount)|round(1) : 0 %}
+
+                            <tr>
+                                <td>
+                                    <span class="badge badge-primary badge-pill">{{ auteur.id }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ auteur.prenom }}</strong>
+                                </td>
+                                <td>
+                                    <strong>{{ auteur.nom }}</strong>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ auteur.biographie ? auteur.biographie|slice(0, 60) ~ (auteur.biographie|length > 60 ? '...' : '') : 'N/A' }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">
+                                        <i class="fas fa-book mr-1"></i>{{ auteur.livres|length }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if avgRating > 0 %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="rating-stars-small mr-2">
+                                                {% for i in 1..5 %}
+                                                    <i class="fas fa-star {% if i <= avgRating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                {% endfor %}
+                                            </div>
+                                            <small class="text-muted">({{ avgRating }})</small>
+                                        </div>
+                                    {% else %}
+                                        <small class="text-muted">N/A</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ path('app_auteur_show', {'id': auteur.id}) }}" class="btn btn-info btn-sm" title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if is_granted('ROLE_USER') %}
+                                        <form action="{{ path('app_user_favorites_add', {'id': auteur.id}) }}" method="post" class="d-inline" title="Ajouter aux favoris">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('add-favorite-' ~ auteur.id) }}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                <i class="fas fa-heart"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+                                        <a href="{{ path('app_auteur_edit', {'id': auteur.id}) }}" class="btn btn-warning btn-sm" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+                                        {% if is_granted('ROLE_ADMIN') %}
+                                        <form method="post" action="{{ path('app_auteur_delete', {'id': auteur.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet auteur ?');" class="d-inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ auteur.id) }}">
+                                            <button class="btn btn-danger btn-sm" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-search fa-3x text-gray-300 mb-3"></i>
+                                    <h5 class="text-gray-600">Aucun auteur trouvé</h5>
+                                    <p class="text-muted">Essayez de modifier vos critères de recherche.</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if auteurs.getPageCount() > 1 %}
+        <div class="d-flex justify-content-center">
+            {{ knp_pagination_render(auteurs, 'pagination.html.twig') }}
+        </div>
+    {% endif %}
+
+    <!-- Enhanced Author Page JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Listen for favorite additions
+            document.querySelectorAll('form[action*="/favorites/add/"]').forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    const button = form.querySelector('button');
+
+                    setTimeout(function() {
+                        showNotification('❤️ Auteur ajouté à vos favoris!', 'danger');
+                        button.style.color = '#e74a3b';
+                    }, 500);
+                });
+            });
+
+            // Add entrance animation delay for cards
+            document.querySelectorAll('.author-card-entrance').forEach(function(card, index) {
+                card.style.animationDelay = (index * 0.1) + 's';
+            });
+
+            // Enhanced search with live feedback
+            const searchInput = document.getElementById('search');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(function() {
+                        if (searchInput.value.length > 0) {
+                            showSearchIndicator();
+                        }
+                    }, 500);
+                });
+            }
+
+            // Auto-submit on sort change
+            const sortSelect = document.getElementById('sort');
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    document.getElementById('filterForm').submit();
+                });
+            }
+        });
+
+        // Search indicator
+        function showSearchIndicator() {
+            const indicator = document.createElement('div');
+            indicator.className = 'search-indicator';
+            indicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche en cours...';
+            indicator.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #009688;
+                color: white;
+                padding: 10px 15px;
+                border-radius: 5px;
+                z-index: 9999;
+                animation: slideInRight 0.3s ease;
+            `;
+
+            document.body.appendChild(indicator);
+
+            setTimeout(function() {
+                indicator.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(function() {
+                    indicator.remove();
+                }, 300);
+            }, 1500);
+        }
+
+        // Notification system
+        function showNotification(message, type) {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.custom-notification');
+            existingNotifications.forEach(function(notification) {
+                notification.remove();
+            });
+
+            // Create new notification
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} custom-notification position-fixed`;
+            notification.style.cssText = `
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                border-radius: 10px;
+                animation: slideInRight 0.5s ease;
+            `;
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <span class="flex-grow-1">${message}</span>
+                    <button type="button" class="close ml-2" onclick="this.parentElement.parentElement.remove()">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto remove after 3 seconds
+            setTimeout(function() {
+                if (notification.parentElement) {
+                    notification.style.animation = 'slideOutRight 0.5s ease';
+                    setTimeout(function() {
+                        notification.remove();
+                    }, 500);
+                }
+            }, 3000);
+        }
+
+        // Add notification animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            .custom-notification .close {
+                border: none;
+                background: none;
+                font-size: 1.2rem;
+                opacity: 0.7;
+            }
+            .custom-notification .close:hover {
+                opacity: 1;
+            }
+            .rating-stars-small .fa-star {
+                font-size: 0.8rem;
+                margin-right: 2px;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+{% endblock %}

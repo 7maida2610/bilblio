@@ -1,0 +1,42 @@
+easy_admin:
+    entities:
+        # List your entities here (or don't list them to make them all available)
+        Livre:
+            class: App\Entity\Livre
+            controller: App\Controller\Admin\LivreCrudController
+        Auteur:
+            class: App\Entity\Auteur
+            controller: App\Controller\Admin\AuteurCrudController
+        Categorie:
+            class: App\Entity\Categorie
+            controller: App\Controller\Admin\CategorieCrudController
+        Editeur:
+            class: App\Entity\Editeur
+            controller: App\Controller\Admin\EditeurCrudController
+        User:
+            class: App\Entity\User
+            controller: App\Controller\Admin\UserCrudController
+        Order:
+            class: App\Entity\Order
+            controller: App\Controller\Admin\OrderCrudController
+        Loan:
+            class: App\Entity\Loan
+            controller: App\Controller\Admin\LoanCrudController
+        BookReservation:
+            class: App\Entity\BookReservation
+            controller: App\Controller\Admin\BookReservationCrudController
+
+    design:
+        brand_color: '#009688'  # Bilio Cool Teal
+        theme: 'admin/custom-theme.html.twig'
+        menu:
+            - { entity: 'Livre', icon: 'book' }
+            - { entity: 'Auteur', icon: 'user' }
+            - { entity: 'Categorie', icon: 'tag' }
+            - { entity: 'Editeur', icon: 'building' }
+            - { entity: 'Order', icon: 'shopping-cart', label: 'Commandes' }
+            - { entity: 'Loan', icon: 'exchange', label: 'Gestion des Emprunts' }
+            - { entity: 'BookReservation', icon: 'calendar', label: 'Reservations' }
+            - { entity: 'User', icon: 'users' }
+
+    site_name: 'Biblio Admin'

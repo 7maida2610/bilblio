@@ -1,0 +1,213 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Statistiques des Bannières - Biblio{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-chart-bar text-primary mr-2"></i>Statistiques des Bannières
+            </h1>
+            <p class="mb-0 text-muted">Vue d'ensemble des bannières et des préférences utilisateur</p>
+        </div>
+        <a href="{{ path('app_admin_banner_custom') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm"></i> Retour à la liste
+        </a>
+    </div>
+
+    <!-- Overview Stats -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-primary text-uppercase mb-1">Total Bannières</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ stats.total|default(0) }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-success text-uppercase mb-1">Actives</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ stats.active|default(0) }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-warning text-uppercase mb-1">Inactives</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ stats.inactive|default(0) }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-info text-uppercase mb-1">Programmées</div>
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ stats.scheduled|default(0) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Types Stats -->
+    <div class="row mb-4">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow h-100 py-2">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Par Type</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-6">Promotions:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-success">{{ stats.promotion|default(0) }}</span></dd>
+
+                        <dt class="col-sm-6">Avertissements:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-warning">{{ stats.warning|default(0) }}</span></dd>
+
+                        <dt class="col-sm-6">Annonces:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-info">{{ stats.announcement|default(0) }}</span></dd>
+
+                        <dt class="col-sm-6">Info:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-primary">{{ stats.info|default(0) }}</span></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow h-100 py-2">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Par Position</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-6">En haut:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-secondary">{{ stats.top|default(0) }}</span></dd>
+
+                        <dt class="col-sm-6">En bas:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-secondary">{{ stats.bottom|default(0) }}</span></dd>
+
+                        <dt class="col-sm-6">Barre latérale:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-secondary">{{ stats.sidebar|default(0) }}</span></dd>
+
+                        <dt class="col-sm-6">Popup:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-secondary">{{ stats.popup|default(0) }}</span></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow h-100 py-2">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Par Statut</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-6">Active:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-success">{{ stats.active|default(0) }}</span></dd>
+
+                        <dt class="col-sm-6">Inactive:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-secondary">{{ stats.inactive|default(0) }}</span></dd>
+
+                        <dt class="col-sm-6">Programmée:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-warning">{{ stats.scheduled|default(0) }}</span></dd>
+
+                        <dt class="col-sm-6">Expirée:</dt>
+                        <dd class="col-sm-6"><span class="badge badge-danger">{{ stats.expired|default(0) }}</span></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dismissal Rates -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-chart-pie mr-2"></i>Taux de Rejet par Bannière
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if dismissalStats|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Titre</th>
+                                <th>Type</th>
+                                <th>Total Vues</th>
+                                <th>Masquées</th>
+                                <th>Taux de Rejet</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in dismissalStats %}
+                            <tr>
+                                <td>
+                                    <strong>{{ stat.banner.title }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{{ stat.banner.type == 'promotion' ? 'success' : (stat.banner.type == 'warning' ? 'warning' : (stat.banner.type == 'announcement' ? 'info' : 'primary')) }}">
+                                        {{ stat.banner.typeLabel }}
+                                    </span>
+                                </td>
+                                <td><strong>{{ stat.total }}</strong></td>
+                                <td>
+                                    <span class="badge badge-warning">{{ stat.dismissed }}</span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar {% if stat.rate > 70 %}bg-danger{% elseif stat.rate > 40 %}bg-warning{% else %}bg-success{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ stat.rate }}%" 
+                                             aria-valuenow="{{ stat.rate }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ stat.rate }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_admin_banner_details', {id: stat.banner.id}) }}" 
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Aucune données de bannière disponible.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tips Card -->
+    <div class="card shadow mb-4 border-left-info">
+        <div class="card-header py-3 bg-info">
+            <h6 class="m-0 font-weight-bold text-white">
+                <i class="fas fa-lightbulb mr-2"></i>Conseils d'Optimisation
+            </h6>
+        </div>
+        <div class="card-body">
+            <ul>
+                <li><strong>Taux de rejet élevé (>70%):</strong> Étudiez le contenu et le positionnement de votre bannière</li>
+                <li><strong>Taux modéré (40-70%):</strong> Votre bannière attire l'attention mais peut être améliorée</li>
+                <li><strong>Taux faible (<40%):</strong> Votre bannière fonctionne bien, les utilisateurs la voient et l'acceptent</li>
+                <li><strong>Astuce:</strong> Variez vos bannières régulièrement pour éviter l'indifférence des utilisateurs</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Favorite Authors{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Favorite Authors</h1>
+    </div>
+
+    <div class="row">
+        {% for auteur in favorites %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-gradient-primary text-white text-center py-3">
+                    <h5 class="mb-0 font-weight-bold">{{ auteur.prenom }} {{ auteur.nom }}</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if auteur.biographie %}
+                        <p class="text-muted mb-3">{{ auteur.biographie|slice(0, 100) ~ '...' }}</p>
+                    {% else %}
+                        <p class="text-muted mb-3">No biography available</p>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <a href="{{ path('app_auteur_show', {'id': auteur.id}) }}" class="btn btn-primary btn-sm mr-2">
+                            <i class="fas fa-eye mr-1"></i>View Profile
+                        </a>
+                        <form action="{{ path('app_user_favorites_remove', {'id': auteur.id}) }}" method="post" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('remove-favorite-' ~ auteur.id) }}">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fas fa-heart-broken mr-1"></i>Remove
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="small text-muted">
+                        <i class="fas fa-book mr-1"></i>{{ auteur.livres|length }} books in catalog
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-heart fa-3x text-gray-300 mb-3"></i>
+                <h5 class="text-muted">No favorite authors yet</h5>
+                <p class="text-muted">Start adding authors you love!</p>
+                <a href="{{ path('app_auteur_index') }}" class="btn btn-primary">Browse Authors</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

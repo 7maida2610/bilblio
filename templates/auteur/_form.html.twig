@@ -1,0 +1,31 @@
+{{ form_start(form, {'attr': {'class': 'user', 'enctype': 'multipart/form-data'}}) }}
+    <div class="form-group row">
+        <div class="col-sm-6 mb-3 mb-sm-0">
+            {{ form_label(form.prenom, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.prenom, {'attr': {'class': 'form-control form-control-user', 'placeholder': 'Prénom de l\'auteur'}}) }}
+            {{ form_errors(form.prenom) }}
+        </div>
+        <div class="col-sm-6">
+            {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.nom, {'attr': {'class': 'form-control form-control-user', 'placeholder': 'Nom de l\'auteur'}}) }}
+            {{ form_errors(form.nom) }}
+        </div>
+    </div>
+    <div class="form-group">
+        {{ form_label(form.biographie, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.biographie, {'attr': {'class': 'form-control form-control-user', 'placeholder': 'Biographie de l\'auteur', 'rows': 4}}) }}
+        {{ form_errors(form.biographie) }}
+    </div>
+    <div class="form-group">
+        {{ form_label(form.image, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.image, {'attr': {'class': 'form-control-file'}}) }}
+        {{ form_errors(form.image) }}
+        {% if auteur.image %}
+            <div class="mt-2">
+                <img src="{{ asset('uploads/auteur_images/' ~ auteur.image) }}" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                <p class="text-muted small mt-1">Image actuelle. Uploader une nouvelle image pour la remplacer.</p>
+            </div>
+        {% endif %}
+    </div>
+    <button class="btn btn-primary btn-user btn-block">{{ button_label|default('Enregistrer') }}</button>
+{{ form_end(form) }}

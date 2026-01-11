@@ -1,0 +1,13 @@
+{{ form_start(form, {'attr': {'class': 'user'}}) }}
+    <div class="form-group">
+        {{ form_label(form.designation, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.designation, {'attr': {'class': 'form-control form-control-user', 'placeholder': 'Désignation de la catégorie'}}) }}
+        {{ form_errors(form.designation) }}
+    </div>
+    <div class="form-group">
+        {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.description, {'attr': {'class': 'form-control form-control-user', 'placeholder': 'Description de la catégorie', 'rows': 3}}) }}
+        {{ form_errors(form.description) }}
+    </div>
+    <button class="btn btn-primary btn-user btn-block">{{ button_label|default('Enregistrer') }}</button>
+{{ form_end(form) }}

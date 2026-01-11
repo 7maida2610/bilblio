@@ -1,0 +1,419 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Gestion des Emails - BiblioApp{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-envelope"></i> Gestion des Emails
+        </h1>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Utilisateurs
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ totalUsers }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Vérifiés
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ verifiedUsers }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Prêts à échéance
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ loansDueSoon|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Prêts en retard
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ overdueLoans|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loan Email Commands Section -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card shadow">
+                <div class="card-header py-3 bg-gradient-primary text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-terminal"></i> Gestion des Rappels de Prêts
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Return Reminders -->
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-left-warning h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-bell fa-2x text-warning"></i>
+                                        <div class="ml-3">
+                                            <h6 class="mb-0">Rappels de Retour</h6>
+                                            <small class="text-muted">{{ loansDueSoon|length }} prêt(s) à échéance proche</small>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-3">
+                                        Envoyer des rappels aux utilisateurs dont les prêts arrivent à échéance
+                                    </p>
+                                    {% if loansDueSoon|length > 0 %}
+                                        <div class="mb-3">
+                                            <small class="text-muted">Prêts concernés:</small>
+                                            <ul class="small mb-0" style="max-height: 100px; overflow-y: auto;">
+                                                {% for loan in loansDueSoon|slice(0, 5) %}
+                                                    <li>{{ loan.livre.titre|slice(0, 30) }}{% if loan.livre.titre|length > 30 %}...{% endif %} - {{ loan.user.username }}</li>
+                                                {% endfor %}
+                                                {% if loansDueSoon|length > 5 %}
+                                                    <li class="text-muted">... et {{ loansDueSoon|length - 5 }} autre(s)</li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                    <form method="post" action="{{ path('backoffice_send_return_reminders') }}">
+                                        <div class="input-group input-group-sm mb-2">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">Jours avant échéance</span>
+                                            </div>
+                                            <input type="number" name="reminder_days" class="form-control" value="3" min="1" max="14">
+                                        </div>
+                                        <button type="submit" class="btn btn-warning btn-sm btn-block" {% if loansDueSoon|length == 0 %}disabled{% endif %}>
+                                            <i class="fas fa-paper-plane"></i> Envoyer {{ loansDueSoon|length }} Rappel(s)
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Overdue Alerts -->
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-left-danger h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-exclamation-circle fa-2x text-danger"></i>
+                                        <div class="ml-3">
+                                            <h6 class="mb-0">Alertes Retard</h6>
+                                            <small class="text-muted">{{ overdueLoans|length }} prêt(s) en retard</small>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-3">
+                                        Notifier les utilisateurs et admins des prêts en retard
+                                    </p>
+                                    {% if overdueLoans|length > 0 %}
+                                        <div class="mb-3">
+                                            <small class="text-muted">Prêts en retard:</small>
+                                            <ul class="small mb-0 text-danger" style="max-height: 100px; overflow-y: auto;">
+                                                {% for loan in overdueLoans|slice(0, 5) %}
+                                                    <li>{{ loan.livre.titre|slice(0, 30) }}{% if loan.livre.titre|length > 30 %}...{% endif %} - {{ loan.user.username }}</li>
+                                                {% endfor %}
+                                                {% if overdueLoans|length > 5 %}
+                                                    <li class="text-muted">... et {{ overdueLoans|length - 5 }} autre(s)</li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                    <form method="post" action="{{ path('backoffice_send_overdue_alerts') }}">
+                                        <button type="submit" class="btn btn-danger btn-sm btn-block" {% if overdueLoans|length == 0 %}disabled{% endif %}>
+                                            <i class="fas fa-paper-plane"></i> Envoyer {{ overdueLoans|length }} Alerte(s)
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Command Line Execution -->
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card bg-dark text-white">
+                                <div class="card-body">
+                                    <h6 class="text-white mb-3"><i class="fas fa-terminal"></i> Exécuter Commande Rappels</h6>
+                                    <p class="small text-light mb-3">
+                                        Exécute <code class="text-warning">app:send-loan-reminders</code> - envoie les rappels ET marque les prêts en retard
+                                    </p>
+                                    <form method="post" action="{{ path('backoffice_run_loan_reminders') }}">
+                                        <div class="input-group input-group-sm mb-2">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text bg-secondary text-white border-0">--reminder-days</span>
+                                            </div>
+                                            <input type="number" name="reminder_days" class="form-control bg-secondary text-white border-0" value="3" min="1" max="14">
+                                        </div>
+                                        <button type="submit" class="btn btn-outline-light btn-sm btn-block">
+                                            <i class="fas fa-play"></i> Exécuter Commande
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-dark text-white">
+                                <div class="card-body">
+                                    <h6 class="text-white mb-3"><i class="fas fa-trophy"></i> Mise à jour Objectifs</h6>
+                                    <p class="small text-light mb-3">
+                                        Exécute <code class="text-warning">app:update-reading-goals</code> - vérifie et envoie les emails d'accomplissement
+                                    </p>
+                                    <form method="post" action="{{ path('backoffice_run_reading_goals') }}">
+                                        <button type="submit" class="btn btn-outline-light btn-sm btn-block mt-4">
+                                            <i class="fas fa-play"></i> Exécuter Commande
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Email Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <h5 class="mb-3 text-gray-800">
+                <i class="fas fa-flask"></i> Tester les Emails par Fonctionnalité
+            </h5>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-left-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-book-reader fa-2x text-primary"></i>
+                        <div class="ml-3">
+                            <h6 class="mb-0">Emails Emprunts</h6>
+                            <small class="text-muted">{{ totalLoans }} emprunt(s)</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Tester approbation, rejet et retard</p>
+                    <a href="{{ path('backoffice_emails_loans') }}" class="btn btn-primary btn-sm btn-block">
+                        <i class="fas fa-envelope"></i> Gérer Emprunts
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-left-success h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-shopping-cart fa-2x text-success"></i>
+                        <div class="ml-3">
+                            <h6 class="mb-0">Emails Commandes</h6>
+                            <small class="text-muted">{{ totalOrders }} commande(s)</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Tester expédition et livraison</p>
+                    <a href="{{ path('backoffice_emails_orders') }}" class="btn btn-success btn-sm btn-block">
+                        <i class="fas fa-envelope"></i> Gérer Commandes
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-left-info h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-calendar fa-2x text-info"></i>
+                        <div class="ml-3">
+                            <h6 class="mb-0">Emails Réservations</h6>
+                            <small class="text-muted">{{ totalReservations }} réservation(s)</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Tester disponibilité et annulation</p>
+                    <a href="{{ path('backoffice_emails_reservations') }}" class="btn btn-info btn-sm btn-block">
+                        <i class="fas fa-envelope"></i> Gérer Réservations
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Email Actions -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-paper-plane"></i> Actions Emails en Masse
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                                    <h5>Résumés Hebdomadaires</h5>
+                                    <p class="text-muted small">Envoyer les résumés à tous les utilisateurs</p>
+                                    <form method="post" action="{{ path('backoffice_send_weekly_summaries') }}" class="d-inline">
+                                        <button type="submit" class="btn btn-info btn-sm">
+                                            <i class="fas fa-paper-plane"></i> Envoyer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-lightbulb fa-3x text-warning mb-3"></i>
+                                    <h5>Recommandations</h5>
+                                    <p class="text-muted small">Envoyer des recommandations personnalisées</p>
+                                    <form method="post" action="{{ path('backoffice_send_recommendations') }}" class="d-inline">
+                                        <button type="submit" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-paper-plane"></i> Envoyer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                                    <h5>Alerte Stock Faible</h5>
+                                    <p class="text-muted small">Alerter les admins des livres en rupture</p>
+                                    <form method="post" action="{{ path('backoffice_send_low_stock_alert') }}" class="d-inline">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-paper-plane"></i> Envoyer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-users fa-3x text-success mb-3"></i>
+                                    <h5>Gérer Utilisateurs</h5>
+                                    <p class="text-muted small">Emails aux utilisateurs individuels</p>
+                                    <a href="{{ path('backoffice_emails_users') }}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-users"></i> Voir
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle"></i> Informations Système
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Email Expéditeur:</strong><br>
+                        <small class="text-muted">khlifahmed9@gmail.com</small>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Templates Emails:</strong><br>
+                        <small class="text-muted">33 templates professionnels</small>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Statut SMTP:</strong><br>
+                        <span class="badge badge-success">Actif</span>
+                    </div>
+                    <div class="mb-0">
+                        <strong>Dernière Activité:</strong><br>
+                        <small class="text-muted">{{ 'now'|date('d/m/Y H:i') }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cogs"></i> Commandes Disponibles
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <code class="small">app:send-loan-reminders</code><br>
+                        <small class="text-muted">Rappels + marque retards</small>
+                    </div>
+                    <div class="mb-2">
+                        <code class="small">app:update-reading-goals</code><br>
+                        <small class="text-muted">Objectifs de lecture</small>
+                    </div>
+                    <hr>
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <small> Vérification inscription</small>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <small> Bienvenue après vérification</small>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <small> Emails auto prêts/commandes</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

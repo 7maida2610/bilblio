@@ -1,0 +1,13 @@
+{% set statusColors = {
+    'pending': 'warning',
+    'paid': 'primary',
+    'processing': 'info',
+    'shipped': 'info',
+    'delivered': 'success',
+    'cancelled': 'danger',
+    'refunded': 'secondary'
+} %}
+
+<span class="badge badge-{{ statusColors[field.value] ?? 'secondary' }}">
+    {{ entity.getInstance().statusLabel }}
+</span>

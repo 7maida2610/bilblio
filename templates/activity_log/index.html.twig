@@ -1,0 +1,100 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Logs d'Activité{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-history mr-2"></i>Logs d'Activité
+        </h1>
+        <a href="{{ path('app_backoffice_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left mr-2"></i>Retour au Dashboard
+        </a>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-list mr-2"></i>Tous les Logs d'Activité
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Utilisateur</th>
+                                    <th>Action</th>
+                                    <th>Description</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity_log in activity_logs %}
+                                <tr>
+                                    <td>{{ activity_log.id }}</td>
+                                    <td>
+                                        {% if activity_log.user %}
+                                            <div class="d-flex align-items-center">
+                                                <div class="mr-2">
+                                                    <i class="fas fa-user-circle fa-lg text-primary"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="font-weight-bold">{{ activity_log.user.username }}</div>
+                                                    <small class="text-muted">{{ activity_log.user.email }}</small>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">Utilisateur inconnu</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-primary">{{ activity_log.action }}</span>
+                                    </td>
+                                    <td>
+                                        {% if activity_log.description %}
+                                            <span title="{{ activity_log.description }}">
+                                                {{ activity_log.description|length > 50 ? activity_log.description|slice(0, 50) ~ '...' : activity_log.description }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <div class="font-weight-bold">{{ activity_log.createdAt|date('d/m/Y') }}</div>
+                                            <small class="text-muted">{{ activity_log.createdAt|date('H:i:s') }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('app_activity_logs_show', {'id': activity_log.id}) }}"
+                                           class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye mr-1"></i>Voir
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <i class="fas fa-info-circle fa-3x text-gray-300 mb-3"></i>
+                                        <h5 class="text-muted">Aucun log d'activité trouvé</h5>
+                                        <p class="text-muted">Les logs d'activité apparaîtront ici une fois que des actions seront effectuées.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,432 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Laisser un avis - {{ livre.titre }}{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-star text-primary mr-2"></i>Laisser un avis
+            </h1>
+            <p class="mb-0 text-muted">Partagez votre expérience avec "{{ livre.titre }}"</p>
+        </div>
+        <a href="{{ path('app_livre_show', {'id': livre.id}) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left mr-1"></i>Retour au livre
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Book Info -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            {% if livre.image %}
+                                <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-fluid rounded shadow" style="max-height: 150px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto" style="height: 150px; width: 100px;">
+                                    <i class="fas fa-book fa-3x text-gray-300"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <h4 class="font-weight-bold">{{ livre.titre }}</h4>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-user mr-1"></i>{{ livre.auteur ? livre.auteur.prenom ~ ' ' ~ livre.auteur.nom : 'Auteur inconnu' }}
+                            </p>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-tag mr-1"></i>{{ livre.categorie ? livre.categorie.designation : 'N/A' }}
+                            </p>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-building mr-1"></i>{{ livre.editeur ? livre.editeur.nomEditeur : 'N/A' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Form -->
+            <div class="card shadow">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-edit mr-2"></i>Votre avis
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        <div class="form-group">
+                            <label class="font-weight-bold">Note *</label>
+                            <div class="rating-stars-container">
+                                <div class="rating-stars">
+                                    {% for i in 5..1 %}
+                                        <input type="radio" id="star{{ i }}" name="{{ form.rating.vars.full_name }}" value="{{ i }}" {{ form.rating.vars.value == i ? 'checked' : '' }}>
+                                        <label for="star{{ i }}" title="{{ i }} étoile{{ i > 1 ? 's' : '' }}">
+                                            <i class="fas fa-star"></i>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                                <div class="rating-text mt-2">
+                                    <small class="text-muted">Cliquez sur les étoiles pour noter ce livre</small>
+                                </div>
+                            </div>
+                            {{ form_errors(form.rating) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.comment, null, {'label_attr': {'class': 'font-weight-bold'}}) }}
+                            {{ form_widget(form.comment, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.comment) }}
+                            <small class="form-text text-muted">Partagez votre expérience de lecture (optionnel)</small>
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.images, null, {'label_attr': {'class': 'font-weight-bold'}}) }}
+                            <div class="file-upload-area" id="file-upload-area">
+                                <div class="upload-content">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <h5 class="text-primary">Glissez-déposez vos images ici</h5>
+                                    <p class="text-muted">ou <span class="text-primary font-weight-bold">cliquez pour sélectionner</span></p>
+                                    <small class="text-muted">Formats acceptés: JPEG, PNG, GIF, WebP • Taille max: 5MB par image • Max 5 images</small>
+                                </div>
+                                {{ form_widget(form.images, {'attr': {'class': 'd-none', 'id': 'file-input', 'multiple': 'multiple'}}) }}
+                            </div>
+                            <div id="file-preview" class="mt-3"></div>
+                            {{ form_help(form.images) }}
+                            {{ form_errors(form.images) }}
+                        </div>
+
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane mr-2"></i>Publier mon avis
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.rating-stars-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.rating-stars {
+    display: inline-flex;
+    direction: rtl;
+    gap: 5px;
+    justify-content: center;
+}
+
+.rating-stars input[type="radio"] {
+    display: none;
+}
+
+.rating-stars label {
+    font-size: 2.5rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+    color: #ffc107;
+    transform: scale(1.1);
+}
+
+.rating-stars input[type="radio"]:checked ~ label {
+    color: #ffc107;
+}
+
+.rating-stars input[type="radio"]:checked ~ label ~ label {
+    color: #ffc107;
+}
+
+.rating-stars label:hover {
+    color: #ff8c00;
+}
+
+.rating-text {
+    margin-top: 10px;
+}
+
+/* File Upload Styles */
+.file-upload-area {
+    border: 2px dashed #009688;
+    border-radius: 10px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, rgba(0, 150, 136, 0.05) 0%, rgba(76, 175, 80, 0.05) 100%);
+}
+
+.file-upload-area:hover,
+.file-upload-area.dragover {
+    border-color: #4CAF50;
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%);
+    transform: scale(1.02);
+}
+
+.file-upload-area.dragover {
+    border-style: solid;
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+}
+
+.upload-content h5 {
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.upload-content p {
+    margin-bottom: 15px;
+}
+
+#file-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.file-preview-item {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.file-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.file-preview-item .remove-file {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(220, 53, 69, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.file-preview-item .remove-file:hover {
+    background: rgba(220, 53, 69, 1);
+    transform: scale(1.1);
+}
+
+.file-preview-item .file-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    font-size: 11px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 576px) {
+    .rating-stars label {
+        font-size: 2rem;
+        padding: 3px;
+    }
+
+    .file-upload-area {
+        padding: 30px 15px;
+    }
+
+    .upload-content h5 {
+        font-size: 1.1rem;
+    }
+
+    #file-preview {
+        justify-content: center;
+    }
+
+    .file-preview-item {
+        width: 100px;
+        height: 100px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function openImageModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    $('#imageModal').modal('show');
+}
+
+// Drag and Drop File Upload
+document.addEventListener('DOMContentLoaded', function() {
+    const fileUploadArea = document.getElementById('file-upload-area');
+    const fileInput = document.getElementById('file-input');
+    const filePreview = document.getElementById('file-preview');
+    let selectedFiles = [];
+
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    // Handle dropped files
+    fileUploadArea.addEventListener('drop', handleDrop, false);
+
+    // Handle click to select files
+    fileUploadArea.addEventListener('click', () => fileInput.click());
+
+    // Handle file input change
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(e.target.files);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function highlight() {
+        fileUploadArea.classList.add('dragover');
+    }
+
+    function unhighlight() {
+        fileUploadArea.classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    function handleFiles(files) {
+        // Convert FileList to Array and validate
+        const validFiles = Array.from(files).filter(file => {
+            // Check file type
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                showError('Format de fichier non supporté: ' + file.name);
+                return false;
+            }
+
+            // Check file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                showError('Fichier trop volumineux (max 5MB): ' + file.name);
+                return false;
+            }
+
+            return true;
+        });
+
+        // Check total file count
+        if (selectedFiles.length + validFiles.length > 5) {
+            showError('Maximum 5 images autorisées');
+            return;
+        }
+
+        // Add valid files
+        selectedFiles = selectedFiles.concat(validFiles);
+        updateFileInput();
+        renderFilePreviews();
+    }
+
+    function updateFileInput() {
+        // Create a new DataTransfer object to update the file input
+        const dt = new DataTransfer();
+        selectedFiles.forEach(file => dt.items.add(file));
+        fileInput.files = dt.files;
+    }
+
+    function renderFilePreviews() {
+        filePreview.innerHTML = '';
+
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'file-preview-item';
+
+                previewItem.innerHTML = `
+                    <img src="${e.target.result}" alt="${file.name}">
+                    <button type="button" class="remove-file" onclick="removeFile(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="file-info">${file.name}</div>
+                `;
+
+                filePreview.appendChild(previewItem);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function showError(message) {
+        // Create a temporary error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+        errorDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle mr-2"></i>${message}
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        `;
+
+        fileUploadArea.parentNode.insertBefore(errorDiv, fileUploadArea.nextSibling);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.remove();
+            }
+        }, 5000);
+    }
+
+    // Global function to remove files
+    window.removeFile = function(index) {
+        selectedFiles.splice(index, 1);
+        updateFileInput();
+        renderFilePreviews();
+    };
+});
+</script>
+{% endblock %}

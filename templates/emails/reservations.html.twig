@@ -1,0 +1,159 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Test Reservation Emails - BiblioApp{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-envelope"></i> Test Reservation Emails
+        </h1>
+        <a href="{{ path('backoffice_emails_index') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    {% if app.flashes %}
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-info">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fas fa-calendar"></i> Réservations Disponibles ({{ totalReservations }})
+                    </h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Utilisateur</th>
+                                <th>Livre</th>
+                                <th>Position</th>
+                                <th>Actif</th>
+                                <th>Notifié</th>
+                                <th>Demandé</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if reservations|length == 0 %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                        Aucune réservation trouvée
+                                    </td>
+                                </tr>
+                            {% else %}
+                                {% for reservation in reservations %}
+                                    <tr>
+                                        <td><strong>#{{ reservation.id }}</strong></td>
+                                        <td>
+                                            <small>{{ reservation.user.email }}</small><br>
+                                            <strong>{{ reservation.user.firstName }} {{ reservation.user.lastName }}</strong>
+                                        </td>
+                                        <td><small>{{ reservation.livre.titre }}</small></td>
+                                        <td>
+                                            {% if reservation.position == 0 %}
+                                                <span class="badge badge-success">1ère!</span>
+                                            {% else %}
+                                                <span class="badge badge-primary">#{{ reservation.position + 1 }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if reservation.isActive %}
+                                                <span class="badge badge-success">Oui</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">Non</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if reservation.notifiedAt %}
+                                                <small>{{ reservation.notifiedAt|date('d/m H:i') }}</small>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><small>{{ reservation.requestedAt|date('d/m/Y H:i') }}</small></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{{ path('backoffice_test_reservation_available', {reservationId: reservation.id}) }}" 
+                                                   class="btn btn-success btn-sm"
+                                                   title="Test email de disponibilité"
+                                                   onclick="return confirm('Envoyer email de disponibilité?')">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <a href="{{ path('backoffice_test_reservation_position', {reservationId: reservation.id}) }}" 
+                                                   class="btn btn-primary btn-sm"
+                                                   title="Test email de position"
+                                                   onclick="return confirm('Envoyer email de changement de position?')">
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </a>
+                                                <a href="{{ path('backoffice_test_reservation_cancelled', {reservationId: reservation.id}) }}" 
+                                                   class="btn btn-danger btn-sm"
+                                                   title="Test email d'annulation"
+                                                   onclick="return confirm('Envoyer email d\'annulation?')">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if totalPages > 1 %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if currentPage > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('backoffice_emails_reservations', {page: 1}) }}">Première</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('backoffice_emails_reservations', {page: currentPage - 1}) }}">Précédente</a>
+                            </li>
+                        {% endif %}
+
+                        {% for p in 1..totalPages %}
+                            {% if p == currentPage %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ p }}</span>
+                                </li>
+                            {% elseif p >= currentPage - 2 and p <= currentPage + 2 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ path('backoffice_emails_reservations', {page: p}) }}">{{ p }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if currentPage < totalPages %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('backoffice_emails_reservations', {page: currentPage + 1}) }}">Suivante</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="{{ path('backoffice_emails_reservations', {page: totalPages}) }}">Dernière</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

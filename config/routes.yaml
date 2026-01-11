@@ -1,0 +1,18 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+# Custom error page routes
+error_404:
+    path: /error/404
+    controller: App\Controller\ErrorController::show404
+
+error_403:
+    path: /error/403
+    controller: App\Controller\ErrorController::show403
+
+error_500:
+    path: /error/500
+    controller: App\Controller\ErrorController::show500

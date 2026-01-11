@@ -1,0 +1,52 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Réservation confirmée{% endblock %}
+
+{% block body %}
+<h2><i class="fas fa-check-circle"></i> Réservation confirmée</h2>
+
+<p>Bonjour {{ user.username ?? user.email }},</p>
+
+<p>Votre réservation a été confirmée avec succès !</p>
+
+<div style="background: #e8f5e9; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <h3 style="margin-top: 0; color: #2e7d32;">{{ book.titre }}</h3>
+    <p>
+        <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}<br>
+        <strong>Catégorie :</strong> {{ book.categorie ? book.categorie.designation : 'Non spécifiée' }}<br>
+        <strong>Date de réservation :</strong> {{ reservation.requestedAt|date('d/m/Y à H:i') }}<br>
+        <strong>Position dans la file d'attente :</strong> <span style="color: #2e7d32; font-weight: bold;">#{{ position }}</span>
+    </p>
+</div>
+
+<h4><i class="fas fa-list-ol"></i> Que signifie votre position ?</h4>
+<p>
+    Vous êtes <strong>#{{ position }}</strong> dans la file d'attente. Cela signifie que 
+    {% if position == 1 %}
+        <strong>ce livre est réservé pour vous !</strong> Vous serez notifié dès qu'il sera disponible.
+    {% else %}
+        <strong>{{ position - 1 }} personne(s)</strong> vous précède(nt). Vous serez notifié quand votre tour arrivera.
+    {% endif %}
+</p>
+
+<div style="background: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #ff9800;">
+    <h4 style="margin-top: 0;"><i class="fas fa-envelope"></i> Vous serez notifié :</h4>
+    <ul style="margin: 5px 0;">
+        <li><i class="fas fa-envelope"></i> Par email quand le livre devient disponible</li>
+        <li><i class="fas fa-bell"></i> Dans votre profil avec une notification</li>
+        <li><i class="fas fa-clock"></i> Vous aurez un délai de 48h pour retirer le livre</li>
+    </ul>
+</div>
+
+<h4>Ce que vous pouvez faire :</h4>
+<ul>
+    <li>Suivre votre réservation dans votre profil</li>
+    <li>Annuler la réservation si vous changez d'avis</li>
+    <li>Explorer d'autres livres en attente</li>
+</ul>
+
+<p>Merci de votre patience ! Nous vous notifierons dès que le livre sera disponible.</p>
+
+<p>Cordialement,<br>
+L'équipe BiblioApp</p>
+{% endblock %}

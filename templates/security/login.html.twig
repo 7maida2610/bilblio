@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{% block title %}Connexion - Biblio{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="shortcut icon" type="image/png" href="/logo.png">
+    <link rel="apple-touch-icon" href="/logo.png">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom styles -->
+    <style>
+        :root {
+            --primary: #009688;
+            --primary-dark: #00796b;
+            --secondary: #FF6F00;
+            --success: #4CAF50;
+            --danger: #F44336;
+            --warning: #FF9800;
+            --info: #2196F3;
+            --light: #F8F9FA;
+            --dark: #212529;
+            --gray: #6C757D;
+            --white: #FFFFFF;
+            --shadow: 0 10px 30px rgba(0, 150, 136, 0.1);
+            --border-radius: 15px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #009688 0%, #26a69a 50%, #4db6ac 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #009688 0%, #00796b 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: var(--white);
+            position: relative;
+        }
+
+        .login-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .logo-container {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 20px;
+        }
+
+        .logo-container img {
+            width: 120px;
+            height: 60px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        .login-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .login-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 300;
+            position: relative;
+            z-index: 2;
+        }
+
+        .login-body {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: #adb5bd;
+            font-weight: 400;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 18px;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #009688 0%, #00796b 100%);
+            border: none;
+            border-radius: 10px;
+            color: var(--white);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 150, 136, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-login:hover::before {
+            left: 100%;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e9ecef;
+        }
+
+        .divider-text {
+            background: var(--white);
+            padding: 0 15px;
+            color: var(--gray);
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .links-container {
+            text-align: center;
+        }
+
+        .auth-link {
+            display: inline-block;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        .auth-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--dark);
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-danger {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+        }
+
+        .alert-success {
+            background: #e8f5e8;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            color: #1565c0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 10px;
+            }
+
+            .login-header {
+                padding: 30px 20px;
+            }
+
+            .login-body {
+                padding: 30px 20px;
+            }
+
+            .login-title {
+                font-size: 24px;
+            }
+        }
+
+        /* Animation for form entrance */
+        .login-card {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-container">
+                    <img src="/logo.png" alt="Biblio Logo">
+                </div>
+                <h1 class="login-title">Bienvenue</h1>
+                <p class="login-subtitle">Connectez-vous à votre compte</p>
+            </div>
+
+            <div class="login-body">
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle mr-2"></i>{{ message }}
+                    </div>
+                {% endfor %}
+
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>{{ message }}
+                    </div>
+                {% endfor %}
+
+                {% for message in app.flashes('info') %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i>{{ message }}
+                    </div>
+                {% endfor %}
+
+                {% if error %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>{{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                {% endif %}
+
+                {% if app.user %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-user-check mr-2"></i>Vous êtes connecté en tant que {{ app.user.userIdentifier }}
+                        <a href="{{ path('app_logout') }}" class="auth-link ml-2">Se déconnecter</a>
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{{ path('app_login_check') }}">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                    <div class="form-group">
+                        <label class="form-label" for="inputEmail">
+                            <i class="fas fa-envelope mr-2"></i>Adresse Email
+                        </label>
+                        <input type="email" value="{{ last_username }}" name="email"
+                            class="form-control" id="inputEmail"
+                            placeholder="votre@email.com" autocomplete="email" required autofocus>
+                        <i class="fas fa-envelope input-icon"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="inputPassword">
+                            <i class="fas fa-lock mr-2"></i>Mot de passe
+                        </label>
+                        <input type="password" name="password"
+                            class="form-control" id="inputPassword"
+                            placeholder="Votre mot de passe" autocomplete="current-password" required>
+                        <i class="fas fa-lock input-icon"></i>
+                    </div>
+
+                    <button type="submit" class="btn-login">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Se connecter
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span class="divider-text">ou</span>
+                </div>
+
+                <div class="links-container">
+                    <a href="{{ path('app_register') }}" class="auth-link">
+                        <i class="fas fa-user-plus mr-1"></i>Créer un compte
+                    </a>
+                    <span class="text-muted">•</span>
+                    <a href="{{ path('app_forgot_password') }}" class="auth-link">
+                        <i class="fas fa-key mr-1"></i>Mot de passe oublié
+                    </a>
+                </div>
+
+                <div class="text-center">
+                    <a href="#" onclick="showResendForm()" class="auth-link">
+                        <i class="fas fa-envelope mr-1"></i>Email de vérification non reçu ?
+                    </a>
+                </div>
+
+                <div class="text-center" id="resendForm" style="display: none; margin-top: 15px;">
+                    <input type="email" id="resendEmail" class="form-control" placeholder="Entrez votre email" style="margin-bottom: 10px;">
+                    <button type="button" onclick="resendVerification()" class="btn-login" style="padding: 10px; font-size: 14px;">
+                        <i class="fas fa-paper-plane mr-1"></i>Renvoyer l'email
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <a href="{{ path('app_livre_index') }}" class="back-link">
+                        <i class="fas fa-arrow-left mr-1"></i>Retour au site public
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+
+    <!-- Login Form Enhancement -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const submitBtn = document.querySelector('.btn-login');
+
+            form.addEventListener('submit', function(e) {
+                // Add loading state
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Connexion en cours...';
+                submitBtn.disabled = true;
+
+                // Form will submit normally
+            });
+        });
+    </script>
+
+    <script>
+        function showResendForm() {
+            document.getElementById('resendForm').style.display = 'block';
+        }
+
+        function resendVerification() {
+            const email = document.getElementById('resendEmail').value;
+            if (!email) {
+                alert('Please enter your email address');
+                return;
+            }
+
+            fetch('/resend/verification?email=' + encodeURIComponent(email), {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('If an account with this email exists, a verification email has been sent.');
+                document.getElementById('resendForm').style.display = 'none';
+            })
+            .catch(error => {
+                alert('An error occurred. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>

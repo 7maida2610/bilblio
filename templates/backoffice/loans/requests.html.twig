@@ -1,0 +1,128 @@
+{% extends "backendofficebase.html.twig" %}
+
+{% block title %}Demandes d'Emprunt - Bibliothèque{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Demandes d'Emprunt en Attente</h1>
+                <a href="{{ path('app_admin_loan_dashboard') }}" class="btn btn-secondary btn-sm">Retour au tableau de bord</a>
+            </div>
+        </div>
+    </div>
+
+    {% if requestedLoans > 0 %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">{{ requestedLoans }} Demande(s) en Attente</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Utilisateur</th>
+                                        <th>Livre</th>
+                                        <th>Date de Demande</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for loan in loans['REQUESTED']|default([]) %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ loan.user.firstName }} {{ loan.user.lastName }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ loan.user.email }}</small>
+                                        </td>
+                                        <td>
+                                            <strong>{{ loan.book.titre }}</strong>
+                                            <br>
+                                            <small class="text-muted">par {{ loan.book.auteur.nom }}</small>
+                                        </td>
+                                        <td>
+                                            {{ loan.requestedAt.format('d/m/Y H:i') }}
+                                        </td>
+                                        <td>
+                                            <form method="POST" style="display: inline;">
+                                                <a href="{{ path('app_admin_loan_approve', {'id': loan.id}) }}" 
+                                                   class="btn btn-success btn-sm" 
+                                                   onclick="return confirm('Approuver cette demande ?');">
+                                                    <i class="fas fa-check"></i> Approuver
+                                                </a>
+                                            </form>
+                                            <form method="POST" style="display: inline;">
+                                                <a href="{{ path('app_admin_loan_reject', {'id': loan.id}) }}" 
+                                                   class="btn btn-danger btn-sm"
+                                                   onclick="return confirm('Rejeter cette demande ?');">
+                                                    <i class="fas fa-times"></i> Rejeter
+                                                </a>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <strong>Parfait!</strong> Aucune demande d'emprunt en attente.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Quick Stats -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-info text-uppercase mb-1 small font-weight-bold">Demandes traitées aujourd'hui</div>
+                    <div class="h3 mb-0">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-primary text-uppercase mb-1 small font-weight-bold">Temps moyen de traitement</div>
+                    <div class="h3 mb-0">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-info {
+        border-left: 0.25rem solid #17a2b8 !important;
+    }
+    
+    .border-left-primary {
+        border-left: 0.25rem solid #004085 !important;
+    }
+    
+    .text-info {
+        color: #17a2b8 !important;
+    }
+    
+    .text-primary {
+        color: #004085 !important;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+</style>
+{% endblock %}

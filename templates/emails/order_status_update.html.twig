@@ -1,0 +1,54 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block subject %}Mise à jour de votre commande - {{ order.orderNumber }}{% endblock %}
+
+{% block body %}
+<h1>Mise à jour de votre commande</h1>
+
+<p>Bonjour {{ user.username }},</p>
+
+<p>Le statut de votre commande <strong>{{ order.orderNumber }}</strong> a été mis à jour.</p>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: #009688;">Détails de la commande</h3>
+    <p><strong>Numéro de commande:</strong> {{ order.orderNumber }}</p>
+    <p><strong>Date de commande:</strong> {{ order.createdAt|date('d/m/Y H:i') }}</p>
+    <p><strong>Statut actuel:</strong>
+        <span style="background-color: {% if order.status == 'pending' %}#ffc107{% elseif order.status == 'confirmed' %}#17a2b8{% elseif order.status == 'shipped' %}#28a745{% elseif order.status == 'delivered' %}#20c997{% else %}#dc3545{% endif %};
+                   color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;">
+            {{ order.status|title }}
+        </span>
+    </p>
+    <p><strong>Total:</strong> {{ order.totalAmount|number_format(2, ',', ' ') }} €</p>
+</div>
+
+{% if order.status == 'shipped' %}
+    <div style="background-color: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <h4 style="color: #155724; margin-top: 0;">📦 Votre commande a été expédiée !</h4>
+        <p style="color: #155724;">Votre commande est en route vers votre adresse de livraison.</p>
+    </div>
+{% elseif order.status == 'delivered' %}
+    <div style="background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <h4 style="color: #0c5460; margin-top: 0;">✅ Commande livrée !</h4>
+        <p style="color: #0c5460;">Votre commande a été livrée avec succès. N'hésitez pas à nous laisser un avis sur les livres reçus !</p>
+    </div>
+{% elseif order.status == 'cancelled' %}
+    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <h4 style="color: #721c24; margin-top: 0;">❌ Commande annulée</h4>
+        <p style="color: #721c24;">Votre commande a été annulée. Le remboursement sera traité dans les prochains jours.</p>
+    </div>
+{% endif %}
+
+<h3>Articles commandés :</h3>
+<ul>
+{% for item in order.orderItems %}
+    <li><strong>{{ item.livre.titre }}</strong> - Quantité: {{ item.quantity }} - Prix: {{ item.price|number_format(2, ',', ' ') }} €</li>
+{% endfor %}
+</ul>
+
+<p>Vous pouvez suivre l'évolution de votre commande dans votre <a href="{{ url('app_user_profile') }}">espace client</a>.</p>
+
+<p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+
+<p>Cordialement,<br>L'équipe BiblioApp</p>
+{% endblock %}

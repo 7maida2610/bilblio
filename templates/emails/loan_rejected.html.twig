@@ -1,0 +1,43 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Demande d'emprunt rejetée{% endblock %}
+
+{% block body %}
+<h2>❌ Votre demande d'emprunt a été rejetée</h2>
+
+<p>Bonjour {{ user.username ?? user.email }},</p>
+
+<p>Nous regrettons de vous informer que votre demande d'emprunt a été rejetée.</p>
+
+<div style="background: #ffebee; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <h3 style="margin-top: 0; color: #c62828;">{{ book.titre }}</h3>
+    <p>
+        <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}<br>
+        <strong>Catégorie :</strong> {{ book.categorie ? book.categorie.designation : 'Non spécifiée' }}
+    </p>
+</div>
+
+{% if reason %}
+<div style="background: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #ff9800;">
+    <h4 style="margin-top: 0;">Raison du rejet :</h4>
+    <p>{{ reason }}</p>
+</div>
+{% endif %}
+
+<h4>Que pouvez-vous faire ?</h4>
+<ul>
+    <li>Consultez votre profil pour voir les raisons du rejet</li>
+    <li>Réessayez ultérieurement si le livre redevient disponible</li>
+    <li>Contactez la bibliothèque pour plus d'informations</li>
+    <li>Explorez d'autres livres disponibles</li>
+</ul>
+
+<p>
+    <a href="{{ app.request.host }}/dashboard" style="display: inline-block; background: #2196f3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">
+        Retour à votre tableau de bord
+    </a>
+</p>
+
+<p>Cordialement,<br>
+L'équipe BiblioApp</p>
+{% endblock %}

@@ -1,0 +1,498 @@
+{% extends "backendofficebase.html.twig" %}
+
+{% block title %}Gestion des Emprunts - Bibliothèque{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Gestion des Emprunts</h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-primary text-uppercase mb-1 small font-weight-bold">Demandes en attente</div>
+                    <div class="h3 mb-0">{{ requestedLoans }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-success text-uppercase mb-1 small font-weight-bold">Emprunts actifs</div>
+                    <div class="h3 mb-0">{{ activeLoans }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-warning text-uppercase mb-1 small font-weight-bold">En retard</div>
+                    <div class="h3 mb-0">{{ overdueLoans }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-info text-uppercase mb-1 small font-weight-bold">Retournés</div>
+                    <div class="h3 mb-0">{{ returnedLoans }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert for Pending Approvals -->
+    {% if requestedLoans > 0 %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <strong>Attention!</strong> {{ requestedLoans }} demande(s) d'emprunt en attente d'approbation.
+                <a href="{{ path('app_admin_loan_requests') }}" class="btn btn-sm btn-warning ms-2">Traiter les demandes</a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Navigation Tabs -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="calendar-tab" data-bs-toggle="tab" href="#calendar-content" role="tab">Calendrier</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="pending-tab" data-bs-toggle="tab" href="#pending-content" role="tab">
+                        Demandes 
+                        {% if requestedLoans > 0 %}
+                            <span class="badge bg-warning text-dark">{{ requestedLoans }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="active-tab" data-bs-toggle="tab" href="#active-content" role="tab">
+                        Emprunts actifs
+                        {% if activeLoans > 0 %}
+                            <span class="badge bg-success">{{ activeLoans }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="history-tab" data-bs-toggle="tab" href="#history-content" role="tab">Historique</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Calendar Tab -->
+        <div id="calendar-content" class="tab-pane fade show active">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Calendrier des Emprunts</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="calendar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Tab -->
+        <div id="pending-content" class="tab-pane fade">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Demandes en Attente d'Approbation</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if requestedLoans > 0 %}
+                                <a href="{{ path('app_admin_loan_requests') }}" class="btn btn-warning btn-sm">
+                                    Gérer les demandes ({{ requestedLoans }})
+                                </a>
+                            {% else %}
+                                <div class="alert alert-info" role="alert">
+                                    Aucune demande en attente.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Tab -->
+        <div id="active-content" class="tab-pane fade">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Emprunts Actifs et En Retard</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if activeLoans > 0 %}
+                                <a href="{{ path('app_admin_loan_active') }}" class="btn btn-success btn-sm">
+                                    Voir les emprunts actifs ({{ activeLoans }})
+                                </a>
+                            {% else %}
+                                <div class="alert alert-info" role="alert">
+                                    Aucun emprunt actif.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history-content" class="tab-pane fade">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Historique des Emprunts</h6>
+                        </div>
+                        <div class="card-body">
+                            <a href="{{ path('app_admin_loan_history') }}" class="btn btn-info btn-sm">
+                                Voir l'historique
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+<!-- French Locale -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/fr.global.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    
+    if (!calendarEl) {
+        console.error('Calendar element not found');
+        return;
+    }
+    
+    // Calendar events from controller
+    var events = {{ calendarEvents|json_encode|raw }};
+    
+    // Detect mobile device
+    const isMobile = window.innerWidth <= 768;
+    
+    function initCalendar() {
+        // Check if calendar is already initialized
+        if (calendarEl.dataset.initialized === 'true') {
+            return;
+        }
+        calendarEl.dataset.initialized = 'true';
+        
+        // Clear any existing calendar
+        calendarEl.innerHTML = '';
+        
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            height: 'auto',
+            headerToolbar: {
+                left: isMobile ? 'prev,next' : 'prev,next today',
+                center: 'title',
+                right: isMobile ? 'dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: events || [],
+            dayMaxEvents: isMobile ? 1 : true,
+            moreLinkClick: isMobile ? 'popover' : 'week',
+            eventClick: function(info) {
+                // Optional: Handle event click
+                console.log('Event clicked:', info.event);
+            },
+            dateClick: function(info) {
+                // Optional: Handle date click
+                console.log('Date clicked:', info.dateStr);
+            },
+            datesSet: function(info) {
+                // Optional: Called when date range changes
+            },
+            eventDidMount: function(info) {
+                // Add tooltips or additional styling
+                info.el.style.cursor = 'pointer';
+            },
+            // Responsive event rendering
+            eventContent: function(arg) {
+                if (isMobile) {
+                    return {
+                        html: '<div style="font-size: 0.65rem; line-height: 1.2; padding: 1px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">' + arg.event.title + '</div>'
+                    };
+                }
+                return {};
+            }
+        });
+
+        calendar.render();
+        
+        // Handle window resize for responsive calendar
+        let resizeTimer;
+        const resizeHandler = function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (calendar) {
+                    calendar.updateSize();
+                }
+            }, 250);
+        };
+        
+        window.addEventListener('resize', resizeHandler);
+        
+        // Update calendar size when tab is shown (Bootstrap tabs)
+        const calendarTab = document.getElementById('calendar-tab');
+        if (calendarTab) {
+            calendarTab.addEventListener('shown.bs.tab', function() {
+                setTimeout(function() {
+                    if (calendar) {
+                        calendar.updateSize();
+                    }
+                }, 100);
+            });
+        }
+    }
+    
+    // Initialize calendar if element is visible, otherwise wait for tab activation
+    if (calendarEl.offsetParent !== null || calendarEl.offsetWidth > 0 || calendarEl.offsetHeight > 0) {
+        initCalendar();
+    } else {
+        // Wait for tab to be shown
+        const calendarTab = document.getElementById('calendar-tab');
+        if (calendarTab) {
+            calendarTab.addEventListener('shown.bs.tab', function() {
+                initCalendar();
+            });
+        } else {
+            // Fallback: initialize after a delay
+            setTimeout(initCalendar, 500);
+        }
+    }
+});
+</script>
+
+<style>
+    .fc {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+    }
+    
+    .fc-button-primary {
+        background-color: #004085 !important;
+        border-color: #004085 !important;
+    }
+    
+    .fc-button-primary:hover {
+        background-color: #003370 !important;
+    }
+    
+    .fc-button-primary.fc-button-active {
+        background-color: #003370 !important;
+        border-color: #003370 !important;
+    }
+    
+    .border-left-primary {
+        border-left: 0.25rem solid #004085 !important;
+    }
+    
+    .border-left-success {
+        border-left: 0.25rem solid #28a745 !important;
+    }
+    
+    .border-left-warning {
+        border-left: 0.25rem solid #ffc107 !important;
+    }
+    
+    .border-left-info {
+        border-left: 0.25rem solid #17a2b8 !important;
+    }
+    
+    .text-primary {
+        color: #004085 !important;
+    }
+    
+    .text-success {
+        color: #28a745 !important;
+    }
+    
+    .text-warning {
+        color: #ffc107 !important;
+    }
+    
+    .text-info {
+        color: #17a2b8 !important;
+    }
+
+    /* Calendar Container Styles */
+    #calendar {
+        width: 100%;
+        min-width: 600px;
+        min-height: 400px;
+    }
+
+    .fc {
+        width: 100%;
+        min-height: 400px;
+    }
+
+    /* Mobile Responsive Styles for Calendar */
+    @media (max-width: 768px) {
+        .fc {
+            font-size: 0.85rem !important;
+        }
+
+        .fc-header-toolbar {
+            flex-direction: column !important;
+            gap: 8px !important;
+            margin-bottom: 0.5em !important;
+        }
+
+        .fc-toolbar-chunk {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .fc-toolbar-chunk:first-child,
+        .fc-toolbar-chunk:last-child {
+            order: 2;
+        }
+
+        .fc-toolbar-chunk:nth-child(2) {
+            order: 1;
+            width: 100%;
+        }
+
+        .fc-button {
+            font-size: 0.7rem !important;
+            padding: 0.3rem 0.6rem !important;
+            margin: 2px !important;
+        }
+
+        .fc-toolbar-title {
+            font-size: 0.95rem !important;
+            margin: 0.5rem 0 !important;
+        }
+
+        .fc-daygrid-day {
+            min-height: 70px !important;
+            height: auto !important;
+        }
+
+        .fc-daygrid-day-number {
+            font-size: 0.8rem !important;
+            padding: 3px 4px !important;
+        }
+
+        .fc-event {
+            font-size: 0.65rem !important;
+            padding: 1px 3px !important;
+            margin: 1px 0 !important;
+            line-height: 1.3 !important;
+        }
+
+        .fc-event-title {
+            font-size: 0.65rem !important;
+            padding: 0 !important;
+        }
+
+        .fc-daygrid-event {
+            margin: 1px 0 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+
+        .fc-scrollgrid {
+            font-size: 0.8rem !important;
+        }
+
+        .fc-col-header-cell {
+            font-size: 0.7rem !important;
+            padding: 4px 2px !important;
+            font-weight: 600 !important;
+        }
+
+        .fc-col-header-cell-cushion {
+            padding: 2px !important;
+        }
+
+        .fc-daygrid-more-link {
+            font-size: 0.65rem !important;
+            padding: 2px 4px !important;
+        }
+
+        #calendar {
+            overflow-x: auto;
+            overflow-y: visible;
+            width: 100%;
+            min-width: 600px;
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .fc-button {
+            font-size: 0.65rem !important;
+            padding: 0.25rem 0.5rem !important;
+            margin: 1px !important;
+        }
+
+        .fc-toolbar-title {
+            font-size: 0.85rem !important;
+        }
+
+        .fc-daygrid-day {
+            min-height: 60px !important;
+        }
+
+        .fc-daygrid-day-number {
+            font-size: 0.7rem !important;
+            padding: 2px 3px !important;
+        }
+
+        .fc-event {
+            font-size: 0.6rem !important;
+            padding: 1px 2px !important;
+        }
+
+        .fc-event-title {
+            font-size: 0.6rem !important;
+        }
+
+        .fc-col-header-cell {
+            font-size: 0.65rem !important;
+            padding: 3px 1px !important;
+        }
+
+        #calendar {
+            min-width: 500px;
+        }
+    }
+</style>
+{% endblock %}

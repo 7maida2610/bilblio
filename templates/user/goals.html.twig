@@ -1,0 +1,140 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Reading Goals{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Reading Goals</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Active Goals -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Your Active Goals</h6>
+                </div>
+                <div class="card-body">
+                    {% for goal in activeGoals %}
+                    <div class="goal-item mb-4 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="mb-0">
+                                {% if goal.goalType == 'books_year' %}
+                                    <i class="fas fa-book text-primary mr-2"></i>Books This Year
+                                {% elseif goal.goalType == 'pages_month' %}
+                                    <i class="fas fa-file-alt text-info mr-2"></i>Pages This Month
+                                {% endif %}
+                            </h5>
+                            <div class="d-flex align-items-center">
+                                <span class="badge badge-primary mr-2">{{ goal.currentValue }} / {{ goal.targetValue }}</span>
+                                <form method="post" action="{{ path('app_user_goals_remove', {'id': goal.id}) }}" class="d-inline"
+                                      onsubmit="return confirm('Are you sure you want to remove this goal?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('remove' ~ goal.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove Goal">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="progress mb-2">
+                            <div class="progress-bar {% if goal.progressPercentage >= 100 %}bg-success{% elseif goal.progressPercentage >= 50 %}bg-warning{% else %}bg-info{% endif %}"
+                                 role="progressbar"
+                                 style="width: {{ goal.progressPercentage }}%"
+                                 aria-valuenow="{{ goal.progressPercentage }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                                {{ goal.progressPercentage|round(1) }}%
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            Target: {{ goal.targetValue }}
+                            {% if goal.goalType == 'books_year' %}books{% else %}pages{% endif %} •
+                            Period: {{ goal.startDate|date('M j, Y') }} - {{ goal.endDate|date('M j, Y') }}
+                        </small>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-bullseye fa-3x text-gray-300 mb-3"></i>
+                        <h5 class="text-muted">No active goals</h5>
+                        <p class="text-muted">Set your first reading goal below!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Achieved Goals (Historical View) -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-trophy mr-2"></i>Achieved Goals
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for goal in achievedGoals %}
+                    <div class="goal-item mb-3 p-3 border rounded bg-light">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0 text-success">
+                                {% if goal.goalType == 'books_year' %}
+                                    <i class="fas fa-book text-success mr-2"></i>Books This Year
+                                {% elseif goal.goalType == 'pages_month' %}
+                                    <i class="fas fa-file-alt text-success mr-2"></i>Pages This Month
+                                {% endif %}
+                                <i class="fas fa-check-circle text-success ml-2"></i>
+                            </h5>
+                            <span class="badge badge-success">{{ goal.currentValue }} / {{ goal.targetValue }} ✓</span>
+                        </div>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-success"
+                                 role="progressbar"
+                                 style="width: 100%"
+                                 aria-valuenow="100"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                                Completed!
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            Achieved: {{ goal.targetValue }}
+                            {% if goal.goalType == 'books_year' %}books{% else %}pages{% endif %} •
+                            Period: {{ goal.startDate|date('M j, Y') }} - {{ goal.endDate|date('M j, Y') }}
+                        </small>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-trophy fa-3x text-gray-300 mb-3"></i>
+                        <h5 class="text-muted">No achieved goals yet</h5>
+                        <p class="text-muted">Keep reading to achieve your goals!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Set New Goal</h6>
+                </div>
+                <div class="card-body">
+                    {{ form_start(goalForm) }}
+                        <div class="form-group">
+                            {{ form_label(goalForm.goalType) }}
+                            {{ form_widget(goalForm.goalType, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(goalForm.targetValue) }}
+                            {{ form_widget(goalForm.targetValue, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-plus mr-2"></i>Set Goal
+                        </button>
+                    {{ form_end(goalForm) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

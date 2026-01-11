@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Server Error - Bibliothèque{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-xl-6 col-lg-8 col-md-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5 text-center">
+                    <!-- Error Image -->
+                    <div class="mb-4">
+                        <img src="{{ asset('denied.png') }}" alt="Server Error" class="img-fluid" style="max-width: 300px; height: auto;">
+                    </div>
+
+                    <!-- Error Title -->
+                    <h1 class="h2 text-gray-900 mb-3 font-weight-bold">
+                        <i class="fas fa-server text-danger mr-2"></i>
+                        Erreur Serveur
+                    </h1>
+
+                    <!-- Error Message -->
+                    <p class="lead text-gray-600 mb-4">
+                        Désolé, une erreur inattendue s'est produite sur le serveur.
+                    </p>
+
+                    <!-- Error Details -->
+                    <div class="alert alert-danger border-0 shadow-sm mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle fa-2x text-danger mr-3"></i>
+                            <div class="text-left">
+                                <h6 class="font-weight-bold text-danger mb-1">Erreur 500 - Erreur Interne du Serveur</h6>
+                                <p class="mb-0 text-muted small">
+                                    Une erreur technique s'est produite. Notre équipe technique a été notifiée et travaille à résoudre le problème.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                        <a href="{{ path('app_backoffice_dashboard') }}" class="btn btn-primary btn-lg px-4 py-2">
+                            <i class="fas fa-home mr-2"></i>
+                            Retour à l'accueil
+                        </a>
+                        <button onclick="window.location.reload()" class="btn btn-outline-secondary btn-lg px-4 py-2">
+                            <i class="fas fa-refresh mr-2"></i>
+                            Actualiser la page
+                        </button>
+                    </div>
+
+                    <!-- Additional Help -->
+                    <div class="mt-4 pt-4 border-top">
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Le problème persiste ?
+                        </p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="mailto:admin@biblio.com" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-envelope mr-1"></i>
+                                Signaler le problème
+                            </a>
+                            <a href="{{ path('app_login') }}" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-sign-in-alt mr-1"></i>
+                                Se connecter
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-4">
+                <p class="text-muted small">
+                    © {{ 'now'|date('Y') }} Bibliothèque - Tous droits réservés
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+.card {
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.2);
+}
+
+.alert {
+    border-radius: 0.75rem;
+}
+
+.gap-3 {
+    gap: 1rem;
+}
+
+@media (max-width: 576px) {
+    .card-body {
+        padding: 2rem 1.5rem !important;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}
