@@ -54,12 +54,14 @@ COPY . .
 RUN npm ci --only=production && \
     npm run build || true
 
-# Create minimal .env for build (Symfony needs it for cache:clear)
+# Create minimal .env for build
 RUN echo "APP_ENV=prod" > .env && \
     echo "APP_DEBUG=0" >> .env
 
-# Run composer scripts (assets:install, etc.)
-RUN APP_ENV=prod APP_DEBUG=0 composer run-script --no-dev post-install-cmd
+# Install assets and importmap (these don't need DATABASE_URL)
+# cache:clear will be done at runtime in start.sh
+RUN php bin/console assets:install public --env=prod --no-debug --symlink || true && \
+    php bin/console importmap:install --env=prod --no-debug || true
 
 # Stage 2: Production - Minimal runtime image
 FROM php:8.2-fpm-alpine
