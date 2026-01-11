@@ -51,7 +51,7 @@ php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migratio
 # Run fixtures once if RUN_FIXTURES environment variable is set to "true"
 if [ "$RUN_FIXTURES" = "true" ]; then
     echo "Loading fixtures..."
-    php bin/console doctrine:fixtures:load --env=prod --no-interaction --no-debug || echo "Fixtures failed or already loaded"
+    php bin/console app:load-fixtures --purge --env=prod --no-interaction --no-debug || echo "Fixtures failed or already loaded"
     echo "Fixtures loaded. Remove RUN_FIXTURES variable from Railway to prevent re-running."
 fi
 
