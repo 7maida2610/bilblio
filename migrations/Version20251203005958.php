@@ -19,13 +19,29 @@ final class Version20251203005958 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE livre ADD is_borrowable TINYINT(1) DEFAULT 1 NOT NULL');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+        
+        if ($isPostgres) {
+            // PostgreSQL syntax
+            $this->addSql('ALTER TABLE livre ADD is_borrowable BOOLEAN DEFAULT true NOT NULL');
+        } else {
+            // MySQL syntax
+            $this->addSql('ALTER TABLE livre ADD is_borrowable TINYINT(1) DEFAULT 1 NOT NULL');
+        }
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE livre DROP is_borrowable');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+        
+        if ($isPostgres) {
+            // PostgreSQL syntax
+            $this->addSql('ALTER TABLE livre DROP is_borrowable');
+        } else {
+            // MySQL syntax
+            $this->addSql('ALTER TABLE livre DROP is_borrowable');
+        }
     }
 }
