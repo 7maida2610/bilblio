@@ -51,14 +51,32 @@ final class Version20251128154844 extends AbstractMigration
             $this->addSql('ALTER TABLE orders ADD CONSTRAINT FK_E52FFDEEA76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id)');
             $this->addSql('ALTER TABLE reading_goal DROP COLUMN IF EXISTS description');
             $this->addSql('ALTER TABLE reading_goal DROP COLUMN IF EXISTS priority');
-            $this->addSql('ALTER TABLE review ADD images JSON DEFAULT NULL');
-            $this->addSql('ALTER TABLE review ADD verified BOOLEAN NOT NULL');
-            $this->addSql('ALTER TABLE review ADD helpful INT NOT NULL');
-            $this->addSql('ALTER TABLE review ADD updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL');
-            $this->addSql('ALTER TABLE "user" ADD profile_picture VARCHAR(255) DEFAULT NULL');
+            // Use IF NOT EXISTS to avoid errors if columns already exist
+            $this->addSql('ALTER TABLE review ADD COLUMN IF NOT EXISTS images JSON DEFAULT NULL');
+            $this->addSql('ALTER TABLE review ADD COLUMN IF NOT EXISTS verified BOOLEAN DEFAULT NULL');
+            $this->addSql('ALTER TABLE review ADD COLUMN IF NOT EXISTS helpful INT DEFAULT NULL');
+            $this->addSql('ALTER TABLE review ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL');
+            // Set default values for existing rows if columns were just added
+            $this->addSql('UPDATE review SET verified = false WHERE verified IS NULL');
+            $this->addSql('UPDATE review SET helpful = 0 WHERE helpful IS NULL');
+            // Now make columns NOT NULL (only if they are currently nullable)
+            $this->addSql('DO $$ BEGIN 
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = \'review\' AND column_name = \'verified\' AND is_nullable = \'YES\') THEN
+                    ALTER TABLE review ALTER COLUMN verified SET NOT NULL;
+                END IF;
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = \'review\' AND column_name = \'helpful\' AND is_nullable = \'YES\') THEN
+                    ALTER TABLE review ALTER COLUMN helpful SET NOT NULL;
+                END IF;
+            END $$;');
+            $this->addSql('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(255) DEFAULT NULL');
             $this->addSql('ALTER TABLE "user" ALTER COLUMN created_at SET DEFAULT NULL');
             $this->addSql('ALTER TABLE "user" ALTER COLUMN updated_at SET DEFAULT NULL');
-            $this->addSql('ALTER TABLE "user" ALTER COLUMN is_verified SET NOT NULL');
+            // Only set NOT NULL if column is currently nullable
+            $this->addSql('DO $$ BEGIN 
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = \'user\' AND column_name = \'is_verified\' AND is_nullable = \'YES\') THEN
+                    ALTER TABLE "user" ALTER COLUMN is_verified SET NOT NULL;
+                END IF;
+            END $$;');
         } else {
             // MySQL syntax
             $this->addSql('CREATE TABLE banners (id INT AUTO_INCREMENT NOT NULL, created_by_id INT NOT NULL, title VARCHAR(255) NOT NULL, content LONGTEXT DEFAULT NULL, type VARCHAR(50) NOT NULL, position VARCHAR(50) NOT NULL, status VARCHAR(50) NOT NULL, start_date DATETIME DEFAULT NULL, end_date DATETIME DEFAULT NULL, image VARCHAR(255) DEFAULT NULL, link VARCHAR(255) DEFAULT NULL, link_text VARCHAR(100) DEFAULT NULL, priority SMALLINT DEFAULT NULL, target_audience JSON DEFAULT NULL COMMENT \'(DC2Type:json)\', styling JSON DEFAULT NULL COMMENT \'(DC2Type:json)\', created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', updated_at DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_250F2568B03A8386 (created_by_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
