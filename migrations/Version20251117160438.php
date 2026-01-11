@@ -19,15 +19,37 @@ final class Version20251117160438 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE reading_progress ADD current_page INT DEFAULT NULL');
-        $this->addSql('ALTER TABLE user CHANGE created_at created_at DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', CHANGE updated_at updated_at DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', CHANGE is_verified is_verified TINYINT(1) NOT NULL');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+        
+        if ($isPostgres) {
+            // PostgreSQL syntax
+            $this->addSql('ALTER TABLE reading_progress ADD current_page INT DEFAULT NULL');
+            $this->addSql('ALTER TABLE "user" ALTER COLUMN created_at SET DEFAULT NULL');
+            $this->addSql('ALTER TABLE "user" ALTER COLUMN updated_at SET DEFAULT NULL');
+            $this->addSql('ALTER TABLE "user" ALTER COLUMN is_verified SET NOT NULL');
+        } else {
+            // MySQL syntax
+            $this->addSql('ALTER TABLE reading_progress ADD current_page INT DEFAULT NULL');
+            $this->addSql('ALTER TABLE user CHANGE created_at created_at DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', CHANGE updated_at updated_at DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', CHANGE is_verified is_verified TINYINT(1) NOT NULL');
+        }
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE reading_progress DROP current_page');
-        $this->addSql('ALTER TABLE user CHANGE is_verified is_verified TINYINT(1) DEFAULT 0 NOT NULL, CHANGE created_at created_at DATETIME DEFAULT NULL, CHANGE updated_at updated_at DATETIME DEFAULT NULL');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+        
+        if ($isPostgres) {
+            // PostgreSQL syntax
+            $this->addSql('ALTER TABLE reading_progress DROP current_page');
+            $this->addSql('ALTER TABLE "user" ALTER COLUMN is_verified DROP DEFAULT');
+            $this->addSql('ALTER TABLE "user" ALTER COLUMN created_at DROP DEFAULT');
+            $this->addSql('ALTER TABLE "user" ALTER COLUMN updated_at DROP DEFAULT');
+        } else {
+            // MySQL syntax
+            $this->addSql('ALTER TABLE reading_progress DROP current_page');
+            $this->addSql('ALTER TABLE user CHANGE is_verified is_verified TINYINT(1) DEFAULT 0 NOT NULL, CHANGE created_at created_at DATETIME DEFAULT NULL, CHANGE updated_at updated_at DATETIME DEFAULT NULL');
+        }
     }
 }

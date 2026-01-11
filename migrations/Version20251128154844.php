@@ -42,24 +42,56 @@ final class Version20251128154844 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE banners DROP FOREIGN KEY FK_250F2568B03A8386');
-        $this->addSql('ALTER TABLE cart_items DROP FOREIGN KEY FK_BEF484451AD5CDBF');
-        $this->addSql('ALTER TABLE cart_items DROP FOREIGN KEY FK_BEF4844537D925CB');
-        $this->addSql('ALTER TABLE carts DROP FOREIGN KEY FK_4E004AACA76ED395');
-        $this->addSql('ALTER TABLE loans DROP FOREIGN KEY FK_82C24DBCA76ED395');
-        $this->addSql('ALTER TABLE loans DROP FOREIGN KEY FK_82C24DBC37D925CB');
-        $this->addSql('ALTER TABLE order_items DROP FOREIGN KEY FK_62809DB08D9F6D38');
-        $this->addSql('ALTER TABLE order_items DROP FOREIGN KEY FK_62809DB037D925CB');
-        $this->addSql('ALTER TABLE orders DROP FOREIGN KEY FK_E52FFDEEA76ED395');
-        $this->addSql('DROP TABLE banners');
-        $this->addSql('DROP TABLE cart_items');
-        $this->addSql('DROP TABLE carts');
-        $this->addSql('DROP TABLE loans');
-        $this->addSql('DROP TABLE order_items');
-        $this->addSql('DROP TABLE orders');
-        $this->addSql('ALTER TABLE reading_goal ADD description LONGTEXT DEFAULT NULL, ADD priority VARCHAR(20) NOT NULL');
-        $this->addSql('ALTER TABLE review DROP images, DROP verified, DROP helpful, DROP updated_at');
-        $this->addSql('ALTER TABLE user DROP profile_picture, CHANGE is_verified is_verified TINYINT(1) DEFAULT 0 NOT NULL, CHANGE created_at created_at DATETIME DEFAULT NULL, CHANGE updated_at updated_at DATETIME DEFAULT NULL');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+        
+        if ($isPostgres) {
+            // PostgreSQL syntax
+            $this->addSql('ALTER TABLE banners DROP CONSTRAINT FK_250F2568B03A8386');
+            $this->addSql('ALTER TABLE cart_items DROP CONSTRAINT FK_BEF484451AD5CDBF');
+            $this->addSql('ALTER TABLE cart_items DROP CONSTRAINT FK_BEF4844537D925CB');
+            $this->addSql('ALTER TABLE carts DROP CONSTRAINT FK_4E004AACA76ED395');
+            $this->addSql('ALTER TABLE loans DROP CONSTRAINT FK_82C24DBCA76ED395');
+            $this->addSql('ALTER TABLE loans DROP CONSTRAINT FK_82C24DBC37D925CB');
+            $this->addSql('ALTER TABLE order_items DROP CONSTRAINT FK_62809DB08D9F6D38');
+            $this->addSql('ALTER TABLE order_items DROP CONSTRAINT FK_62809DB037D925CB');
+            $this->addSql('ALTER TABLE orders DROP CONSTRAINT FK_E52FFDEEA76ED395');
+            $this->addSql('DROP TABLE banners');
+            $this->addSql('DROP TABLE cart_items');
+            $this->addSql('DROP TABLE carts');
+            $this->addSql('DROP TABLE loans');
+            $this->addSql('DROP TABLE order_items');
+            $this->addSql('DROP TABLE orders');
+            $this->addSql('ALTER TABLE reading_goal ADD description TEXT DEFAULT NULL');
+            $this->addSql('ALTER TABLE reading_goal ADD priority VARCHAR(20) NOT NULL');
+            $this->addSql('ALTER TABLE review DROP images');
+            $this->addSql('ALTER TABLE review DROP verified');
+            $this->addSql('ALTER TABLE review DROP helpful');
+            $this->addSql('ALTER TABLE review DROP updated_at');
+            $this->addSql('ALTER TABLE "user" DROP profile_picture');
+            $this->addSql('ALTER TABLE "user" ALTER COLUMN is_verified DROP DEFAULT');
+            $this->addSql('ALTER TABLE "user" ALTER COLUMN created_at DROP DEFAULT');
+            $this->addSql('ALTER TABLE "user" ALTER COLUMN updated_at DROP DEFAULT');
+        } else {
+            // MySQL syntax
+            $this->addSql('ALTER TABLE banners DROP FOREIGN KEY FK_250F2568B03A8386');
+            $this->addSql('ALTER TABLE cart_items DROP FOREIGN KEY FK_BEF484451AD5CDBF');
+            $this->addSql('ALTER TABLE cart_items DROP FOREIGN KEY FK_BEF4844537D925CB');
+            $this->addSql('ALTER TABLE carts DROP FOREIGN KEY FK_4E004AACA76ED395');
+            $this->addSql('ALTER TABLE loans DROP FOREIGN KEY FK_82C24DBCA76ED395');
+            $this->addSql('ALTER TABLE loans DROP FOREIGN KEY FK_82C24DBC37D925CB');
+            $this->addSql('ALTER TABLE order_items DROP FOREIGN KEY FK_62809DB08D9F6D38');
+            $this->addSql('ALTER TABLE order_items DROP FOREIGN KEY FK_62809DB037D925CB');
+            $this->addSql('ALTER TABLE orders DROP FOREIGN KEY FK_E52FFDEEA76ED395');
+            $this->addSql('DROP TABLE banners');
+            $this->addSql('DROP TABLE cart_items');
+            $this->addSql('DROP TABLE carts');
+            $this->addSql('DROP TABLE loans');
+            $this->addSql('DROP TABLE order_items');
+            $this->addSql('DROP TABLE orders');
+            $this->addSql('ALTER TABLE reading_goal ADD description LONGTEXT DEFAULT NULL, ADD priority VARCHAR(20) NOT NULL');
+            $this->addSql('ALTER TABLE review DROP images, DROP verified, DROP helpful, DROP updated_at');
+            $this->addSql('ALTER TABLE user DROP profile_picture, CHANGE is_verified is_verified TINYINT(1) DEFAULT 0 NOT NULL, CHANGE created_at created_at DATETIME DEFAULT NULL, CHANGE updated_at updated_at DATETIME DEFAULT NULL');
+        }
     }
 }
