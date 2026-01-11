@@ -7,17 +7,21 @@ mkdir -p /var/log/supervisor /var/run /var/log/nginx
 # Wait for database to be ready (Railway provides DATABASE_URL)
 if [ -n "$DATABASE_URL" ]; then
     echo "Waiting for database connection..."
+    echo "DATABASE_URL format: ${DATABASE_URL:0:50}..."
     until php -r "
         \$url = parse_url(getenv('DATABASE_URL'));
         \$host = \$url['host'] ?? 'localhost';
         \$port = \$url['port'] ?? 5432;
-        \$socket = @fsockopen(\$host, \$port, \$errno, \$errstr, 2);
-        if (\$socket) { fclose(\$socket); exit(0); } else { exit(1); }
+        echo \"Trying to connect to \$host:\$port...\n\";
+        \$socket = @fsockopen(\$host, \$port, \$errno, \$errstr, 5);
+        if (\$socket) { fclose(\$socket); echo \"Connection successful!\n\"; exit(0); } else { echo \"Connection failed: \$errstr (\$errno)\n\"; exit(1); }
     "; do
         echo "Database is unavailable - sleeping"
         sleep 2
     done
     echo "Database is ready!"
+else
+    echo "WARNING: DATABASE_URL is not set!"
 fi
 
 # Set production environment
