@@ -108,7 +108,11 @@ class LoadFixturesCommand extends Command
         $tableObjects = $schemaManager->listTables();
         $tables = [];
         foreach ($tableObjects as $tableObject) {
-            $tables[] = $tableObject->getName();
+            $tableName = $tableObject->getName();
+            // Skip doctrine_migration_versions to preserve migration state
+            if ($tableName !== 'doctrine_migration_versions') {
+                $tables[] = $tableName;
+            }
         }
 
         if ($isPostgres) {
