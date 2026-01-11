@@ -143,22 +143,48 @@ final class LivreController extends AbstractController
             $pdfFile = $form->get('pdf')->getData();
 
             if ($imageFile) {
-                // Cloudinary only - no local fallback
+                // Try Cloudinary first, fallback to local storage if not configured
                 $cloudinaryUrl = $cloudinaryService->uploadImage($imageFile, 'biblio/images');
                 if ($cloudinaryUrl) {
                     $livre->setImage($cloudinaryUrl);
                 } else {
-                    throw new \RuntimeException('Cloudinary upload failed. Please configure CLOUDINARY_URL.');
+                    // Fallback to local storage if Cloudinary is not configured
+                    try {
+                        $imageDirectory = $this->getParameter('images_directory');
+                        if (!is_dir($imageDirectory)) {
+                            mkdir($imageDirectory, 0777, true);
+                        }
+                        $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                        $safeFilename = $slugger->slug($originalFilename)->toString();
+                        $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                        $imageFile->move($imageDirectory, $newFilename);
+                        $livre->setImage('uploads/images/' . $newFilename);
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image: ' . $e->getMessage());
+                    }
                 }
             }
 
             if ($pdfFile) {
-                // Cloudinary only - no local fallback
+                // Try Cloudinary first, fallback to local storage if not configured
                 $cloudinaryUrl = $cloudinaryService->uploadPdf($pdfFile, 'biblio/pdfs');
                 if ($cloudinaryUrl) {
                     $livre->setPdf($cloudinaryUrl);
                 } else {
-                    throw new \RuntimeException('Cloudinary PDF upload failed. Please configure CLOUDINARY_URL.');
+                    // Fallback to local storage if Cloudinary is not configured
+                    try {
+                        $pdfDirectory = $this->getParameter('pdf_directory');
+                        if (!is_dir($pdfDirectory)) {
+                            mkdir($pdfDirectory, 0777, true);
+                        }
+                        $originalFilename = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
+                        $safeFilename = $slugger->slug($originalFilename)->toString();
+                        $newFilename = $safeFilename . '-' . uniqid() . '.pdf';
+                        $pdfFile->move($pdfDirectory, $newFilename);
+                        $livre->setPdf('uploads/pdfs/' . $newFilename);
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'Erreur lors de l\'upload du PDF: ' . $e->getMessage());
+                    }
                 }
             }
 
@@ -238,22 +264,48 @@ final class LivreController extends AbstractController
             $pdfFile = $form->get('pdf')->getData();
 
             if ($imageFile) {
-                // Cloudinary only - no local fallback
+                // Try Cloudinary first, fallback to local storage if not configured
                 $cloudinaryUrl = $cloudinaryService->uploadImage($imageFile, 'biblio/images');
                 if ($cloudinaryUrl) {
                     $livre->setImage($cloudinaryUrl);
                 } else {
-                    throw new \RuntimeException('Cloudinary upload failed. Please configure CLOUDINARY_URL.');
+                    // Fallback to local storage if Cloudinary is not configured
+                    try {
+                        $imageDirectory = $this->getParameter('images_directory');
+                        if (!is_dir($imageDirectory)) {
+                            mkdir($imageDirectory, 0777, true);
+                        }
+                        $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                        $safeFilename = $slugger->slug($originalFilename)->toString();
+                        $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                        $imageFile->move($imageDirectory, $newFilename);
+                        $livre->setImage('uploads/images/' . $newFilename);
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'Erreur lors de l\'upload de l\'image: ' . $e->getMessage());
+                    }
                 }
             }
 
             if ($pdfFile) {
-                // Cloudinary only - no local fallback
+                // Try Cloudinary first, fallback to local storage if not configured
                 $cloudinaryUrl = $cloudinaryService->uploadPdf($pdfFile, 'biblio/pdfs');
                 if ($cloudinaryUrl) {
                     $livre->setPdf($cloudinaryUrl);
                 } else {
-                    throw new \RuntimeException('Cloudinary PDF upload failed. Please configure CLOUDINARY_URL.');
+                    // Fallback to local storage if Cloudinary is not configured
+                    try {
+                        $pdfDirectory = $this->getParameter('pdf_directory');
+                        if (!is_dir($pdfDirectory)) {
+                            mkdir($pdfDirectory, 0777, true);
+                        }
+                        $originalFilename = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
+                        $safeFilename = $slugger->slug($originalFilename)->toString();
+                        $newFilename = $safeFilename . '-' . uniqid() . '.pdf';
+                        $pdfFile->move($pdfDirectory, $newFilename);
+                        $livre->setPdf('uploads/pdfs/' . $newFilename);
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'Erreur lors de l\'upload du PDF: ' . $e->getMessage());
+                    }
                 }
             }
 

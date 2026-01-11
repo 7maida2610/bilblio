@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -29,9 +30,46 @@ class PdfController extends AbstractController
 
         $pdfPath = $livre->getPdf();
 
-        // If it's a Cloudinary URL, redirect to it
+        // If it's a Cloudinary URL, proxy it to allow iframe embedding
         if (str_starts_with($pdfPath, 'http://') || str_starts_with($pdfPath, 'https://')) {
-            return $this->redirect($pdfPath);
+            try {
+                // Use HttpClient if available, otherwise fallback to curl
+                if ($this->httpClient) {
+                    $response = $this->httpClient->request('GET', $pdfPath, [
+                        'timeout' => 30,
+                        'max_redirects' => 5,
+                    ]);
+                    $pdfContent = $response->getContent();
+                } else {
+                    // Fallback to curl
+                    $ch = curl_init($pdfPath);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0');
+                    $pdfContent = curl_exec($ch);
+                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    $error = curl_error($ch);
+                    curl_close($ch);
+
+                    if ($httpCode !== 200 || !$pdfContent || $error) {
+                        throw new \RuntimeException("Failed to fetch PDF: HTTP $httpCode - $error");
+                    }
+                }
+
+                // Return PDF with proper headers for iframe embedding
+                $response = new Response($pdfContent);
+                $response->headers->set('Content-Type', 'application/pdf');
+                $response->headers->set('Content-Disposition', 'inline; filename="' . basename(parse_url($pdfPath, PHP_URL_PATH)) . '"');
+                // Allow PDF to be displayed in iframe
+                $response->headers->remove('X-Frame-Options');
+                $response->headers->set('X-Content-Type-Options', 'nosniff');
+                
+                return $response;
+            } catch (\Exception $e) {
+                throw $this->createNotFoundException('Impossible de charger le PDF: ' . $e->getMessage());
+            }
         }
 
         // Otherwise, it's a local file
@@ -53,7 +91,6 @@ class PdfController extends AbstractController
         $response->headers->remove('X-Frame-Options');
         // Allow content from same origin to be embedded
         $response->headers->set('X-Content-Type-Options', 'nosniff');
-        $response->headers->set('Content-Security-Policy', "frame-ancestors 'self'");
 
         return $response;
     }

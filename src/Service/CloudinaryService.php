@@ -82,12 +82,22 @@ class CloudinaryService
         }
 
         try {
+            $originalFilename = $file->getClientOriginalName();
+            $publicId = pathinfo($originalFilename, PATHINFO_FILENAME) . '-' . uniqid();
+            
             $result = $this->cloudinary->uploadApi()->upload(
                 $file->getRealPath(),
                 [
                     'folder' => $folder,
-                    'resource_type' => 'raw',
-                    'public_id' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '-' . uniqid(),
+                    'resource_type' => 'auto', // Auto-detect format (PDF will be detected correctly)
+                    'public_id' => $publicId,
+                    'format' => 'pdf', // Explicitly set format to PDF
+                    'context' => [
+                        'alt' => $originalFilename,
+                        'caption' => 'PDF Document',
+                    ],
+                    'overwrite' => false,
+                    'invalidate' => true,
                 ]
             );
 

@@ -23,11 +23,14 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class LivreCrudController extends AbstractCrudController
 {
@@ -162,18 +165,34 @@ class LivreCrudController extends AbstractCrudController
 
         $cloudinaryService = $this->container->get(CloudinaryService::class);
 
-        $formBuilder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) use ($cloudinaryService) {
+        $slugger = $this->container->get(SluggerInterface::class);
+        $pdfDirectory = $this->getParameter('pdf_directory');
+        
+        $formBuilder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) use ($cloudinaryService, $slugger, $pdfDirectory) {
             $livre = $event->getData();
             $form = $event->getForm();
 
             $pdfFile = $form->get('pdf')->getData();
             if ($pdfFile instanceof UploadedFile) {
-                // Cloudinary only - no local fallback
+                // Try Cloudinary first, fallback to local storage if not configured
                 $cloudinaryUrl = $cloudinaryService->uploadPdf($pdfFile, 'biblio/pdfs');
                 if ($cloudinaryUrl) {
                     $livre->setPdf($cloudinaryUrl);
                 } else {
-                    throw new \RuntimeException('Cloudinary PDF upload failed. Please configure CLOUDINARY_URL.');
+                    // Fallback to local storage if Cloudinary is not configured
+                    try {
+                        if (!is_dir($pdfDirectory)) {
+                            mkdir($pdfDirectory, 0777, true);
+                        }
+                        $originalFilename = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
+                        $safeFilename = $slugger->slug($originalFilename)->toString();
+                        $newFilename = $safeFilename . '-' . uniqid() . '.pdf';
+                        $pdfFile->move($pdfDirectory, $newFilename);
+                        $livre->setPdf('uploads/pdfs/' . $newFilename);
+                    } catch (FileException $e) {
+                        // Log error but don't throw - let the form handle it gracefully
+                        error_log('PDF upload error: ' . $e->getMessage());
+                    }
                 }
             }
             // If no new file uploaded, keep existing PDF (do nothing)
@@ -188,18 +207,34 @@ class LivreCrudController extends AbstractCrudController
 
         $cloudinaryService = $this->container->get(CloudinaryService::class);
 
-        $formBuilder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) use ($cloudinaryService) {
+        $slugger = $this->container->get(SluggerInterface::class);
+        $pdfDirectory = $this->getParameter('pdf_directory');
+        
+        $formBuilder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) use ($cloudinaryService, $slugger, $pdfDirectory) {
             $livre = $event->getData();
             $form = $event->getForm();
 
             $pdfFile = $form->get('pdf')->getData();
             if ($pdfFile instanceof UploadedFile) {
-                // Cloudinary only - no local fallback
+                // Try Cloudinary first, fallback to local storage if not configured
                 $cloudinaryUrl = $cloudinaryService->uploadPdf($pdfFile, 'biblio/pdfs');
                 if ($cloudinaryUrl) {
                     $livre->setPdf($cloudinaryUrl);
                 } else {
-                    throw new \RuntimeException('Cloudinary PDF upload failed. Please configure CLOUDINARY_URL.');
+                    // Fallback to local storage if Cloudinary is not configured
+                    try {
+                        if (!is_dir($pdfDirectory)) {
+                            mkdir($pdfDirectory, 0777, true);
+                        }
+                        $originalFilename = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
+                        $safeFilename = $slugger->slug($originalFilename)->toString();
+                        $newFilename = $safeFilename . '-' . uniqid() . '.pdf';
+                        $pdfFile->move($pdfDirectory, $newFilename);
+                        $livre->setPdf('uploads/pdfs/' . $newFilename);
+                    } catch (FileException $e) {
+                        // Log error but don't throw - let the form handle it gracefully
+                        error_log('PDF upload error: ' . $e->getMessage());
+                    }
                 }
             }
         });
