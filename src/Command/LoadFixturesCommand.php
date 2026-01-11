@@ -39,12 +39,15 @@ class LoadFixturesCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $purge = $input->getOption('purge');
+        $noInteraction = !$input->isInteractive();
 
         if ($purge) {
-            $io->warning('This will delete all existing data!');
-            if (!$io->confirm('Are you sure you want to continue?', false)) {
-                $io->info('Command cancelled.');
-                return Command::FAILURE;
+            if (!$noInteraction) {
+                $io->warning('This will delete all existing data!');
+                if (!$io->confirm('Are you sure you want to continue?', false)) {
+                    $io->info('Command cancelled.');
+                    return Command::FAILURE;
+                }
             }
 
             $io->section('Purging database...');
