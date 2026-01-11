@@ -54,8 +54,12 @@ COPY . .
 RUN npm ci --only=production && \
     npm run build || true
 
+# Create minimal .env for build (Symfony needs it for cache:clear)
+RUN echo "APP_ENV=prod" > .env && \
+    echo "APP_DEBUG=0" >> .env
+
 # Run composer scripts (assets:install, etc.)
-RUN composer run-script --no-dev post-install-cmd
+RUN APP_ENV=prod APP_DEBUG=0 composer run-script --no-dev post-install-cmd
 
 # Stage 2: Production - Minimal runtime image
 FROM php:8.2-fpm-alpine
