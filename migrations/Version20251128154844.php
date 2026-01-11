@@ -23,32 +23,33 @@ final class Version20251128154844 extends AbstractMigration
         $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
         
         if ($isPostgres) {
-            // PostgreSQL syntax
-            $this->addSql('CREATE TABLE banners (id SERIAL NOT NULL, created_by_id INT NOT NULL, title VARCHAR(255) NOT NULL, content TEXT DEFAULT NULL, type VARCHAR(50) NOT NULL, position VARCHAR(50) NOT NULL, status VARCHAR(50) NOT NULL, start_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, end_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, image VARCHAR(255) DEFAULT NULL, link VARCHAR(255) DEFAULT NULL, link_text VARCHAR(100) DEFAULT NULL, priority SMALLINT DEFAULT NULL, target_audience JSON DEFAULT NULL, styling JSON DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
-            $this->addSql('CREATE INDEX IDX_250F2568B03A8386 ON banners (created_by_id)');
-            $this->addSql('CREATE TABLE cart_items (id SERIAL NOT NULL, cart_id INT NOT NULL, livre_id INT NOT NULL, quantity INT NOT NULL, added_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
-            $this->addSql('CREATE INDEX IDX_BEF484451AD5CDBF ON cart_items (cart_id)');
-            $this->addSql('CREATE INDEX IDX_BEF4844537D925CB ON cart_items (livre_id)');
-            $this->addSql('CREATE TABLE carts (id SERIAL NOT NULL, user_id INT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
-            $this->addSql('CREATE INDEX IDX_4E004AACA76ED395 ON carts (user_id)');
-            $this->addSql('CREATE TABLE loans (id SERIAL NOT NULL, user_id INT NOT NULL, livre_id INT NOT NULL, status VARCHAR(20) NOT NULL, requested_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, approved_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, loan_start_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, due_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, returned_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, cancelled_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, notes TEXT DEFAULT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
-            $this->addSql('CREATE INDEX IDX_82C24DBCA76ED395 ON loans (user_id)');
-            $this->addSql('CREATE INDEX IDX_82C24DBC37D925CB ON loans (livre_id)');
-            $this->addSql('CREATE TABLE order_items (id SERIAL NOT NULL, order_id INT NOT NULL, livre_id INT NOT NULL, quantity INT NOT NULL, unit_price NUMERIC(10, 2) NOT NULL, subtotal NUMERIC(10, 2) NOT NULL, PRIMARY KEY(id))');
-            $this->addSql('CREATE INDEX IDX_62809DB08D9F6D38 ON order_items (order_id)');
-            $this->addSql('CREATE INDEX IDX_62809DB037D925CB ON order_items (livre_id)');
-            $this->addSql('CREATE TABLE orders (id SERIAL NOT NULL, user_id INT NOT NULL, order_number VARCHAR(20) NOT NULL, status VARCHAR(20) NOT NULL, total_amount NUMERIC(10, 2) NOT NULL, currency VARCHAR(3) NOT NULL, stripe_payment_intent_id VARCHAR(255) DEFAULT NULL, shipping_address JSON DEFAULT NULL, billing_address JSON DEFAULT NULL, notes TEXT DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, paid_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, shipped_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, delivered_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
-            $this->addSql('CREATE UNIQUE INDEX UNIQ_E52FFDEE551F0F81 ON orders (order_number)');
-            $this->addSql('CREATE INDEX IDX_E52FFDEEA76ED395 ON orders (user_id)');
-            $this->addSql('ALTER TABLE banners ADD CONSTRAINT FK_250F2568B03A8386 FOREIGN KEY (created_by_id) REFERENCES "user" (id)');
-            $this->addSql('ALTER TABLE cart_items ADD CONSTRAINT FK_BEF484451AD5CDBF FOREIGN KEY (cart_id) REFERENCES carts (id)');
-            $this->addSql('ALTER TABLE cart_items ADD CONSTRAINT FK_BEF4844537D925CB FOREIGN KEY (livre_id) REFERENCES livre (id)');
-            $this->addSql('ALTER TABLE carts ADD CONSTRAINT FK_4E004AACA76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id)');
-            $this->addSql('ALTER TABLE loans ADD CONSTRAINT FK_82C24DBCA76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id)');
-            $this->addSql('ALTER TABLE loans ADD CONSTRAINT FK_82C24DBC37D925CB FOREIGN KEY (livre_id) REFERENCES livre (id)');
-            $this->addSql('ALTER TABLE order_items ADD CONSTRAINT FK_62809DB08D9F6D38 FOREIGN KEY (order_id) REFERENCES orders (id)');
-            $this->addSql('ALTER TABLE order_items ADD CONSTRAINT FK_62809DB037D925CB FOREIGN KEY (livre_id) REFERENCES livre (id)');
-            $this->addSql('ALTER TABLE orders ADD CONSTRAINT FK_E52FFDEEA76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id)');
+            // PostgreSQL syntax - Use IF NOT EXISTS to avoid errors if tables already exist
+            $this->addSql('CREATE TABLE IF NOT EXISTS banners (id SERIAL NOT NULL, created_by_id INT NOT NULL, title VARCHAR(255) NOT NULL, content TEXT DEFAULT NULL, type VARCHAR(50) NOT NULL, position VARCHAR(50) NOT NULL, status VARCHAR(50) NOT NULL, start_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, end_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, image VARCHAR(255) DEFAULT NULL, link VARCHAR(255) DEFAULT NULL, link_text VARCHAR(100) DEFAULT NULL, priority SMALLINT DEFAULT NULL, target_audience JSON DEFAULT NULL, styling JSON DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
+            $this->addSql('CREATE INDEX IF NOT EXISTS IDX_250F2568B03A8386 ON banners (created_by_id)');
+            $this->addSql('CREATE TABLE IF NOT EXISTS cart_items (id SERIAL NOT NULL, cart_id INT NOT NULL, livre_id INT NOT NULL, quantity INT NOT NULL, added_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
+            $this->addSql('CREATE INDEX IF NOT EXISTS IDX_BEF484451AD5CDBF ON cart_items (cart_id)');
+            $this->addSql('CREATE INDEX IF NOT EXISTS IDX_BEF4844537D925CB ON cart_items (livre_id)');
+            $this->addSql('CREATE TABLE IF NOT EXISTS carts (id SERIAL NOT NULL, user_id INT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
+            $this->addSql('CREATE INDEX IF NOT EXISTS IDX_4E004AACA76ED395 ON carts (user_id)');
+            $this->addSql('CREATE TABLE IF NOT EXISTS loans (id SERIAL NOT NULL, user_id INT NOT NULL, livre_id INT NOT NULL, status VARCHAR(20) NOT NULL, requested_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, approved_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, loan_start_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, due_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, returned_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, cancelled_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, notes TEXT DEFAULT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
+            $this->addSql('CREATE INDEX IF NOT EXISTS IDX_82C24DBCA76ED395 ON loans (user_id)');
+            $this->addSql('CREATE INDEX IF NOT EXISTS IDX_82C24DBC37D925CB ON loans (livre_id)');
+            $this->addSql('CREATE TABLE IF NOT EXISTS order_items (id SERIAL NOT NULL, order_id INT NOT NULL, livre_id INT NOT NULL, quantity INT NOT NULL, unit_price NUMERIC(10, 2) NOT NULL, subtotal NUMERIC(10, 2) NOT NULL, PRIMARY KEY(id))');
+            $this->addSql('CREATE INDEX IF NOT EXISTS IDX_62809DB08D9F6D38 ON order_items (order_id)');
+            $this->addSql('CREATE INDEX IF NOT EXISTS IDX_62809DB037D925CB ON order_items (livre_id)');
+            $this->addSql('CREATE TABLE IF NOT EXISTS orders (id SERIAL NOT NULL, user_id INT NOT NULL, order_number VARCHAR(20) NOT NULL, status VARCHAR(20) NOT NULL, total_amount NUMERIC(10, 2) NOT NULL, currency VARCHAR(3) NOT NULL, stripe_payment_intent_id VARCHAR(255) DEFAULT NULL, shipping_address JSON DEFAULT NULL, billing_address JSON DEFAULT NULL, notes TEXT DEFAULT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, paid_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, shipped_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, delivered_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, PRIMARY KEY(id))');
+            $this->addSql('CREATE UNIQUE INDEX IF NOT EXISTS UNIQ_E52FFDEE551F0F81 ON orders (order_number)');
+            $this->addSql('CREATE INDEX IF NOT EXISTS IDX_E52FFDEEA76ED395 ON orders (user_id)');
+            // Use DO block to handle foreign key constraints gracefully
+            $this->addSql('DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = \'FK_250F2568B03A8386\') THEN ALTER TABLE banners ADD CONSTRAINT FK_250F2568B03A8386 FOREIGN KEY (created_by_id) REFERENCES "user" (id); END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;');
+            $this->addSql('DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = \'FK_BEF484451AD5CDBF\') THEN ALTER TABLE cart_items ADD CONSTRAINT FK_BEF484451AD5CDBF FOREIGN KEY (cart_id) REFERENCES carts (id); END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;');
+            $this->addSql('DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = \'FK_BEF4844537D925CB\') THEN ALTER TABLE cart_items ADD CONSTRAINT FK_BEF4844537D925CB FOREIGN KEY (livre_id) REFERENCES livre (id); END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;');
+            $this->addSql('DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = \'FK_4E004AACA76ED395\') THEN ALTER TABLE carts ADD CONSTRAINT FK_4E004AACA76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id); END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;');
+            $this->addSql('DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = \'FK_82C24DBCA76ED395\') THEN ALTER TABLE loans ADD CONSTRAINT FK_82C24DBCA76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id); END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;');
+            $this->addSql('DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = \'FK_82C24DBC37D925CB\') THEN ALTER TABLE loans ADD CONSTRAINT FK_82C24DBC37D925CB FOREIGN KEY (livre_id) REFERENCES livre (id); END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;');
+            $this->addSql('DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = \'FK_62809DB08D9F6D38\') THEN ALTER TABLE order_items ADD CONSTRAINT FK_62809DB08D9F6D38 FOREIGN KEY (order_id) REFERENCES orders (id); END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;');
+            $this->addSql('DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = \'FK_62809DB037D925CB\') THEN ALTER TABLE order_items ADD CONSTRAINT FK_62809DB037D925CB FOREIGN KEY (livre_id) REFERENCES livre (id); END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;');
+            $this->addSql('DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = \'FK_E52FFDEEA76ED395\') THEN ALTER TABLE orders ADD CONSTRAINT FK_E52FFDEEA76ED395 FOREIGN KEY (user_id) REFERENCES "user" (id); END IF; EXCEPTION WHEN duplicate_object THEN NULL; END $$;');
             $this->addSql('ALTER TABLE reading_goal DROP COLUMN IF EXISTS description');
             $this->addSql('ALTER TABLE reading_goal DROP COLUMN IF EXISTS priority');
             // Use IF NOT EXISTS to avoid errors if columns already exist
