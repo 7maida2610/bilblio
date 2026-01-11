@@ -23,8 +23,8 @@ class EmailService implements EmailServiceInterface
         private UrlGeneratorInterface $urlGenerator,
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
-        string $fromEmail = null,
-        string $fromName = null
+        ?string $fromEmail = null,
+        ?string $fromName = null
     ) {
         $this->fromEmail = $fromEmail ?? $_ENV['EMAIL_FROM_ADDRESS'] ?? 'noreply@biblio.app';
         $this->fromName = $fromName ?? $_ENV['EMAIL_FROM_NAME'] ?? 'BiblioApp';
