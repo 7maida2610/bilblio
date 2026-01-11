@@ -9,10 +9,10 @@ parameters:
     profile_pictures_directory: '%kernel.project_dir%/public/uploads/profile_pictures'
     auteur_images_directory: '%kernel.project_dir%/public/uploads/auteur_images'
     review_images_directory: '%kernel.project_dir%/public/uploads/review_images'
-    app.email.from_address: '%env(string:default:EMAIL_FROM_ADDRESS:default:noreply@biblio.app)%'
-    app.email.from_name: '%env(string:default:EMAIL_FROM_NAME:default:BiblioApp)%'
-    stripe_secret_key: '%env(string:default:STRIPE_SECRET_KEY:default:)%'
-    stripe_publishable_key: '%env(string:default:STRIPE_PUBLISHABLE_KEY:default:)%'
+    app.email.from_address: '%env(default:EMAIL_FROM_ADDRESS:default:noreply@biblio.app)%'
+    app.email.from_name: '%env(default:EMAIL_FROM_NAME:default:BiblioApp)%'
+    stripe_secret_key: '%env(default:STRIPE_SECRET_KEY:default:)%'
+    stripe_publishable_key: '%env(default:STRIPE_PUBLISHABLE_KEY:default:)%'
 
     # Borrowing status messages (configurable by admins)
     borrowing.messages.available: 'Disponible'
@@ -50,7 +50,7 @@ services:
     App\Service\CloudinaryService:
         arguments:
             $logger: '@logger'
-            $cloudinaryUrl: '%env(string:default:CLOUDINARY_URL:default:)%'
+            $cloudinaryUrl: '%env(default:CLOUDINARY_URL:default:)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
