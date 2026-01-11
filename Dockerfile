@@ -77,6 +77,7 @@ RUN apk add --no-cache \
     freetype-dev \
     libzip-dev \
     icu-dev \
+    oniguruma-dev \
     postgresql-dev
 
 # Install PHP extensions
@@ -92,7 +93,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         mbstring
 
 # Remove build dependencies to reduce image size
-RUN apk del zlib-dev libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev icu-dev postgresql-dev
+RUN apk del zlib-dev libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev icu-dev oniguruma-dev postgresql-dev
 
 # Configure PHP for production
 RUN { \
