@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Livre;
+use App\Service\CloudinaryService;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -74,7 +75,18 @@ class LivreCrudController extends AbstractCrudController
                 ->setBasePath('uploads/images/')
                 ->setUploadDir('public/uploads/images/')
                 ->setUploadedFileNamePattern('[randomhash].[extension]')
-                ->setRequired(false),
+                ->setRequired(false)
+                ->formatValue(function ($value, $entity) {
+                    if (!$value) {
+                        return null;
+                    }
+                    // If it's a Cloudinary URL, return it directly
+                    if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+                        return $value;
+                    }
+                    // Otherwise, it's a local file
+                    return 'uploads/images/' . $value;
+                }),
             Field::new('pdf', 'Document PDF')
                 ->setFormType(FileType::class)
                 ->setFormTypeOptions([
@@ -91,6 +103,11 @@ class LivreCrudController extends AbstractCrudController
                 ->renderAsHtml()
                 ->formatValue(function ($value, $entity) {
                     if ($value) {
+                        // If it's a Cloudinary URL, use it directly
+                        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+                            return sprintf('<a href="%s" target="_blank" class="btn btn-sm btn-info"><i class="fas fa-file-pdf mr-1"></i>Voir PDF</a>', $value);
+                        }
+                        // Otherwise, it's a local file
                         return sprintf('<a href="/uploads/pdfs/%s" target="_blank" class="btn btn-sm btn-info"><i class="fas fa-file-pdf mr-1"></i>Voir PDF</a>', $value);
                     }
                     return 'Aucun PDF';
@@ -143,22 +160,21 @@ class LivreCrudController extends AbstractCrudController
     {
         $formBuilder = parent::createEditFormBuilder($entityDto, $formOptions, $context);
 
+        $cloudinaryService = $this->container->get(CloudinaryService::class);
 
-        $formBuilder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
+        $formBuilder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) use ($cloudinaryService) {
             $livre = $event->getData();
             $form = $event->getForm();
 
             $pdfFile = $form->get('pdf')->getData();
             if ($pdfFile instanceof UploadedFile) {
-                $originalFilename = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = preg_replace('/[^A-Za-z0-9_-]/', '', $originalFilename);
-                $fileName = $safeFilename . '-' . uniqid() . '.' . $pdfFile->guessExtension();
-
-                $pdfFile->move(
-                    $this->getParameter('kernel.project_dir') . '/public/uploads/pdfs/',
-                    $fileName
-                );
-                $livre->setPdf($fileName);
+                // Cloudinary only - no local fallback
+                $cloudinaryUrl = $cloudinaryService->uploadPdf($pdfFile, 'biblio/pdfs');
+                if ($cloudinaryUrl) {
+                    $livre->setPdf($cloudinaryUrl);
+                } else {
+                    throw new \RuntimeException('Cloudinary PDF upload failed. Please configure CLOUDINARY_URL.');
+                }
             }
             // If no new file uploaded, keep existing PDF (do nothing)
         });
@@ -170,21 +186,21 @@ class LivreCrudController extends AbstractCrudController
     {
         $formBuilder = parent::createNewFormBuilder($entityDto, $formOptions, $context);
 
-        $formBuilder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
+        $cloudinaryService = $this->container->get(CloudinaryService::class);
+
+        $formBuilder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) use ($cloudinaryService) {
             $livre = $event->getData();
             $form = $event->getForm();
 
             $pdfFile = $form->get('pdf')->getData();
             if ($pdfFile instanceof UploadedFile) {
-                $originalFilename = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = preg_replace('/[^A-Za-z0-9_-]/', '', strtolower($originalFilename));
-                $fileName = $safeFilename . '-' . uniqid() . '.' . $pdfFile->guessExtension();
-
-                $pdfFile->move(
-                    $this->getParameter('kernel.project_dir') . '/public/uploads/pdfs/',
-                    $fileName
-                );
-                $livre->setPdf($fileName);
+                // Cloudinary only - no local fallback
+                $cloudinaryUrl = $cloudinaryService->uploadPdf($pdfFile, 'biblio/pdfs');
+                if ($cloudinaryUrl) {
+                    $livre->setPdf($cloudinaryUrl);
+                } else {
+                    throw new \RuntimeException('Cloudinary PDF upload failed. Please configure CLOUDINARY_URL.');
+                }
             }
         });
 

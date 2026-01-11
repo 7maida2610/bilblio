@@ -27,18 +27,26 @@ class PdfController extends AbstractController
             throw $this->createNotFoundException('PDF non trouvé pour ce livre.');
         }
 
-        $pdfPath = $this->getParameter('pdf_directory') . '/' . $livre->getPdf();
+        $pdfPath = $livre->getPdf();
 
-        if (!file_exists($pdfPath)) {
+        // If it's a Cloudinary URL, redirect to it
+        if (str_starts_with($pdfPath, 'http://') || str_starts_with($pdfPath, 'https://')) {
+            return $this->redirect($pdfPath);
+        }
+
+        // Otherwise, it's a local file
+        $localPdfPath = $this->getParameter('pdf_directory') . '/' . $pdfPath;
+
+        if (!file_exists($localPdfPath)) {
             throw $this->createNotFoundException('Fichier PDF introuvable.');
         }
 
         // Return PDF for inline viewing
-        $response = new BinaryFileResponse($pdfPath);
+        $response = new BinaryFileResponse($localPdfPath);
         $response->headers->set('Content-Type', 'application/pdf');
         $response->setContentDisposition(
             ResponseHeaderBag::DISPOSITION_INLINE,
-            basename($pdfPath)
+            basename($localPdfPath)
         );
 
         return $response;
@@ -57,14 +65,22 @@ class PdfController extends AbstractController
             throw $this->createNotFoundException('PDF non trouvé pour ce livre.');
         }
 
-        $pdfPath = $this->getParameter('pdf_directory') . '/' . $livre->getPdf();
+        $pdfPath = $livre->getPdf();
 
-        if (!file_exists($pdfPath)) {
+        // If it's a Cloudinary URL, redirect to it
+        if (str_starts_with($pdfPath, 'http://') || str_starts_with($pdfPath, 'https://')) {
+            return $this->redirect($pdfPath);
+        }
+
+        // Otherwise, it's a local file
+        $localPdfPath = $this->getParameter('pdf_directory') . '/' . $pdfPath;
+
+        if (!file_exists($localPdfPath)) {
             throw $this->createNotFoundException('Fichier PDF introuvable.');
         }
 
         // Return PDF for download
-        $response = new BinaryFileResponse($pdfPath);
+        $response = new BinaryFileResponse($localPdfPath);
         $response->headers->set('Content-Type', 'application/pdf');
         $response->setContentDisposition(
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,

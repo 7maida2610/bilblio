@@ -210,7 +210,7 @@
                 <div class="card-body text-center">
                     <div class="mb-3">
                         {% if user.profilePicture %}
-                            <img src="{{ asset('uploads/profile_pictures/' ~ user.profilePicture) }}" alt="Photo de profil" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #6f42c1;">
+                            <img src="{{ user.profilePicture starts with 'http' ? user.profilePicture : '' }}" alt="Photo de profil" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #6f42c1;">
                         {% else %}
                             <div class="bg-gradient-purple rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
                                 <i class="fas fa-user fa-3x text-white"></i>

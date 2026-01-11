@@ -137,6 +137,9 @@ COPY docker/symfony.conf /etc/nginx/http.d/default.conf
 # Copy supervisor configuration
 COPY docker/supervisord.conf /etc/supervisord.conf
 
+# Create supervisor log directory
+RUN mkdir -p /var/log/supervisor /var/run
+
 # Copy startup script
 COPY docker/start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh

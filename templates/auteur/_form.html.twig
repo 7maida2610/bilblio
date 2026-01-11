@@ -22,7 +22,7 @@
         {{ form_errors(form.image) }}
         {% if auteur.image %}
             <div class="mt-2">
-                <img src="{{ asset('uploads/auteur_images/' ~ auteur.image) }}" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                <img src="{{ auteur.image starts with 'http' ? auteur.image : '' }}" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
                 <p class="text-muted small mt-1">Image actuelle. Uploader une nouvelle image pour la remplacer.</p>
             </div>
         {% endif %}

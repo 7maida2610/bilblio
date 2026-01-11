@@ -233,7 +233,7 @@
                         <!-- Author Avatar -->
                         <div class="position-relative">
                             {% if auteur.image %}
-                                <div class="card-img-top author-avatar" style="height: 200px; background-image: url('{{ asset('uploads/auteur_images/' ~ auteur.image) }}'); background-size: cover; background-position: center;"></div>
+                                <div class="card-img-top author-avatar" style="height: 200px; background-image: url('{{ auteur.image starts with 'http' ? auteur.image : '' }}'); background-size: cover; background-position: center;"></div>
                             {% else %}
                                 <div class="card-img-top d-flex align-items-center justify-content-center author-avatar" style="height: 200px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
                                     <div class="text-center text-white">

@@ -116,7 +116,7 @@
                                 </span>
                                 {% if app.user and app.user.profilePicture %}
                                     <img class="img-profile rounded-circle"
-                                        src="{{ asset('uploads/profile_pictures/' ~ app.user.profilePicture) }}" style="width: 32px; height: 32px; object-fit: cover;">
+                                        src="{{ app.user.profilePicture starts with 'http' ? app.user.profilePicture : '' }}" style="width: 32px; height: 32px; object-fit: cover;">
                                 {% else %}
                                     <img class="img-profile rounded-circle"
                                         src="{{ asset('img/undraw_profile.svg') }}">

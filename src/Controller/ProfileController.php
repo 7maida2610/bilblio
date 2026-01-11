@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\ProfileType;
+use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,8 @@ class ProfileController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private SluggerInterface $slugger
+        private SluggerInterface $slugger,
+        private CloudinaryService $cloudinaryService
     ) {}
 
     #[Route('', name: 'app_profile', methods: ['GET', 'POST'])]
@@ -62,30 +64,12 @@ class ProfileController extends AbstractController
             $profilePictureFile = $form->get('profilePicture')->getData();
             
             if ($profilePictureFile) {
-                try {
-                    $originalFilename = pathinfo($profilePictureFile->getClientOriginalName(), PATHINFO_FILENAME);
-                    $safeFilename = $this->slugger->slug($originalFilename);
-                    $newFilename = $safeFilename . '-' . uniqid() . '.' . $profilePictureFile->guessExtension();
-
-                    // Delete old picture if exists
-                    if ($user->getProfilePicture()) {
-                        $oldPath = $this->getParameter('profile_pictures_directory') . '/' . $user->getProfilePicture();
-                        if (file_exists($oldPath)) {
-                            unlink($oldPath);
-                        }
-                    }
-
-                    $uploadDir = $this->getParameter('profile_pictures_directory');
-                    
-                    // Ensure directory exists and is writable
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0755, true);
-                    }
-
-                    $profilePictureFile->move($uploadDir, $newFilename);
-                    $user->setProfilePicture($newFilename);
-                } catch (\Exception $e) {
-                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image: ' . $e->getMessage());
+                // Cloudinary only - no local fallback
+                $cloudinaryUrl = $this->cloudinaryService->uploadImage($profilePictureFile, 'biblio/profile_pictures');
+                if ($cloudinaryUrl) {
+                    $user->setProfilePicture($cloudinaryUrl);
+                } else {
+                    $this->addFlash('error', 'Cloudinary upload failed. Please configure CLOUDINARY_URL.');
                 }
             }
 

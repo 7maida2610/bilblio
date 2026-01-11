@@ -74,7 +74,7 @@
                             <div class="mr-3">
                                 {% set otherUser = tab == 'inbox' ? message.sender : message.recipient %}
                                 {% if otherUser.profilePicture %}
-                                    <img class="rounded-circle" src="{{ asset('uploads/profile_pictures/' ~ otherUser.profilePicture) }}" 
+                                    <img class="rounded-circle" src="{{ otherUser.profilePicture starts with 'http' ? otherUser.profilePicture : '' }}" 
                                          alt="{{ otherUser.username }}" style="width: 45px; height: 45px; object-fit: cover;">
                                 {% else %}
                                     <img class="rounded-circle" src="{{ asset('img/undraw_profile.svg') }}" 

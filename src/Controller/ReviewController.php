@@ -6,6 +6,7 @@ use App\Entity\Livre;
 use App\Entity\Review;
 use App\Form\ReviewType;
 use App\Repository\ReviewRepository;
+use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +22,8 @@ class ReviewController extends AbstractController
     public function __construct(
         private ReviewRepository $reviewRepository,
         private EntityManagerInterface $entityManager,
-        private SluggerInterface $slugger
+        private SluggerInterface $slugger,
+        private CloudinaryService $cloudinaryService
     ) {}
 
     #[Route('/livre/{id}', name: 'app_review_create', methods: ['GET', 'POST'])]
@@ -53,18 +55,12 @@ class ReviewController extends AbstractController
             if ($imageFiles) {
                 foreach ($imageFiles as $imageFile) {
                     if ($imageFile) {
-                        $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                        $safeFilename = $this->slugger->slug($originalFilename);
-                        $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
-
-                        try {
-                            $imageFile->move(
-                                $this->getParameter('review_images_directory'),
-                                $newFilename
-                            );
-                            $uploadedImages[] = $newFilename;
-                        } catch (\Exception $e) {
-                            $this->addFlash('error', 'Erreur lors de l\'upload d\'une image.');
+                        // Cloudinary only - no local fallback
+                        $cloudinaryUrl = $this->cloudinaryService->uploadImage($imageFile, 'biblio/review_images');
+                        if ($cloudinaryUrl) {
+                            $uploadedImages[] = $cloudinaryUrl;
+                        } else {
+                            $this->addFlash('error', 'Cloudinary upload failed. Please configure CLOUDINARY_URL.');
                         }
                     }
                 }
@@ -107,18 +103,12 @@ class ReviewController extends AbstractController
             if ($imageFiles) {
                 foreach ($imageFiles as $imageFile) {
                     if ($imageFile) {
-                        $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                        $safeFilename = $this->slugger->slug($originalFilename);
-                        $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
-
-                        try {
-                            $imageFile->move(
-                                $this->getParameter('review_images_directory'),
-                                $newFilename
-                            );
-                            $uploadedImages[] = $newFilename;
-                        } catch (\Exception $e) {
-                            $this->addFlash('error', 'Erreur lors de l\'upload d\'une image.');
+                        // Cloudinary only - no local fallback
+                        $cloudinaryUrl = $this->cloudinaryService->uploadImage($imageFile, 'biblio/review_images');
+                        if ($cloudinaryUrl) {
+                            $uploadedImages[] = $cloudinaryUrl;
+                        } else {
+                            $this->addFlash('error', 'Cloudinary upload failed. Please configure CLOUDINARY_URL.');
                         }
                     }
                 }

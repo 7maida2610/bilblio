@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Auteur;
 use App\Form\AuteurType;
 use App\Repository\AuteurRepository;
+use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -43,7 +44,7 @@ final class AuteurController extends AbstractController
     }
 
     #[Route('/new', name: 'app_auteur_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, CloudinaryService $cloudinaryService): Response
     {
         $auteur = new Auteur();
         $form = $this->createForm(AuteurType::class, $auteur);
@@ -53,20 +54,13 @@ final class AuteurController extends AbstractController
             $imageFile = $form->get('image')->getData();
 
             if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-
-                try {
-                    $imageFile->move(
-                        $this->getParameter('auteur_images_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    // handle exception if something happens during file upload
+                // Cloudinary only - no local fallback
+                $cloudinaryUrl = $cloudinaryService->uploadImage($imageFile, 'biblio/auteur_images');
+                if ($cloudinaryUrl) {
+                    $auteur->setImage($cloudinaryUrl);
+                } else {
+                    throw new \RuntimeException('Cloudinary upload failed. Please configure CLOUDINARY_URL.');
                 }
-
-                $auteur->setImage($newFilename);
             }
 
             $entityManager->persist($auteur);
@@ -90,7 +84,7 @@ final class AuteurController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_auteur_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Auteur $auteur, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Auteur $auteur, EntityManagerInterface $entityManager, CloudinaryService $cloudinaryService): Response
     {
         $form = $this->createForm(AuteurType::class, $auteur);
         $form->handleRequest($request);
@@ -99,20 +93,13 @@ final class AuteurController extends AbstractController
             $imageFile = $form->get('image')->getData();
 
             if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-
-                try {
-                    $imageFile->move(
-                        $this->getParameter('auteur_images_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    // handle exception if something happens during file upload
+                // Cloudinary only - no local fallback
+                $cloudinaryUrl = $cloudinaryService->uploadImage($imageFile, 'biblio/auteur_images');
+                if ($cloudinaryUrl) {
+                    $auteur->setImage($cloudinaryUrl);
+                } else {
+                    throw new \RuntimeException('Cloudinary upload failed. Please configure CLOUDINARY_URL.');
                 }
-
-                $auteur->setImage($newFilename);
             }
 
             $entityManager->flush();

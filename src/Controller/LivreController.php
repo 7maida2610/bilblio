@@ -11,6 +11,7 @@ use App\Repository\AuteurRepository;
 use App\Repository\EditeurRepository;
 use App\Repository\BookReservationRepository;
 use App\Repository\LoanRepository;
+use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -131,7 +132,7 @@ final class LivreController extends AbstractController
     }
 
     #[Route('/new', name: 'app_livre_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, CloudinaryService $cloudinaryService): Response
     {
         $livre = new Livre();
         $form = $this->createForm(LivreType::class, $livre);
@@ -142,37 +143,23 @@ final class LivreController extends AbstractController
             $pdfFile = $form->get('pdf')->getData();
 
             if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-
-                try {
-                    $imageFile->move(
-                        $this->getParameter('images_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    // handle exception if something happens during file upload
+                // Cloudinary only - no local fallback
+                $cloudinaryUrl = $cloudinaryService->uploadImage($imageFile, 'biblio/images');
+                if ($cloudinaryUrl) {
+                    $livre->setImage($cloudinaryUrl);
+                } else {
+                    throw new \RuntimeException('Cloudinary upload failed. Please configure CLOUDINARY_URL.');
                 }
-
-                $livre->setImage($newFilename);
             }
 
             if ($pdfFile) {
-                $originalFilename = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$pdfFile->guessExtension();
-
-                try {
-                    $pdfFile->move(
-                        $this->getParameter('pdf_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    // handle exception if something happens during file upload
+                // Cloudinary only - no local fallback
+                $cloudinaryUrl = $cloudinaryService->uploadPdf($pdfFile, 'biblio/pdfs');
+                if ($cloudinaryUrl) {
+                    $livre->setPdf($cloudinaryUrl);
+                } else {
+                    throw new \RuntimeException('Cloudinary PDF upload failed. Please configure CLOUDINARY_URL.');
                 }
-
-                $livre->setPdf($newFilename);
             }
 
             $entityManager->persist($livre);
@@ -241,7 +228,7 @@ final class LivreController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_livre_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Livre $livre, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function edit(Request $request, Livre $livre, EntityManagerInterface $entityManager, SluggerInterface $slugger, CloudinaryService $cloudinaryService): Response
     {
         $form = $this->createForm(LivreType::class, $livre);
         $form->handleRequest($request);
@@ -251,37 +238,23 @@ final class LivreController extends AbstractController
             $pdfFile = $form->get('pdf')->getData();
 
             if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-
-                try {
-                    $imageFile->move(
-                        $this->getParameter('images_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    // handle exception if something happens during file upload
+                // Cloudinary only - no local fallback
+                $cloudinaryUrl = $cloudinaryService->uploadImage($imageFile, 'biblio/images');
+                if ($cloudinaryUrl) {
+                    $livre->setImage($cloudinaryUrl);
+                } else {
+                    throw new \RuntimeException('Cloudinary upload failed. Please configure CLOUDINARY_URL.');
                 }
-
-                $livre->setImage($newFilename);
             }
 
             if ($pdfFile) {
-                $originalFilename = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$pdfFile->guessExtension();
-
-                try {
-                    $pdfFile->move(
-                        $this->getParameter('pdf_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    // handle exception if something happens during file upload
+                // Cloudinary only - no local fallback
+                $cloudinaryUrl = $cloudinaryService->uploadPdf($pdfFile, 'biblio/pdfs');
+                if ($cloudinaryUrl) {
+                    $livre->setPdf($cloudinaryUrl);
+                } else {
+                    throw new \RuntimeException('Cloudinary PDF upload failed. Please configure CLOUDINARY_URL.');
                 }
-
-                $livre->setPdf($newFilename);
             }
 
             $entityManager->flush();

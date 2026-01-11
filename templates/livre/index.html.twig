@@ -437,7 +437,7 @@
                         <!-- Book Image -->
                         <div class="position-relative">
                             {% if livre.image %}
-                                <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="card-img-top book-image" style="height: 250px; object-fit: cover;">
+                                <img src="{{ livre.image starts with 'http' ? livre.image : asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="card-img-top book-image" style="height: 250px; object-fit: cover;">
                             {% else %}
                                 <div class="card-img-top d-flex align-items-center justify-content-center bg-light book-image-placeholder" style="height: 250px;">
                                     <i class="fas fa-book fa-4x text-gray-300"></i>
@@ -730,7 +730,7 @@
                                 <td>{{ livre.id }}</td>
                                 <td>
                                      {% if livre.image %}
-                                         <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-thumbnail" style="width: 40px; height: 40px; object-fit: cover;">
+                                         <img src="{{ livre.image starts with 'http' ? livre.image : asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-thumbnail" style="width: 40px; height: 40px; object-fit: cover;">
                                      {% else %}
                                          <i class="fas fa-book text-gray-300" style="font-size: 24px;"></i>
                                      {% endif %}

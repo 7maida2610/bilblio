@@ -476,7 +476,7 @@
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ app.user.username ?: app.user.email }}</span>
                                 {% if app.user.profilePicture %}
-                                    <img class="img-profile rounded-circle" src="{{ asset('uploads/profile_pictures/' ~ app.user.profilePicture) }}" style="width: 32px; height: 32px; object-fit: cover;">
+                                    <img class="img-profile rounded-circle" src="{{ app.user.profilePicture starts with 'http' ? app.user.profilePicture : asset('uploads/profile_pictures/' ~ app.user.profilePicture) }}" style="width: 32px; height: 32px; object-fit: cover;">
                                 {% else %}
                                     <img class="img-profile rounded-circle" src="{{ asset('img/undraw_profile.svg') }}">
                                 {% endif %}

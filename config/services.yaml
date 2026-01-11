@@ -9,8 +9,8 @@ parameters:
     profile_pictures_directory: '%kernel.project_dir%/public/uploads/profile_pictures'
     auteur_images_directory: '%kernel.project_dir%/public/uploads/auteur_images'
     review_images_directory: '%kernel.project_dir%/public/uploads/review_images'
-    app.email.from_address: 'khlifahmed9@gmail.com'
-    app.email.from_name: 'BiblioApp'
+    app.email.from_address: '%env(EMAIL_FROM_ADDRESS)%'
+    app.email.from_name: '%env(EMAIL_FROM_NAME)%'
     stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
     stripe_publishable_key: '%env(STRIPE_PUBLISHABLE_KEY)%'
 

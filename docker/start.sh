@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Create supervisor and nginx directories if they don't exist
+mkdir -p /var/log/supervisor /var/run /var/log/nginx
+
 # Wait for database to be ready (Railway provides DATABASE_URL)
 if [ -n "$DATABASE_URL" ]; then
     echo "Waiting for database connection..."
@@ -25,8 +28,8 @@ export APP_DEBUG=${APP_DEBUG:-0}
 export PORT=${PORT:-8080}
 echo "Starting on port $PORT"
 
-# Update nginx configuration to use PORT
-sed -i "s/listen 8080;/listen $PORT;/" /etc/nginx/http.d/default.conf
+# Update nginx configuration to use PORT (listen on 0.0.0.0 for Railway)
+sed -i "s/listen 0.0.0.0:8080;/listen 0.0.0.0:$PORT;/" /etc/nginx/http.d/default.conf
 
 # Warm up cache (only if cache directory exists)
 if [ -d "var/cache" ]; then
